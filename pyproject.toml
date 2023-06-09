@@ -1,0 +1,33 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "spark-llm"
+version = "0.1.2"
+description = "LLM assistant for the development of Spark applications"
+authors = ["Gengliang Wang <gengliang@apache.org>"]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/gengliangwang/spark-llm"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+requests = "*"
+tiktoken = "*"
+beautifulsoup4 = "*"
+langchain = "*"
+pyspark = "*"
+
+[tool.poetry.dev-dependencies]
+
