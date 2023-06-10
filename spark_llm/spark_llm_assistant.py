@@ -1,4 +1,5 @@
 import re
+from functools import partial
 from typing import Callable, Optional, List
 from urllib.parse import urlparse
 
@@ -214,3 +215,10 @@ class SparkLLMAssistant:
             return summary.strip()
         else:
             return explain_result
+
+    def activate(self):
+        """
+        Activates LLM utility functions for Spark DataFrame.
+        """
+        DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(df_instance, desc)
+        DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)

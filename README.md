@@ -14,6 +14,7 @@ from spark_llm import SparkLLMAssistant
 
 llm = ChatOpenAI(model_name='gpt-4') # using gpt-4 can achieve better results
 assistant=SparkLLMAssistant(llm=llm)
+assistant.activate() # active partial functions for Spark DataFrame
 ```
 
 ### Data Ingestion
@@ -31,16 +32,16 @@ auto_df.show(n=5)
 
 ### DataFrame Transformation
 ```python
-auto_top_growth_df=assistant.transform_df(auto_df, "top brand with the highest growth")
+auto_top_growth_df=auto_df.llm_transform("top brand with the highest growth")
 auto_top_growth_df.show()
 ```
 | brand    | us_sales_2022 | sales_change_vs_2021 |
 |----------|---------------|----------------------|
 | Cadillac | 134726        | 14                   |
 
-### DataFrame Explaination
+### DataFrame Explanation
 ```python
-assistant.explain_df(auto_top_growth_df)
+auto_top_growth_df.llm_explain()
 ```
 
 > In summary, this dataframe is retrieving the brand with the highest sales change in 2022 compared to 2021. It presents the results sorted by sales change in descending order and only returns the top result.
