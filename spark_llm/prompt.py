@@ -114,3 +114,8 @@ EXPLAIN_DF_PROMPT = FewShotPromptTemplate(
     input_variables=["input"],
     example_separator="\n\n",
 )
+
+PLOT_PROMPT = """
+Assume the result of the Spark SQL query is stored in a dataframe named 'df', visualize the query result using plotly.
+There is no need to install any package with pip.
+"""

@@ -30,6 +30,11 @@ auto_df.show(n=5)
 | 4    | Honda     | 881201        | -33                  |
 | 5    | Hyundai   | 724265        | -2                   |
 
+### Plot
+```python
+auto_df.llm_plot()
+```
+![2022 USA national auto sales by brand](docs/_static/auto_sales.png)
 ### DataFrame Transformation
 ```python
 auto_top_growth_df=auto_df.llm_transform("top brand with the highest growth")

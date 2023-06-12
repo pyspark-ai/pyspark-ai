@@ -8,6 +8,7 @@ import tiktoken
 from bs4 import BeautifulSoup
 from langchain import LLMChain, GoogleSearchAPIWrapper
 from langchain.base_language import BaseLanguageModel
+from langchain.schema import HumanMessage, AIMessage
 from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
@@ -15,7 +16,7 @@ from spark_llm.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     EXPLAIN_DF_PROMPT,
-    TRANSFORM_PROMPT,
+    TRANSFORM_PROMPT, PLOT_PROMPT,
 )
 
 
@@ -148,6 +149,9 @@ class SparkLLMAssistant:
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
 
+    def _get_logical_plan(self, df: DataFrame) -> str:
+        return df._jdf.queryExecution().analyzed().toString()
+
     def create_df(self, desc: str, columns: Optional[List[str]] = None) -> DataFrame:
         """
         Create a Spark DataFrame by querying an LLM from web search result.
@@ -207,7 +211,7 @@ class SparkLLMAssistant:
         :return: A string explanation of the DataFrame's SQL plan, detailing what the DataFrame is intended to retrieve.
         """
         explain_result = self._explain_chain.run(
-            df._jdf.queryExecution().analyzed().toString()
+            self._get_logical_plan(df)
         )
         # If there is code block in the explain result, ignore it.
         if "```" in explain_result:
@@ -216,9 +220,25 @@ class SparkLLMAssistant:
         else:
             return explain_result
 
+    def plot_df(self, df: DataFrame) -> None:
+        explain_msg = HumanMessage(content=EXPLAIN_DF_PROMPT.format_prompt(input=self._get_logical_plan(df)).to_string())
+        ai_msg = AIMessage(content=self._llm.predict(explain_msg.content))
+        plot_msg = HumanMessage(content=PLOT_PROMPT)
+        messages = [
+            explain_msg,
+            ai_msg,
+            plot_msg
+        ]
+        response = self._llm.predict_messages(messages)
+        self.log(response.content)
+        code = response.content.replace("```python", "```").split("```")[1]
+        exec(code)
+
+
     def activate(self):
         """
         Activates LLM utility functions for Spark DataFrame.
         """
         DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(df_instance, desc)
         DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
+        DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
