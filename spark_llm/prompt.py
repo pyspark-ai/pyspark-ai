@@ -119,3 +119,75 @@ PLOT_PROMPT = """
 Assume the result of the Spark SQL query is stored in a dataframe named 'df', visualize the query result using plotly.
 There is no need to install any package with pip.
 """
+
+# VERIFY_TEMPLATE = """
+# You are an Apache Spark SQL expert, with experience writing robust test cases
+# for PySpark code. Given a description of properties of a PySpark dataframe,
+# you will generate Python code to test whether the PySpark dataframe satisfies the properties.
+# Your answer MUST contain only the code (no explanation words).
+# The code should only be a few lines long.
+#
+# The description will start with the word "expect." For example:
+# Input: expect 5 columns
+# Output:
+# def has_5_columns(df):
+#     # Get the number of columns in the DataFrame
+#     num_columns = len(df.columns)
+#
+#     # Check if the number of columns is equal to 5
+#     if num_columns == 5:
+#         return True
+#     else:
+#         return False
+#
+# Here is the input description: {desc}
+# """
+
+VERIFY_TEMPLATE = """
+You are an Apache Spark SQL expert, with experience writing robust test cases
+for PySpark code. Given 1) a PySpark dataframe, my_df, and 2) a description of expected properties, desc,
+you will generate a Python function to test whether the given dataframe satisfies the expected properties.
+The given description will start with the word "expect."
+Your generated function should take 1 parameter, df, and the return type should be a boolean.
+Then, you will call the function, passing in the given dataframe as the parameter, and display the output (True/False).
+In total, your output must contain ONLY the following code (no explanation words):
+1. Function definition, in Python
+2. Call to function, with given dataframe passed in as parameter
+3. The boolean result value of the function call (either True or False)
+
+For example:
+Input:
+my_df = spark.createDataFrame(data=[("Alice", 25), ("Bob", 30), ("Charlie", 35)], schema=["Name", "Age"])
+desc = "expect 5 columns"
+Output:
+def has_5_columns(df):
+    # Get the number of columns in the DataFrame
+    num_columns = len(df.columns)
+
+    # Check if the number of columns is equal to 5
+    if num_columns == 5:
+        return True
+    else:
+        return False
+has_5_columns(df=my_df) -> False
+
+Here is your input df: {my_df}
+Here is your input description: {desc}
+"""
+
+VERIFY_PROMPT = PromptTemplate(
+    input_variables=["my_df", "desc"], template=VERIFY_TEMPLATE
+)
+
+TEST_TEMPLATE = """
+You are an Apache Spark SQL expert, with experience writing robust test cases for PySpark code. 
+Given a PySpark function which transforms a dataframe, you will
+write test cases in python to test the given PySpark function.
+The answer MUST contain only the code with the test cases (no explanation words)
+
+Here is the function: {function}
+"""
+
+TEST_PROMPT = PromptTemplate(
+    input_variables=["function"], template=TEST_TEMPLATE
+)

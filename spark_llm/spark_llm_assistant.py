@@ -16,7 +16,10 @@ from spark_llm.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     EXPLAIN_DF_PROMPT,
-    TRANSFORM_PROMPT, PLOT_PROMPT,
+    TRANSFORM_PROMPT,
+    PLOT_PROMPT,
+    TEST_PROMPT,
+    VERIFY_PROMPT
 )
 
 
@@ -57,6 +60,8 @@ class SparkLLMAssistant:
         self._sql_llm_chain = LLMChain(llm=self._llm, prompt=SQL_PROMPT)
         self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
+        self._test_chain = LLMChain(llm=llm, prompt=TEST_PROMPT)
+        self._verify_chain = LLMChain(llm=llm, prompt=VERIFY_PROMPT)
         self._verbose = verbose
 
     @staticmethod
@@ -226,6 +231,7 @@ class SparkLLMAssistant:
         plot_msg = HumanMessage(content=PLOT_PROMPT)
         messages = [
             explain_msg,
+            explain_msg,
             ai_msg,
             plot_msg
         ]
@@ -233,6 +239,46 @@ class SparkLLMAssistant:
         self.log(response.content)
         code = response.content.replace("```python", "```").split("```")[1]
         exec(code)
+
+    def verify_df(self, my_df: DataFrame, desc: str) -> None:
+        """
+        This method creates and runs test cases for the provided PySpark dataframe transformation function.
+
+        :param my_df: The Spark DataFrame to be verified
+        :param desc: A description of the expectation to be verified
+        """
+        test_code = self._verify_chain.run(
+            my_df=my_df,
+            desc=desc
+        )
+        self.log(f"Generated test function:\n{test_code}")
+
+    def test_llm(self, function: Callable[[DataFrame], DataFrame]) -> str:
+        """
+        This method creates and runs test cases for the provided PySpark dataframe transformation function.
+
+        :param function: The PySpark DataFrame transformation function that is to be tested.
+
+        :return: A string explanation of the generated test cases and the result.
+        """
+        import sys
+        from io import StringIO
+
+        test_code = self._test_chain.run(
+            function=function
+        )
+        test_code = test_code.replace("```python", "").replace("```", "")
+        self.log(f"Generated test code:\n{test_code}")
+
+        old_stdout = sys.stdout
+        redirected_output = sys.stdout = StringIO()
+        exec(test_code)
+        # exec("```\n" + test_code + "\n```")
+        # exec("\"\"\"\n" + test_code + "\n\"\"\"")
+        sys.stdout = old_stdout
+        test_result = redirected_output.getvalue()
+        self.log(f"Test result:\n{test_result}")
+        return test_result
 
 
     def activate(self):
@@ -242,3 +288,4 @@ class SparkLLMAssistant:
         DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(df_instance, desc)
         DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
         DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
+        DataFrame.llm_verify = lambda df_instance, desc: self.verify_df(df_instance, desc)
