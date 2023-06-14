@@ -121,20 +121,19 @@ There is no need to install any package with pip.
 """
 
 VERIFY_TEMPLATE = """
-Given 1) a PySpark dataframe, my_df, and 2) a description of expected properties, desc,
+Given 1) a PySpark dataframe, df, and 2) a description of expected properties, desc,
 generate a Python function to test whether the given dataframe satisfies the expected properties.
 Your generated function should take 1 parameter, df, and the return type should be a boolean.
-You will call the function, passing in my_df as the parameter, and return the output (True/False).
+You will call the function, passing in df as the parameter, and return the output (True/False).
 
-In total, your output must contain ONLY the following code (no explanation words):
-1. Function definition, in Python
-2. Run the function with given dataframe, my_df, passed in as parameter
-3. Boolean indicating whether my_df satisfies the expectation described in desc (True/False)
-Your output MUST contain EACH of the above three things.
+In total, your output must follow the format below, exactly (no explanation words):
+1. function definition f, in Python
+2. 1 blank new line
+3. FUNCTION_NAME: name_of_f
 
 For example:
 Input:
-my_df = spark.createDataFrame(data=[("Alice", 25), ("Bob", 30), ("Charlie", 35)], schema=["Name", "Age"])
+df = DataFrame[rank: int, city: string]
 desc = "expect 5 columns"
 
 Output:
@@ -147,36 +146,14 @@ Output:
         return True
     else:
         return False
-has_5_columns(df=my_df) -> Result: False"
+        
+FUNCTION_NAME: has_5_columns"
 
-Output Template:
-"def verify_func(df) -> bool:
-    ...
-verify_func(df=my_df) -> Result: result"
-
-Here is your input df: {my_df}
+Here is your input df: {df}
 Here is your input description: {desc}
 """
 
+
 VERIFY_PROMPT = PromptTemplate(
-    input_variables=["my_df", "desc"], template=VERIFY_TEMPLATE
-)
-
-TEST_TEMPLATE = """
-You are an Apache Spark SQL expert, with experience writing robust test cases for PySpark code. 
-Given a PySpark function which transforms a dataframe, write a unit test class in Python with 
-methods to test the given PySpark function. 
-
-The answer MUST contain only:
-1. the unit test class with the test cases
-2. the result from running the unit test class suite
-(no explanation words)
-
-Do not worry about importing any packages.
-
-Here is the function: {function}
-"""
-
-TEST_PROMPT = PromptTemplate(
-    input_variables=["function"], template=TEST_TEMPLATE
+    input_variables=["df", "desc"], template=VERIFY_TEMPLATE
 )

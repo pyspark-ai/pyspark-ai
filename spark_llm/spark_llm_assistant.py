@@ -18,10 +18,8 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
-    TEST_PROMPT,
     VERIFY_PROMPT
 )
-
 
 class SparkLLMAssistant:
     _HTTP_HEADER = {
@@ -60,7 +58,6 @@ class SparkLLMAssistant:
         self._sql_llm_chain = LLMChain(llm=self._llm, prompt=SQL_PROMPT)
         self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
-        self._test_chain = LLMChain(llm=llm, prompt=TEST_PROMPT)
         self._verify_chain = LLMChain(llm=llm, prompt=VERIFY_PROMPT)
         self._verbose = verbose
 
@@ -246,28 +243,38 @@ class SparkLLMAssistant:
         :param my_df: The Spark DataFrame to be verified
         :param desc: A description of the expectation to be verified
         """
-        test_code = self._verify_chain.run(
+        llm_output = self._verify_chain.run(
             my_df=my_df,
             desc=desc
         )
-        self.log(f"Generated test function:\n{test_code}")
-
-    def test_llm(self, function: Callable[[DataFrame], DataFrame]) -> str:
-        """
-        This method creates and runs test cases for the provided PySpark dataframe transformation function.
-
-        :param function: The PySpark DataFrame transformation function that is to be tested.
-
-        :return: A string explanation of the generated test cases and the result.
-        """
+        function_def = llm_output.split("FUNCTION_NAME: ")[0].strip()
+        function_name = llm_output.split("FUNCTION_NAME: ")[1].strip()
+        
+        test_code = f"""{function_def}\nprint({function_name}(my_df))"""
+        self.log(f"Generated code:\n{test_code}")
+        
         import sys
         from io import StringIO
+        import contextlib
+        
+        @contextlib.contextmanager
+        def stdoutIO(stdout=None):
+            old = sys.stdout
+            if stdout is None:
+                stdout = StringIO()
+            sys.stdout = stdout
+            yield stdout
+            sys.stdout = old
 
-        test_code = self._test_chain.run(
-            function=function
-        )
-        test_code = test_code.replace("```python", "").replace("```", "")
-        self.log(f"Generated test code:\n{test_code}")
+        with stdoutIO() as s:
+            try:
+                exec(test_code)
+            except Exception as e:
+                print(e)
+        
+        result = s.getvalue()
+        
+        self.log(f"\nResult: {result}")
 
     def activate(self):
         """
