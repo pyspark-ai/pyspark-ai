@@ -121,23 +121,24 @@ There is no need to install any package with pip.
 """
 
 VERIFY_TEMPLATE = """
-You are an Apache Spark SQL expert, with experience writing robust test cases
-for PySpark code. Given 1) a PySpark dataframe, my_df, and 2) a description of expected properties, desc,
-you will generate a Python function to test whether the given dataframe satisfies the expected properties.
-The given description will start with the word "expect."
+Given 1) a PySpark dataframe, my_df, and 2) a description of expected properties, desc,
+generate a Python function to test whether the given dataframe satisfies the expected properties.
 Your generated function should take 1 parameter, df, and the return type should be a boolean.
-Then, you will call the function, passing in the given dataframe as the parameter, and display the output (True/False).
+You will call the function, passing in my_df as the parameter, and return the output (True/False).
+
 In total, your output must contain ONLY the following code (no explanation words):
 1. Function definition, in Python
-2. Call to function, with given dataframe passed in as parameter
-3. The boolean result value of the function call (either True or False)
+2. Run the function with given dataframe, my_df, passed in as parameter
+3. Boolean indicating whether my_df satisfies the expectation described in desc (True/False)
+Your output MUST contain EACH of the above three things.
 
 For example:
 Input:
 my_df = spark.createDataFrame(data=[("Alice", 25), ("Bob", 30), ("Charlie", 35)], schema=["Name", "Age"])
 desc = "expect 5 columns"
+
 Output:
-def has_5_columns(df):
+"def has_5_columns(df) -> bool:
     # Get the number of columns in the DataFrame
     num_columns = len(df.columns)
 
@@ -146,7 +147,12 @@ def has_5_columns(df):
         return True
     else:
         return False
-has_5_columns(df=my_df) -> False
+has_5_columns(df=my_df) -> Result: False"
+
+Output Template:
+"def verify_func(df) -> bool:
+    ...
+verify_func(df=my_df) -> Result: result"
 
 Here is your input df: {my_df}
 Here is your input description: {desc}
@@ -158,9 +164,15 @@ VERIFY_PROMPT = PromptTemplate(
 
 TEST_TEMPLATE = """
 You are an Apache Spark SQL expert, with experience writing robust test cases for PySpark code. 
-Given a PySpark function which transforms a dataframe, you will
-write test cases in python to test the given PySpark function.
-The answer MUST contain only the code with the test cases (no explanation words)
+Given a PySpark function which transforms a dataframe, write a unit test class in Python with 
+methods to test the given PySpark function. 
+
+The answer MUST contain only:
+1. the unit test class with the test cases
+2. the result from running the unit test class suite
+(no explanation words)
+
+Do not worry about importing any packages.
 
 Here is the function: {function}
 """

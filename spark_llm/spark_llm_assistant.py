@@ -269,17 +269,6 @@ class SparkLLMAssistant:
         test_code = test_code.replace("```python", "").replace("```", "")
         self.log(f"Generated test code:\n{test_code}")
 
-        old_stdout = sys.stdout
-        redirected_output = sys.stdout = StringIO()
-        exec(test_code)
-        # exec("```\n" + test_code + "\n```")
-        # exec("\"\"\"\n" + test_code + "\n\"\"\"")
-        sys.stdout = old_stdout
-        test_result = redirected_output.getvalue()
-        self.log(f"Test result:\n{test_result}")
-        return test_result
-
-
     def activate(self):
         """
         Activates LLM utility functions for Spark DataFrame.
