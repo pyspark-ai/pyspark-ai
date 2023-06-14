@@ -120,29 +120,6 @@ Assume the result of the Spark SQL query is stored in a dataframe named 'df', vi
 There is no need to install any package with pip.
 """
 
-# VERIFY_TEMPLATE = """
-# You are an Apache Spark SQL expert, with experience writing robust test cases
-# for PySpark code. Given a description of properties of a PySpark dataframe,
-# you will generate Python code to test whether the PySpark dataframe satisfies the properties.
-# Your answer MUST contain only the code (no explanation words).
-# The code should only be a few lines long.
-#
-# The description will start with the word "expect." For example:
-# Input: expect 5 columns
-# Output:
-# def has_5_columns(df):
-#     # Get the number of columns in the DataFrame
-#     num_columns = len(df.columns)
-#
-#     # Check if the number of columns is equal to 5
-#     if num_columns == 5:
-#         return True
-#     else:
-#         return False
-#
-# Here is the input description: {desc}
-# """
-
 VERIFY_TEMPLATE = """
 You are an Apache Spark SQL expert, with experience writing robust test cases
 for PySpark code. Given 1) a PySpark dataframe, my_df, and 2) a description of expected properties, desc,

@@ -231,7 +231,6 @@ class SparkLLMAssistant:
         plot_msg = HumanMessage(content=PLOT_PROMPT)
         messages = [
             explain_msg,
-            explain_msg,
             ai_msg,
             plot_msg
         ]
