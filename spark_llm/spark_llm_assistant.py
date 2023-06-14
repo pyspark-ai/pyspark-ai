@@ -6,12 +6,14 @@ from urllib.parse import urlparse
 import requests
 import tiktoken
 from bs4 import BeautifulSoup
+import langchain
 from langchain import LLMChain, GoogleSearchAPIWrapper
 from langchain.base_language import BaseLanguageModel
 from langchain.schema import HumanMessage, AIMessage
 from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
+from spark_llm.cache import Cache
 from spark_llm.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
@@ -33,6 +35,7 @@ class SparkLLMAssistant:
         llm: BaseLanguageModel,
         web_search_tool: Optional[Callable[[str], str]] = None,
         spark_session: Optional[SparkSession] = None,
+        enable_cache: bool = True,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         verbose: bool = False,
@@ -58,6 +61,9 @@ class SparkLLMAssistant:
         self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
         self._verbose = verbose
+        if enable_cache:
+            self._cache = Cache()
+            langchain.llm_cache = self._cache
 
     @staticmethod
     def _extract_view_name(query: str) -> str:
@@ -242,3 +248,6 @@ class SparkLLMAssistant:
         DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(df_instance, desc)
         DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
         DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
+
+    def commit(self):
+        self._cache.commit()
