@@ -5,9 +5,9 @@ from langchain.cache import RETURN_VAL_TYPE, SQLiteCache
 
 
 class Cache(BaseCache):
-    def __init__(self):
+    def __init__(self, database_path: str = ".llm.db"):
         self._staging_updates: Dict[(str, str), RETURN_VAL_TYPE] = {}
-        self._sqlite_cache = SQLiteCache(database_path=".langchain.db")
+        self._sqlite_cache = SQLiteCache(database_path=database_path)
 
     def lookup(self, prompt: str, llm_string: str) -> Optional[RETURN_VAL_TYPE]:
         return self._sqlite_cache.lookup(prompt, llm_string)

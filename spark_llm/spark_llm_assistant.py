@@ -6,14 +6,14 @@ from urllib.parse import urlparse
 import requests
 import tiktoken
 from bs4 import BeautifulSoup
-import langchain
-from langchain import LLMChain, GoogleSearchAPIWrapper
+from langchain import LLMChain, GoogleSearchAPIWrapper, BasePromptTemplate
 from langchain.base_language import BaseLanguageModel
 from langchain.schema import HumanMessage, AIMessage
 from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
 from spark_llm.cache import Cache
+from spark_llm.llm_chain_with_cache import LLMChainWithCache
 from spark_llm.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
@@ -63,7 +63,15 @@ class SparkLLMAssistant:
         self._verbose = verbose
         if enable_cache:
             self._cache = Cache()
-            langchain.llm_cache = self._cache
+        else:
+            self._cache = None
+
+    def _create_llm_chain(self, prompt: BasePromptTemplate):
+        if self._cache is None:
+            return LLMChain(llm=self._llm, prompt=prompt)
+
+        return LLMChainWithCache(llm=self._llm, prompt=prompt, cache=self._cache)
+
 
     @staticmethod
     def _extract_view_name(query: str) -> str:
