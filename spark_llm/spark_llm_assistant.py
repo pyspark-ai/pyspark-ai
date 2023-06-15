@@ -7,7 +7,6 @@ import tiktoken
 from bs4 import BeautifulSoup
 from langchain import LLMChain, GoogleSearchAPIWrapper, BasePromptTemplate
 from langchain.base_language import BaseLanguageModel
-from langchain.schema import HumanMessage, AIMessage
 from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
@@ -65,6 +64,7 @@ class SparkLLMAssistant:
         self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = self._create_llm_chain(prompt=TRANSFORM_PROMPT)
+        self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verbose = verbose
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
@@ -163,8 +163,13 @@ class SparkLLMAssistant:
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
 
-    def _get_logical_plan(self, df: DataFrame) -> str:
-        return df._jdf.queryExecution().analyzed().toString()
+    def _get_df_schema(self, df: DataFrame) -> str:
+        return "\n".join([f"{name}: {dtype}" for name, dtype in df.dtypes])
+
+    def _get_df_explain(self, df: DataFrame) -> str:
+        return self._explain_chain.run(
+            input=df._jdf.queryExecution().analyzed().toString()
+        )
 
     def create_df(self, desc: str, columns: Optional[List[str]] = None) -> DataFrame:
         """
@@ -209,7 +214,7 @@ class SparkLLMAssistant:
         """
         temp_view_name = "temp_view_for_transform"
         df.createOrReplaceTempView(temp_view_name)
-        schema_str = "\n".join([f"{name}: {dtype}" for name, dtype in df.dtypes])
+        schema_str = self._get_df_schema(df)
         sql_query = self._transform_chain.run(
             view_name=temp_view_name, columns=schema_str, desc=desc
         )
@@ -224,9 +229,7 @@ class SparkLLMAssistant:
 
         :return: A string explanation of the DataFrame's SQL plan, detailing what the DataFrame is intended to retrieve.
         """
-        explain_result = self._explain_chain.run(
-            input=self._get_logical_plan(df)
-        )
+        explain_result = self._get_df_explain(df)
         # If there is code block in the explain result, ignore it.
         if "```" in explain_result:
             summary = explain_result.split("```")[-1]
@@ -235,17 +238,10 @@ class SparkLLMAssistant:
             return explain_result
 
     def plot_df(self, df: DataFrame) -> None:
-        explain_msg = HumanMessage(content=EXPLAIN_DF_PROMPT.format_prompt(input=self._get_logical_plan(df)).to_string())
-        ai_msg = AIMessage(content=self._llm.predict(explain_msg.content))
-        plot_msg = HumanMessage(content=PLOT_PROMPT)
-        messages = [
-            explain_msg,
-            ai_msg,
-            plot_msg
-        ]
-        response = self._llm.predict_messages(messages)
-        self.log(response.content)
-        code = response.content.replace("```python", "```").split("```")[1]
+        response =\
+            self._plot_chain.run(columns=self._get_df_schema(df), explain=self._get_df_explain(df))
+        self.log(response)
+        code = response.replace("```python", "```").split("```")[1]
         exec(code)
 
     def activate(self):
