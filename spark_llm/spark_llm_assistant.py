@@ -237,21 +237,21 @@ class SparkLLMAssistant:
         code = response.content.replace("```python", "```").split("```")[1]
         exec(code)
 
-    def verify_df(self, my_df: DataFrame, desc: str) -> None:
+    def verify_df(self, df: DataFrame, desc: str) -> None:
         """
         This method creates and runs test cases for the provided PySpark dataframe transformation function.
 
-        :param my_df: The Spark DataFrame to be verified
+        :param df: The Spark DataFrame to be verified
         :param desc: A description of the expectation to be verified
         """
         llm_output = self._verify_chain.run(
-            my_df=my_df,
+            df=df,
             desc=desc
         )
         function_def = llm_output.split("FUNCTION_NAME: ")[0].strip()
         function_name = llm_output.split("FUNCTION_NAME: ")[1].strip()
         
-        test_code = f"""{function_def}\nprint({function_name}(my_df))"""
+        test_code = f"""{function_def}\nprint({function_name}(df))"""
         self.log(f"Generated code:\n{test_code}")
         
         import sys
