@@ -129,7 +129,7 @@ You will call the function, passing in df as the parameter, and return the outpu
 In total, your output must follow the format below, exactly (no explanation words):
 1. function definition f, in Python
 2. 1 blank new line
-3. FUNCTION_NAME: name_of_f
+3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
 
 For example:
 Input:
@@ -147,7 +147,7 @@ Output:
     else:
         return False
 
-FUNCTION_NAME: has_5_columns"
+result = has_5_columns(df)"
 
 Here is your input df: {df}
 Here is your input description: {desc}

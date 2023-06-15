@@ -248,34 +248,13 @@ class SparkLLMAssistant:
             df=df,
             desc=desc
         )
-        function_def = llm_output.split("FUNCTION_NAME: ")[0].strip()
-        function_name = llm_output.split("FUNCTION_NAME: ")[1].strip()
         
-        test_code = f"""{function_def}\nprint({function_name}(df))"""
-        self.log(f"Generated code:\n{test_code}")
+        self.log(f"Generated code:\n{llm_output}")
         
-        import sys
-        from io import StringIO
-        import contextlib
+        locals_ = {}
+        exec(llm_output, {"df": df}, locals_)
         
-        @contextlib.contextmanager
-        def stdoutIO(stdout=None):
-            old = sys.stdout
-            if stdout is None:
-                stdout = StringIO()
-            sys.stdout = stdout
-            yield stdout
-            sys.stdout = old
-
-        with stdoutIO() as s:
-            try:
-                exec(test_code)
-            except Exception as e:
-                print(e)
-        
-        result = s.getvalue()
-        
-        self.log(f"\nResult: {result}")
+        self.log(f"\nResult: {locals_['result']}")
 
     def activate(self):
         """
