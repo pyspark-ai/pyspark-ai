@@ -27,8 +27,8 @@ class LLMChainWithCache(LLMChain):
         prompt_str = self.prompt.format_prompt(**kwargs).to_string()
         args_str = self._sort_and_stringify(*args)
         cached_result = self.cache.lookup(prompt_str, args_str)
-        if cached_result is not None and len(cached_result) > 0:
-            return cached_result[0].text
-        result = super().run(*args, callbacks, tags, **kwargs)
+        if cached_result is not None:
+            return cached_result
+        result = super().run(*args, callbacks=callbacks, tags=tags, **kwargs)
         self.cache.update(prompt_str, args_str, result)
         return result

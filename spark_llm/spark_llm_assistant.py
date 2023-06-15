@@ -1,5 +1,4 @@
 import re
-from functools import partial
 from typing import Callable, Optional, List
 from urllib.parse import urlparse
 
@@ -20,6 +19,7 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT, PLOT_PROMPT,
 )
+from spark_llm.search_tool_with_cache import SearchToolWithCache
 
 
 class SparkLLMAssistant:
@@ -54,24 +54,24 @@ class SparkLLMAssistant:
         self._spark = spark_session or SparkSession.builder.getOrCreate()
         self._llm = llm
         self._web_search_tool = web_search_tool or self._default_web_search_tool
-        self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
-        self._max_tokens_of_web_content = max_tokens_of_web_content
-        self._search_llm_chain = LLMChain(llm=self._llm, prompt=SEARCH_PROMPT)
-        self._sql_llm_chain = LLMChain(llm=self._llm, prompt=SQL_PROMPT)
-        self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
-        self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
-        self._verbose = verbose
         if enable_cache:
             self._cache = Cache()
+            self._web_search_tool = SearchToolWithCache(self._web_search_tool, self._cache).search
         else:
             self._cache = None
+        self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
+        self._max_tokens_of_web_content = max_tokens_of_web_content
+        self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
+        self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
+        self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
+        self._transform_chain = self._create_llm_chain(prompt=TRANSFORM_PROMPT)
+        self._verbose = verbose
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:
             return LLMChain(llm=self._llm, prompt=prompt)
 
         return LLMChainWithCache(llm=self._llm, prompt=prompt, cache=self._cache)
-
 
     @staticmethod
     def _extract_view_name(query: str) -> str:
@@ -225,7 +225,7 @@ class SparkLLMAssistant:
         :return: A string explanation of the DataFrame's SQL plan, detailing what the DataFrame is intended to retrieve.
         """
         explain_result = self._explain_chain.run(
-            self._get_logical_plan(df)
+            input=self._get_logical_plan(df)
         )
         # If there is code block in the explain result, ignore it.
         if "```" in explain_result:
@@ -247,7 +247,6 @@ class SparkLLMAssistant:
         self.log(response.content)
         code = response.content.replace("```python", "```").split("```")[1]
         exec(code)
-
 
     def activate(self):
         """
