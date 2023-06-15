@@ -162,12 +162,25 @@ You are an Apache Spark SQL expert, with experience writing robust test cases fo
 Given a PySpark function which transforms a dataframe, write a unit test class in Python with 
 methods to test the given PySpark function. 
 
-The answer MUST contain only:
-1. the unit test class with the test cases
-2. the result from running the unit test class suite
-(no explanation words)
+The answer must contain ONLY the code for the unit test class with the test cases (no explanation words).
+Please do include all necessary imports.
 
-Do not worry about importing any packages.
+The footer of the unit test class should be the following:
+"if __name__ == '__main__':
+    import __main__
+    import contextlib
+    import io
+    
+    suite = unittest.TestLoader().loadTestsFromModule(__main__)
+    with io.StringIO() as buf:
+    
+        with contextlib.redirect_stdout(buf):
+            try:
+                unittest.TextTestRunner(stream=buf).run(suite)
+            except Exception as e:
+                print(e.getValue())
+
+        print("CAPTURED TEXT", buf.getvalue())"
 
 Here is the function: {function}
 """
