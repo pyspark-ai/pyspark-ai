@@ -18,25 +18,27 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
+    TEST_PROMPT,
     VERIFY_PROMPT
 )
+
 
 class SparkLLMAssistant:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-        " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                      " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
     }
 
     def __init__(
-        self,
-        llm: BaseLanguageModel,
-        web_search_tool: Optional[Callable[[str], str]] = None,
-        spark_session: Optional[SparkSession] = None,
-        encoding: Optional[Encoding] = None,
-        max_tokens_of_web_content: int = 3000,
-        verbose: bool = False,
+            self,
+            llm: BaseLanguageModel,
+            web_search_tool: Optional[Callable[[str], str]] = None,
+            spark_session: Optional[SparkSession] = None,
+            encoding: Optional[Encoding] = None,
+            max_tokens_of_web_content: int = 3000,
+            verbose: bool = False,
     ) -> None:
         """
         Initialize the SparkLLMAssistant object with the provided parameters.
@@ -58,6 +60,7 @@ class SparkLLMAssistant:
         self._sql_llm_chain = LLMChain(llm=self._llm, prompt=SQL_PROMPT)
         self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
+        self._test_chain = LLMChain(llm=llm, prompt=TEST_PROMPT)
         self._verify_chain = LLMChain(llm=llm, prompt=VERIFY_PROMPT)
         self._verbose = verbose
 
@@ -131,7 +134,7 @@ class SparkLLMAssistant:
         )
 
     def _create_dataframe_with_llm(
-        self, text: str, desc: str, columns: Optional[List[str]]
+            self, text: str, desc: str, columns: Optional[List[str]]
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
@@ -223,7 +226,8 @@ class SparkLLMAssistant:
             return explain_result
 
     def plot_df(self, df: DataFrame) -> None:
-        explain_msg = HumanMessage(content=EXPLAIN_DF_PROMPT.format_prompt(input=self._get_logical_plan(df)).to_string())
+        explain_msg = HumanMessage(
+            content=EXPLAIN_DF_PROMPT.format_prompt(input=self._get_logical_plan(df)).to_string())
         ai_msg = AIMessage(content=self._llm.predict(explain_msg.content))
         plot_msg = HumanMessage(content=PLOT_PROMPT)
         messages = [
@@ -249,14 +253,14 @@ class SparkLLMAssistant:
         )
         function_def = llm_output.split("FUNCTION_NAME: ")[0].strip()
         function_name = llm_output.split("FUNCTION_NAME: ")[1].strip()
-        
+
         test_code = f"""{function_def}\nprint({function_name}(my_df))"""
         self.log(f"Generated code:\n{test_code}")
-        
+
         import sys
         from io import StringIO
         import contextlib
-        
+
         @contextlib.contextmanager
         def stdoutIO(stdout=None):
             old = sys.stdout
@@ -271,10 +275,27 @@ class SparkLLMAssistant:
                 exec(test_code)
             except Exception as e:
                 print(e)
-        
+
         result = s.getvalue()
-        
+
         self.log(f"\nResult: {result}")
+
+    def test_llm(self, function: Callable[[DataFrame], DataFrame]) -> str:
+        """
+        This method creates and runs test cases for the provided PySpark dataframe transformation function.
+
+        :param function: The PySpark DataFrame transformation function that is to be tested.
+
+        :return: A string explanation of the generated test cases and the result.
+        """
+        import sys
+        from io import StringIO
+
+        test_code = self._test_chain.run(
+            function=function
+        )
+        test_code = test_code.replace("```python", "").replace("```", "")
+        self.log(f"Generated test code:\n{test_code}")
 
     def activate(self):
         """
