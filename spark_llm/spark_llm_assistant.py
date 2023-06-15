@@ -18,6 +18,7 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
+    TEST_PROMPT,
     VERIFY_PROMPT
 )
 
@@ -59,6 +60,7 @@ class SparkLLMAssistant:
         self._sql_llm_chain = LLMChain(llm=self._llm, prompt=SQL_PROMPT)
         self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
+        self._test_chain = LLMChain(llm=llm, prompt=TEST_PROMPT)
         self._verify_chain = LLMChain(llm=llm, prompt=VERIFY_PROMPT)
         self._verbose = verbose
 
@@ -248,13 +250,30 @@ class SparkLLMAssistant:
             df=df,
             desc=desc
         )
-        
+
         self.log(f"Generated code:\n{llm_output}")
-        
+
         locals_ = {}
         exec(llm_output, {"df": df}, locals_)
-        
+
         self.log(f"\nResult: {locals_['result']}")
+
+    def test_llm(self, function: Callable[[DataFrame], DataFrame]) -> str:
+        """
+        This method creates and runs test cases for the provided PySpark dataframe transformation function.
+
+        :param function: The PySpark DataFrame transformation function that is to be tested.
+
+        :return: A string explanation of the generated test cases and the result.
+        """
+        import sys
+        from io import StringIO
+
+        test_code = self._test_chain.run(
+            function=function
+        )
+        test_code = test_code.replace("```python", "").replace("```", "")
+        self.log(f"Generated test code:\n{test_code}")
 
     def activate(self):
         """

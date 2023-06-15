@@ -154,5 +154,24 @@ Here is your input description: {desc}
 """
 
 VERIFY_PROMPT = PromptTemplate(
-    input_variables=["df", "desc"], template=VERIFY_TEMPLATE
+    input_variables=["my_df", "desc"], template=VERIFY_TEMPLATE
+)
+
+TEST_TEMPLATE = """
+You are an Apache Spark SQL expert, with experience writing robust test cases for PySpark code. 
+Given a PySpark function which transforms a dataframe, write a unit test class in Python with 
+methods to test the given PySpark function. 
+
+The answer MUST contain only:
+1. the unit test class with the test cases
+2. the result from running the unit test class suite
+(no explanation words)
+
+Do not worry about importing any packages.
+
+Here is the function: {function}
+"""
+
+TEST_PROMPT = PromptTemplate(
+    input_variables=["function"], template=TEST_TEMPLATE
 )
