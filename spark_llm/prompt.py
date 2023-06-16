@@ -115,7 +115,19 @@ EXPLAIN_DF_PROMPT = FewShotPromptTemplate(
     example_separator="\n\n",
 )
 
-PLOT_PROMPT = """
-Assume the result of the Spark SQL query is stored in a dataframe named 'df', visualize the query result using plotly.
-There is no need to install any package with pip.
+PLOT_PROMPT_TEMPLATE = """
+Given a pyspark dataframe `df`.
+The output columns of `df`:
+{columns}
+
+{explain}
+
+Now help me write python code to visualize the result of `df` using plotly:
+1. All the code MUST be in one code block.
+2. There is no need to install any package with pip.
+3. Show the plot directly, instead of saving into a HTML
 """
+
+PLOT_PROMPT = PromptTemplate(
+    input_variables=["columns", "explain"], template=PLOT_PROMPT_TEMPLATE
+)
