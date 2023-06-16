@@ -131,3 +131,40 @@ Now help me write python code to visualize the result of `df` using plotly:
 PLOT_PROMPT = PromptTemplate(
     input_variables=["columns", "explain"], template=PLOT_PROMPT_TEMPLATE
 )
+
+VERIFY_TEMPLATE = """
+Given 1) a PySpark dataframe, df, and 2) a description of expected properties, desc,
+generate a Python function to test whether the given dataframe satisfies the expected properties.
+Your generated function should take 1 parameter, df, and the return type should be a boolean.
+You will call the function, passing in df as the parameter, and return the output (True/False).
+
+In total, your output must follow the format below, exactly (no explanation words):
+1. function definition f, in Python
+2. 1 blank new line
+3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
+
+For example:
+Input:
+df = DataFrame[name: string, age: int]
+desc = "expect 5 columns"
+
+Output:
+"def has_5_columns(df) -> bool:
+    # Get the number of columns in the DataFrame
+    num_columns = len(df.columns)
+
+    # Check if the number of columns is equal to 5
+    if num_columns == 5:
+        return True
+    else:
+        return False
+
+result = has_5_columns(df)"
+
+Here is your input df: {df}
+Here is your input description: {desc}
+"""
+
+VERIFY_PROMPT = PromptTemplate(
+    input_variables=["df", "desc"], template=VERIFY_TEMPLATE
+)

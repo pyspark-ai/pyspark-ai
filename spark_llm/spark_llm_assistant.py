@@ -18,6 +18,7 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
+    VERIFY_PROMPT
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
 
@@ -279,6 +280,25 @@ class SparkLLMAssistant:
         for code in codeblocks:
             exec(code)
 
+    def verify_df(self, df: DataFrame, desc: str) -> None:
+        """
+        This method creates and runs test cases for the provided PySpark dataframe transformation function.
+
+        :param df: The Spark DataFrame to be verified
+        :param desc: A description of the expectation to be verified
+        """
+        llm_output = self._verify_chain.run(
+            df=df,
+            desc=desc
+        )
+
+        self.log(f"Generated code:\n{llm_output}")
+
+        locals_ = {}
+        exec(llm_output, {"df": df}, locals_)
+
+        self.log(f"\nResult: {locals_['result']}")
+
     def activate(self):
         """
         Activates LLM utility functions for Spark DataFrame.
@@ -288,6 +308,7 @@ class SparkLLMAssistant:
         )
         DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
         DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
+        DataFrame.llm_verify = lambda df_instance, desc: self.verify_df(df_instance, desc)
 
     def commit(self):
         """
