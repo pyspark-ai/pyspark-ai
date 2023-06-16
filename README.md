@@ -48,6 +48,7 @@ auto_top_growth_df.show()
 ```python
 auto_top_growth_df.llm_explain()
 ```
+
 > In summary, this dataframe is retrieving the brand with the highest sales change in 2022 compared to 2021. It presents the results sorted by sales change in descending order and only returns the top result.
 
 Refer to [example.ipynb](https://github.com/gengliangwang/spark-llm/blob/main/examples/example.ipynb) for more detailed usage examples.
