@@ -58,24 +58,6 @@ Refer to [example.ipynb](https://github.com/gengliangwang/spark-llm/blob/main/ex
 auto_top_growth_df.llm_verify("expect sales change percentage to be between -100 to 100")
 ```
 
-```python
-# Generated code:
-def is_sales_change_valid(df) -> bool:
-    # Check if the sales_change column exists in the DataFrame
-    if 'sales_change_vs_2021' not in df.columns:
-        return False
-
-    # Filter rows where sales_change is between -100 and 100
-    valid_rows = df.filter((df.sales_change_vs_2021 >= -100) & (df.sales_change_vs_2021 <= 100))
-
-    # Check if all rows are valid
-    if valid_rows.count() == df.count():
-        return True
-    else:
-        return False
-
-result = is_sales_change_valid(df)
-```
 > result: True
 
 ## Contributing
