@@ -18,8 +18,7 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
-    TEST_PROMPT,
-    VERIFY_PROMPT
+    TEST_PROMPT
 )
 
 
@@ -61,7 +60,6 @@ class SparkLLMAssistant:
         self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
         self._test_chain = LLMChain(llm=llm, prompt=TEST_PROMPT)
-        self._verify_chain = LLMChain(llm=llm, prompt=VERIFY_PROMPT)
         self._verbose = verbose
 
     @staticmethod
@@ -239,24 +237,6 @@ class SparkLLMAssistant:
         code = response.content.replace("```python", "```").split("```")[1]
         exec(code)
 
-    def verify_df(self, df: DataFrame, desc: str) -> None:
-        """
-        This method creates and runs test cases for the provided PySpark dataframe transformation function.
-
-        :param df: The Spark DataFrame to be verified
-        :param desc: A description of the expectation to be verified
-        """
-        llm_output = self._verify_chain.run(
-            df=df,
-            desc=desc
-        )
-
-        self.log(f"Generated code:\n{llm_output}")
-
-        locals_ = {}
-        exec(llm_output, {"df": df}, locals_)
-
-        self.log(f"\nResult: {locals_['result']}")
 
     def test_llm(self, function: Callable[[DataFrame], DataFrame]) -> str:
         """
@@ -266,25 +246,16 @@ class SparkLLMAssistant:
 
         :return: A string explanation of the generated test cases and the result.
         """
-        import sys
-        from io import StringIO
-
         test_code = self._test_chain.run(
             function=function
         )
         test_code = test_code.replace("```python", "").replace("```", "")
         self.log(f"Generated test code:\n{test_code}")
 
-        with stdoutIO() as s:
-            try:
-                print("exec worked")
-                exec(test_code)
-            except Exception as e:
-                print(e)
+        locals_ = {}
+        exec(test_code, {}, locals_)
 
-        result = s.getvalue()
-
-        self.log(f"\nResult: {result}")
+        self.log(f"\nResult: {locals_['result']}")
 
     def activate(self):
         """
@@ -293,4 +264,3 @@ class SparkLLMAssistant:
         DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(df_instance, desc)
         DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
         DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
-        DataFrame.llm_verify = lambda df_instance, desc: self.verify_df(df_instance, desc)

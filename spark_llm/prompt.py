@@ -120,43 +120,6 @@ Assume the result of the Spark SQL query is stored in a dataframe named 'df', vi
 There is no need to install any package with pip.
 """
 
-VERIFY_TEMPLATE = """
-Given 1) a PySpark dataframe, df, and 2) a description of expected properties, desc,
-generate a Python function to test whether the given dataframe satisfies the expected properties.
-Your generated function should take 1 parameter, df, and the return type should be a boolean.
-You will call the function, passing in df as the parameter, and return the output (True/False).
-
-In total, your output must follow the format below, exactly (no explanation words):
-1. function definition f, in Python
-2. 1 blank new line
-3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
-
-For example:
-Input:
-df = DataFrame[name: string, age: int]
-desc = "expect 5 columns"
-
-Output:
-"def has_5_columns(df) -> bool:
-    # Get the number of columns in the DataFrame
-    num_columns = len(df.columns)
-
-    # Check if the number of columns is equal to 5
-    if num_columns == 5:
-        return True
-    else:
-        return False
-
-result = has_5_columns(df)"
-
-Here is your input df: {df}
-Here is your input description: {desc}
-"""
-
-VERIFY_PROMPT = PromptTemplate(
-    input_variables=["my_df", "desc"], template=VERIFY_TEMPLATE
-)
-
 TEST_TEMPLATE = """
 You are an Apache Spark SQL expert, with experience writing robust test cases for PySpark code. 
 Given a PySpark function which transforms a dataframe, write a unit test class in Python with 
@@ -167,7 +130,11 @@ Please do include all necessary imports.
 
 The footer of the unit test class should be the following:
 "if __name__ == '__main__':
-    unittest.main(argv=['first-arg-is-ignored'], exit=False)"
+    try:
+        unittest.main(argv=['first-arg-is-ignored'], exit=False)
+        result = "OK"
+    except Exception as e: 
+        result = f"Error""
 
 Here is the function: {function}
 """
