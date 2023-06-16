@@ -4,8 +4,8 @@ from langchain.cache import RETURN_VAL_TYPE, SQLiteCache
 from langchain.schema import Generation
 
 
-class Cache():
-    def __init__(self, database_path: str = ".llm.db"):
+class Cache:
+    def __init__(self, database_path: str = ".spark_llm.db"):
         self._staging_updates: Dict[(str, str), str] = {}
         self._sqlite_cache = SQLiteCache(database_path=database_path)
 

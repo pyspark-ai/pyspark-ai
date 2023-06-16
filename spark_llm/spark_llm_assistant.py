@@ -117,6 +117,25 @@ class SparkLLMAssistant:
         # Check if the scheme is 'http' or 'https'
         return result.scheme in ["http", "https"]
 
+    @staticmethod
+    def _extract_code_blocks(text) -> List[str]:
+        code_block_pattern = re.compile(r'```(.*?)```', re.DOTALL)
+        code_blocks = re.findall(code_block_pattern, text)
+        if code_blocks:
+            # If there are code blocks, strip them and remove language specifiers.
+            extracted_blocks = []
+            for block in code_blocks:
+                block = block.strip()
+                if block.startswith('python'):
+                    block = block.replace('python\n', '', 1)
+                elif block.startswith('sql'):
+                    block = block.replace('sql\n', '', 1)
+                extracted_blocks.append(block)
+            return extracted_blocks
+        else:
+            # If there are no code blocks, treat the whole text as a single block of code.
+            return [text]
+
     def log(self, message: str) -> None:
         if self._verbose:
             print(message)
@@ -153,9 +172,10 @@ class SparkLLMAssistant:
         sql_columns_hint = self._generate_sql_prompt(columns)
 
         # Run the LLM chain to get an ingestion SQL query
-        sql_query = self._sql_llm_chain.run(
+        llm_result = self._sql_llm_chain.run(
             query=desc, web_content=web_content, columns=sql_columns_hint
         )
+        sql_query = self._extract_code_blocks(llm_result)[0]
         self.log(f"SQL query for the ingestion:\n {sql_query}\n")
 
         view_name = self._extract_view_name(sql_query)
@@ -166,9 +186,20 @@ class SparkLLMAssistant:
     def _get_df_schema(self, df: DataFrame) -> str:
         return "\n".join([f"{name}: {dtype}" for name, dtype in df.dtypes])
 
+    @staticmethod
+    def _trim_hash_id(analyzed_plan):
+        # Pattern to find strings like #59 or #2021
+        pattern = r'#\d+'
+
+        # Remove matching patterns
+        trimmed_plan = re.sub(pattern, '', analyzed_plan)
+
+        return trimmed_plan
+
     def _get_df_explain(self, df: DataFrame) -> str:
+        raw_analyzed_str = df._jdf.queryExecution().analyzed().toString()
         return self._explain_chain.run(
-            input=df._jdf.queryExecution().analyzed().toString()
+            input=self._trim_hash_id(raw_analyzed_str)
         )
 
     def create_df(self, desc: str, columns: Optional[List[str]] = None) -> DataFrame:
@@ -215,9 +246,10 @@ class SparkLLMAssistant:
         temp_view_name = "temp_view_for_transform"
         df.createOrReplaceTempView(temp_view_name)
         schema_str = self._get_df_schema(df)
-        sql_query = self._transform_chain.run(
+        llm_result = self._transform_chain.run(
             view_name=temp_view_name, columns=schema_str, desc=desc
         )
+        sql_query = self._extract_code_blocks(llm_result)[0]
         self.log(f"SQL query for the transform:\n{sql_query}")
         return self._spark.sql(sql_query)
 
@@ -241,8 +273,9 @@ class SparkLLMAssistant:
         response =\
             self._plot_chain.run(columns=self._get_df_schema(df), explain=self._get_df_explain(df))
         self.log(response)
-        code = response.replace("```python", "```").split("```")[1]
-        exec(code)
+        codeblocks = self._extract_code_blocks(response)
+        for code in codeblocks:
+            exec(code)
 
     def activate(self):
         """
