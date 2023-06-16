@@ -1,23 +1,25 @@
 import re
-from functools import partial
 from typing import Callable, Optional, List
 from urllib.parse import urlparse
 
 import requests
 import tiktoken
 from bs4 import BeautifulSoup
-from langchain import LLMChain, GoogleSearchAPIWrapper
+from langchain import LLMChain, GoogleSearchAPIWrapper, BasePromptTemplate
 from langchain.base_language import BaseLanguageModel
-from langchain.schema import HumanMessage, AIMessage
 from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
+from spark_llm.cache import Cache
+from spark_llm.llm_chain_with_cache import LLMChainWithCache
 from spark_llm.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     EXPLAIN_DF_PROMPT,
-    TRANSFORM_PROMPT, PLOT_PROMPT,
+    TRANSFORM_PROMPT,
+    PLOT_PROMPT,
 )
+from spark_llm.search_tool_with_cache import SearchToolWithCache
 
 
 class SparkLLMAssistant:
@@ -33,6 +35,7 @@ class SparkLLMAssistant:
         llm: BaseLanguageModel,
         web_search_tool: Optional[Callable[[str], str]] = None,
         spark_session: Optional[SparkSession] = None,
+        enable_cache: bool = True,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         verbose: bool = False,
@@ -51,13 +54,27 @@ class SparkLLMAssistant:
         self._spark = spark_session or SparkSession.builder.getOrCreate()
         self._llm = llm
         self._web_search_tool = web_search_tool or self._default_web_search_tool
+        if enable_cache:
+            self._cache = Cache()
+            self._web_search_tool = SearchToolWithCache(
+                self._web_search_tool, self._cache
+            ).search
+        else:
+            self._cache = None
         self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
         self._max_tokens_of_web_content = max_tokens_of_web_content
-        self._search_llm_chain = LLMChain(llm=self._llm, prompt=SEARCH_PROMPT)
-        self._sql_llm_chain = LLMChain(llm=self._llm, prompt=SQL_PROMPT)
-        self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
-        self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
+        self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
+        self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
+        self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
+        self._transform_chain = self._create_llm_chain(prompt=TRANSFORM_PROMPT)
+        self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verbose = verbose
+
+    def _create_llm_chain(self, prompt: BasePromptTemplate):
+        if self._cache is None:
+            return LLMChain(llm=self._llm, prompt=prompt)
+
+        return LLMChainWithCache(llm=self._llm, prompt=prompt, cache=self._cache)
 
     @staticmethod
     def _extract_view_name(query: str) -> str:
@@ -103,6 +120,25 @@ class SparkLLMAssistant:
         # Check if the scheme is 'http' or 'https'
         return result.scheme in ["http", "https"]
 
+    @staticmethod
+    def _extract_code_blocks(text) -> List[str]:
+        code_block_pattern = re.compile(r"```(.*?)```", re.DOTALL)
+        code_blocks = re.findall(code_block_pattern, text)
+        if code_blocks:
+            # If there are code blocks, strip them and remove language specifiers.
+            extracted_blocks = []
+            for block in code_blocks:
+                block = block.strip()
+                if block.startswith("python"):
+                    block = block.replace("python\n", "", 1)
+                elif block.startswith("sql"):
+                    block = block.replace("sql\n", "", 1)
+                extracted_blocks.append(block)
+            return extracted_blocks
+        else:
+            # If there are no code blocks, treat the whole text as a single block of code.
+            return [text]
+
     def log(self, message: str) -> None:
         if self._verbose:
             print(message)
@@ -139,9 +175,10 @@ class SparkLLMAssistant:
         sql_columns_hint = self._generate_sql_prompt(columns)
 
         # Run the LLM chain to get an ingestion SQL query
-        sql_query = self._sql_llm_chain.run(
+        llm_result = self._sql_llm_chain.run(
             query=desc, web_content=web_content, columns=sql_columns_hint
         )
+        sql_query = self._extract_code_blocks(llm_result)[0]
         self.log(f"SQL query for the ingestion:\n {sql_query}\n")
 
         view_name = self._extract_view_name(sql_query)
@@ -149,8 +186,22 @@ class SparkLLMAssistant:
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
 
-    def _get_logical_plan(self, df: DataFrame) -> str:
-        return df._jdf.queryExecution().analyzed().toString()
+    def _get_df_schema(self, df: DataFrame) -> str:
+        return "\n".join([f"{name}: {dtype}" for name, dtype in df.dtypes])
+
+    @staticmethod
+    def _trim_hash_id(analyzed_plan):
+        # Pattern to find strings like #59 or #2021
+        pattern = r"#\d+"
+
+        # Remove matching patterns
+        trimmed_plan = re.sub(pattern, "", analyzed_plan)
+
+        return trimmed_plan
+
+    def _get_df_explain(self, df: DataFrame) -> str:
+        raw_analyzed_str = df._jdf.queryExecution().analyzed().toString()
+        return self._explain_chain.run(input=self._trim_hash_id(raw_analyzed_str))
 
     def create_df(self, desc: str, columns: Optional[List[str]] = None) -> DataFrame:
         """
@@ -195,10 +246,11 @@ class SparkLLMAssistant:
         """
         temp_view_name = "temp_view_for_transform"
         df.createOrReplaceTempView(temp_view_name)
-        schema_str = "\n".join([f"{name}: {dtype}" for name, dtype in df.dtypes])
-        sql_query = self._transform_chain.run(
+        schema_str = self._get_df_schema(df)
+        llm_result = self._transform_chain.run(
             view_name=temp_view_name, columns=schema_str, desc=desc
         )
+        sql_query = self._extract_code_blocks(llm_result)[0]
         self.log(f"SQL query for the transform:\n{sql_query}")
         return self._spark.sql(sql_query)
 
@@ -210,9 +262,7 @@ class SparkLLMAssistant:
 
         :return: A string explanation of the DataFrame's SQL plan, detailing what the DataFrame is intended to retrieve.
         """
-        explain_result = self._explain_chain.run(
-            self._get_logical_plan(df)
-        )
+        explain_result = self._get_df_explain(df)
         # If there is code block in the explain result, ignore it.
         if "```" in explain_result:
             summary = explain_result.split("```")[-1]
@@ -221,24 +271,27 @@ class SparkLLMAssistant:
             return explain_result
 
     def plot_df(self, df: DataFrame) -> None:
-        explain_msg = HumanMessage(content=EXPLAIN_DF_PROMPT.format_prompt(input=self._get_logical_plan(df)).to_string())
-        ai_msg = AIMessage(content=self._llm.predict(explain_msg.content))
-        plot_msg = HumanMessage(content=PLOT_PROMPT)
-        messages = [
-            explain_msg,
-            ai_msg,
-            plot_msg
-        ]
-        response = self._llm.predict_messages(messages)
-        self.log(response.content)
-        code = response.content.replace("```python", "```").split("```")[1]
-        exec(code)
-
+        response = self._plot_chain.run(
+            columns=self._get_df_schema(df), explain=self._get_df_explain(df)
+        )
+        self.log(response)
+        codeblocks = self._extract_code_blocks(response)
+        for code in codeblocks:
+            exec(code)
 
     def activate(self):
         """
         Activates LLM utility functions for Spark DataFrame.
         """
-        DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(df_instance, desc)
+        DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(
+            df_instance, desc
+        )
         DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
         DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
+
+    def commit(self):
+        """
+        Commit the staging in-memory cache into persistent cache, if cache is enabled.
+        """
+        if self._cache is not None:
+            self._cache.commit()
