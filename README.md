@@ -76,7 +76,7 @@ def is_sales_change_valid(df) -> bool:
 
 result = is_sales_change_valid(df)
 ```
-> Result: True
+> result: True
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
