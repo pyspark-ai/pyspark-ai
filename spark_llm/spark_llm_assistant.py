@@ -246,16 +246,17 @@ class SparkLLMAssistant:
 
         :return: A string explanation of the generated test cases and the result.
         """
-        test_code = self._test_chain.run(
+        code = self._test_chain.run(
             function=function
         )
-        test_code = test_code.replace("```python", "").replace("```", "")
-        self.log(f"Generated test code:\n{test_code}")
+        code = code.replace("```python", "").replace("```", "")
+        code = code + "\nresult = unittest.main(argv=['first-arg-is-ignored'], exit=False)"
+        self.log(f"Generated unit test class:\n{code}")
 
         locals_ = {}
-        exec(test_code, {}, locals_)
+        exec(code, {}, locals_)
 
-        self.log(f"\nResult: {locals_['result']}")
+        self.log(f"\nResult: {locals_['result'].result.wasSuccessful()}")
 
     def activate(self):
         """

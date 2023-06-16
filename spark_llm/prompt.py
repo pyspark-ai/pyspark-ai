@@ -126,15 +126,8 @@ Given a PySpark function which transforms a dataframe, write a unit test class i
 methods to test the given PySpark function. 
 
 The answer must contain ONLY the code for the unit test class with the test cases (no explanation words).
+Do NOT include a main class footer (e.g. do NOT include "if __name__ == '__main__':")
 Please do include all necessary imports.
-
-The footer of the unit test class should be the following:
-"if __name__ == '__main__':
-    try:
-        unittest.main(argv=['first-arg-is-ignored'], exit=False)
-        result = "OK"
-    except Exception as e: 
-        result = f"Error""
 
 Here is the function: {function}
 """
