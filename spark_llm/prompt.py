@@ -26,7 +26,7 @@ I got the following answer from a web page:
 Now help me write a SQL query to store the answer into a temp view.
 Here is an example of how to store data into a temp view:
 ```
-CREATE OR REPLACE TEMP VIEW movies AS SELECT * FROM VALUES(('Citizen Kane', 1941), ('Schindler\'s List', 1993)) AS v1(title, year)
+CREATE OR REPLACE TEMP VIEW movies AS SELECT * FROM VALUES('Citizen Kane', 1941), ('Schindler\'s List', 1993) AS v1(title, year)
 ```
 {columns}
 The answer MUST contain query only.
