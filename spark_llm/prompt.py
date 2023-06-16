@@ -167,20 +167,7 @@ Please do include all necessary imports.
 
 The footer of the unit test class should be the following:
 "if __name__ == '__main__':
-    import __main__
-    import contextlib
-    import io
-    
-    suite = unittest.TestLoader().loadTestsFromModule(__main__)
-    with io.StringIO() as buf:
-    
-        with contextlib.redirect_stdout(buf):
-            try:
-                unittest.TextTestRunner(stream=buf).run(suite)
-            except Exception as e:
-                print(e.getValue())
-
-        print("CAPTURED TEXT", buf.getvalue())"
+    unittest.main(argv=['first-arg-is-ignored'], exit=False)"
 
 Here is the function: {function}
 """
