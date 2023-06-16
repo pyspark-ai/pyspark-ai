@@ -18,8 +18,6 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
-    TRANSFORM_PROMPT,
-    PLOT_PROMPT,
     VERIFY_PROMPT
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
@@ -66,11 +64,6 @@ class SparkLLMAssistant:
             self._cache = None
         self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
         self._max_tokens_of_web_content = max_tokens_of_web_content
-        self._search_llm_chain = LLMChain(llm=self._llm, prompt=SEARCH_PROMPT)
-        self._sql_llm_chain = LLMChain(llm=self._llm, prompt=SQL_PROMPT)
-        self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
-        self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
-        self._verify_chain = LLMChain(llm=llm, prompt=VERIFY_PROMPT)
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
         self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
