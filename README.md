@@ -48,11 +48,35 @@ auto_top_growth_df.show()
 ```python
 auto_top_growth_df.llm_explain()
 ```
-
 > In summary, this dataframe is retrieving the brand with the highest sales change in 2022 compared to 2021. It presents the results sorted by sales change in descending order and only returns the top result.
 
 Refer to [example.ipynb](https://github.com/gengliangwang/spark-llm/blob/main/examples/example.ipynb) for more detailed usage examples.
 
+### DataFrame Attribute Verification
+```python
+auto_top_growth_df.llm_verify("expect sales change percentage to be between -100 to 100")
+```
+
+```python
+# Generated code:
+def is_sales_change_valid(df) -> bool:
+    # Check if the sales_change column exists in the DataFrame
+    if 'sales_change_vs_2021' not in df.columns:
+        return False
+
+    # Filter rows where sales_change is between -100 and 100
+    valid_rows = df.filter((df.sales_change_vs_2021 >= -100) & (df.sales_change_vs_2021 <= 100))
+
+    # Check if all rows are valid
+    if valid_rows.count() == df.count():
+        return True
+    else:
+        return False
+
+result = is_sales_change_valid(df)
+
+# Result: True
+```
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
