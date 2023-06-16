@@ -16,7 +16,9 @@ from spark_llm.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     EXPLAIN_DF_PROMPT,
-    TRANSFORM_PROMPT, PLOT_PROMPT,
+    TRANSFORM_PROMPT,
+    PLOT_PROMPT,
+    UDF_PROMPT
 )
 
 
@@ -57,6 +59,7 @@ class SparkLLMAssistant:
         self._sql_llm_chain = LLMChain(llm=self._llm, prompt=SQL_PROMPT)
         self._explain_chain = LLMChain(llm=llm, prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
+        self._udf_chain = LLMChain(llm=llm, prompt=UDF_PROMPT)
         self._verbose = verbose
 
     @staticmethod
@@ -234,6 +237,26 @@ class SparkLLMAssistant:
         code = response.content.replace("```python", "```").split("```")[1]
         exec(code)
 
+#     def udf_llm(self, header: str, desc: str):
+#         code = self._udf_chain.run(
+#             desc=desc
+#         )
+#         # reformat, add indent for each line
+#         code_split = code.split("\n")
+#         new_code = "\n\t".join(code_split)
+        
+#         udf = f"""def {header}:\n\t{new_code}"""
+#         self.log(f"UDF:\n{udf}")
+
+    def udf_llm(self, desc: str):
+        code = self._udf_chain.run(
+            desc=desc
+        )
+        # reformat, add indent for each line
+        code_split = code.split("\n")
+        new_code = "\n\t".join(code_split)
+        
+        return new_code
 
     def activate(self):
         """

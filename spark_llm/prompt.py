@@ -119,3 +119,43 @@ PLOT_PROMPT = """
 Assume the result of the Spark SQL query is stored in a dataframe named 'df', visualize the query result using plotly.
 There is no need to install any package with pip.
 """
+
+UDF_TEMPLATE = """
+This is the documentation for a PySpark user-defined function (udf): pyspark.sql.functions.udf
+
+A udf creates a deterministic, reusable function in Spark. It can take any data type as a parameter, 
+and by default returns a String (although it can return any data type). 
+The point is to reuse a function on several dataframes and SQL functions.
+
+Here is an example udf which converts a string, s, to uppercase and returns the resulting string.
+Note that because it returns a string, we do not specify the returnType in the @udf tag.
+
+@udf
+def to_upper(s):
+    if s is not None:
+        return s.upper()
+
+Here is another example udf which takes an integer, x, and adds 1 to it, and returns the resulting integer.
+@udf(returnType=IntegerType())
+def add_one(x):
+    if x is not None:
+        return x + 1
+        
+Assume you have a udf that takes some number of input parameters.
+Given an input description, return ONLY the code INSIDE the udf function definition (no explanation words).
+
+For example:
+for the above to_upper(s) udf, you would just return:
+"if s is not None:
+        return s.upper()"
+
+for the above add_one(x) udf, you would just return:
+"if x is not None:
+        return x + 1"
+
+Here is your input description: {desc}
+"""
+
+UDF_PROMPT = PromptTemplate(
+    input_variables=["desc"], template=UDF_TEMPLATE
+)
