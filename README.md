@@ -53,6 +53,69 @@ auto_top_growth_df.llm_explain()
 
 Refer to [example.ipynb](https://github.com/gengliangwang/spark-llm/blob/main/examples/example.ipynb) for more detailed usage examples.
 
+### Test Generation
+```python
+import pyspark.sql.functions as F
+
+def remove_non_word_characters(col):
+    return F.regexp_replace(col, "[^\\w\\s]+", "")
+
+# ask the assistant to generate tests for the df transform function
+assistant.test_llm(remove_non_word_characters)
+```
+
+```python
+import unittest
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from pyspark.sql.types import StringType
+
+def remove_non_word_characters(df, input_col):
+    return df.withColumn(input_col, col(input_col).regexp_replace('[^a-zA-Z0-9]+', ''))
+
+class TestRemoveNonWordCharacters(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.spark = SparkSession.builder.master("local[*]").appName("RemoveNonWordCharactersTest").getOrCreate()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.spark.stop()
+
+    def test_remove_non_word_characters(self):
+        input_data = [("Test!@#",), ("123$%^",), ("No-Special",)]
+        expected_output_data = [("Test",), ("123",), ("NoSpecial",)]
+
+        input_schema = ["text"]
+        expected_output_schema = ["text"]
+
+        input_df = self.spark.createDataFrame(input_data, input_schema)
+        expected_output_df = self.spark.createDataFrame(expected_output_data, expected_output_schema)
+
+        output_df = remove_non_word_characters(input_df, "text")
+
+        self.assertTrue(output_df.subtract(expected_output_df).count() == 0)
+        self.assertTrue(expected_output_df.subtract(output_df).count() == 0)
+
+    def test_remove_non_word_characters_empty_string(self):
+        input_data = [("",)]
+        expected_output_data = [("",)]
+
+        input_schema = ["text"]
+        expected_output_schema = ["text"]
+
+        input_df = self.spark.createDataFrame(input_data, input_schema)
+        expected_output_df = self.spark.createDataFrame(expected_output_data, expected_output_schema)
+
+        output_df = remove_non_word_characters(input_df, "text")
+
+        self.assertTrue(output_df.subtract(expected_output_df).count() == 0)
+        self.assertTrue(expected_output_df.subtract(output_df).count() == 0)
+
+result = unittest.main(argv=['first-arg-is-ignored'], exit=False)
+```
+> result: True
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
