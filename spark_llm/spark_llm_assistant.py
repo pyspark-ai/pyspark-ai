@@ -286,4 +286,8 @@ class SparkLLMAssistant:
         DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
 
     def commit(self):
-        self._cache.commit()
+        """
+        Commit the staging in-memory cache into persistent cache, if cache is enabled.
+        """
+        if self._cache is not None:
+            self._cache.commit()
