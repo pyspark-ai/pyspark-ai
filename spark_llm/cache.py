@@ -64,6 +64,6 @@ class Cache:
         """
         Commits all the staged updates to the persistent cache.
         """
-        for (key, value) in self._staging_updates.items():
+        for key, value in self._staging_updates.items():
             stored_value = [Generation(text=value)]
             self._sqlite_cache.update(key[0], key[1], stored_value)

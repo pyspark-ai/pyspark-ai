@@ -16,7 +16,8 @@ from spark_llm.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     EXPLAIN_DF_PROMPT,
-    TRANSFORM_PROMPT, PLOT_PROMPT,
+    TRANSFORM_PROMPT,
+    PLOT_PROMPT,
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
 
@@ -55,7 +56,9 @@ class SparkLLMAssistant:
         self._web_search_tool = web_search_tool or self._default_web_search_tool
         if enable_cache:
             self._cache = Cache()
-            self._web_search_tool = SearchToolWithCache(self._web_search_tool, self._cache).search
+            self._web_search_tool = SearchToolWithCache(
+                self._web_search_tool, self._cache
+            ).search
         else:
             self._cache = None
         self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
@@ -119,17 +122,17 @@ class SparkLLMAssistant:
 
     @staticmethod
     def _extract_code_blocks(text) -> List[str]:
-        code_block_pattern = re.compile(r'```(.*?)```', re.DOTALL)
+        code_block_pattern = re.compile(r"```(.*?)```", re.DOTALL)
         code_blocks = re.findall(code_block_pattern, text)
         if code_blocks:
             # If there are code blocks, strip them and remove language specifiers.
             extracted_blocks = []
             for block in code_blocks:
                 block = block.strip()
-                if block.startswith('python'):
-                    block = block.replace('python\n', '', 1)
-                elif block.startswith('sql'):
-                    block = block.replace('sql\n', '', 1)
+                if block.startswith("python"):
+                    block = block.replace("python\n", "", 1)
+                elif block.startswith("sql"):
+                    block = block.replace("sql\n", "", 1)
                 extracted_blocks.append(block)
             return extracted_blocks
         else:
@@ -189,18 +192,16 @@ class SparkLLMAssistant:
     @staticmethod
     def _trim_hash_id(analyzed_plan):
         # Pattern to find strings like #59 or #2021
-        pattern = r'#\d+'
+        pattern = r"#\d+"
 
         # Remove matching patterns
-        trimmed_plan = re.sub(pattern, '', analyzed_plan)
+        trimmed_plan = re.sub(pattern, "", analyzed_plan)
 
         return trimmed_plan
 
     def _get_df_explain(self, df: DataFrame) -> str:
         raw_analyzed_str = df._jdf.queryExecution().analyzed().toString()
-        return self._explain_chain.run(
-            input=self._trim_hash_id(raw_analyzed_str)
-        )
+        return self._explain_chain.run(input=self._trim_hash_id(raw_analyzed_str))
 
     def create_df(self, desc: str, columns: Optional[List[str]] = None) -> DataFrame:
         """
@@ -270,8 +271,9 @@ class SparkLLMAssistant:
             return explain_result
 
     def plot_df(self, df: DataFrame) -> None:
-        response =\
-            self._plot_chain.run(columns=self._get_df_schema(df), explain=self._get_df_explain(df))
+        response = self._plot_chain.run(
+            columns=self._get_df_schema(df), explain=self._get_df_explain(df)
+        )
         self.log(response)
         codeblocks = self._extract_code_blocks(response)
         for code in codeblocks:
@@ -281,7 +283,9 @@ class SparkLLMAssistant:
         """
         Activates LLM utility functions for Spark DataFrame.
         """
-        DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(df_instance, desc)
+        DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(
+            df_instance, desc
+        )
         DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
         DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
 
