@@ -20,7 +20,7 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
-    VERIFY_PROMPT
+    VERIFY_PROMPT,
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
 from spark_llm.llm_utils import LLMUtils
@@ -29,20 +29,20 @@ from spark_llm.llm_utils import LLMUtils
 class SparkLLMAssistant:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-                      " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
     }
 
     def __init__(
-            self,
-            llm: BaseLanguageModel,
-            web_search_tool: Optional[Callable[[str], str]] = None,
-            spark_session: Optional[SparkSession] = None,
-            enable_cache: bool = True,
-            encoding: Optional[Encoding] = None,
-            max_tokens_of_web_content: int = 3000,
-            verbose: bool = False,
+        self,
+        llm: BaseLanguageModel,
+        web_search_tool: Optional[Callable[[str], str]] = None,
+        spark_session: Optional[SparkSession] = None,
+        enable_cache: bool = True,
+        encoding: Optional[Encoding] = None,
+        max_tokens_of_web_content: int = 3000,
+        verbose: bool = False,
     ) -> None:
         """
         Initialize the SparkLLMAssistant object with the provided parameters.
@@ -170,7 +170,7 @@ class SparkLLMAssistant:
         )
 
     def _create_dataframe_with_llm(
-            self, text: str, desc: str, columns: Optional[List[str]]
+        self, text: str, desc: str, columns: Optional[List[str]]
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
@@ -291,10 +291,7 @@ class SparkLLMAssistant:
         :param df: The Spark DataFrame to be verified
         :param desc: A description of the expectation to be verified
         """
-        llm_output = self._verify_chain.run(
-            df=df,
-            desc=desc
-        )
+        llm_output = self._verify_chain.run(df=df, desc=desc)
 
         self.log(f"Generated code:\n{llm_output}")
 

@@ -165,6 +165,4 @@ Here is your input df: {df}
 Here is your input description: {desc}
 """
 
-VERIFY_PROMPT = PromptTemplate(
-    input_variables=["df", "desc"], template=VERIFY_TEMPLATE
-)
+VERIFY_PROMPT = PromptTemplate(input_variables=["df", "desc"], template=VERIFY_TEMPLATE)
