@@ -1,5 +1,0 @@
-requests
-tiktoken
-beautifulsoup4
-langchain
-pyspark

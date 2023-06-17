@@ -32,12 +32,12 @@ auto_df.show(n=5)
 
 ### Plot
 ```python
-auto_df.llm_plot()
+auto_df.llm.plot()
 ```
 ![2022 USA national auto sales by brand](docs/_static/auto_sales.png)
 ### DataFrame Transformation
 ```python
-auto_top_growth_df=auto_df.llm_transform("top brand with the highest growth")
+auto_top_growth_df=auto_df.llm.transform("top brand with the highest growth")
 auto_top_growth_df.show()
 ```
 | brand    | us_sales_2022 | sales_change_vs_2021 |
@@ -46,13 +46,19 @@ auto_top_growth_df.show()
 
 ### DataFrame Explanation
 ```python
-auto_top_growth_df.llm_explain()
+auto_top_growth_df.llm.explain()
 ```
 
 > In summary, this dataframe is retrieving the brand with the highest sales change in 2022 compared to 2021. It presents the results sorted by sales change in descending order and only returns the top result.
 
 Refer to [example.ipynb](https://github.com/gengliangwang/spark-llm/blob/main/examples/example.ipynb) for more detailed usage examples.
 
+### DataFrame Attribute Verification
+```python
+auto_top_growth_df.llm.verify("expect sales change percentage to be between -100 to 100")
+```
+
+> result: True
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

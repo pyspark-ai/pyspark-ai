@@ -26,7 +26,7 @@ I got the following answer from a web page:
 Now help me write a SQL query to store the answer into a temp view.
 Here is an example of how to store data into a temp view:
 ```
-CREATE OR REPLACE TEMP VIEW movies AS SELECT * FROM VALUES(('Citizen Kane', 1941), ('Schindler\'s List', 1993)) AS v1(title, year)
+CREATE OR REPLACE TEMP VIEW movies AS SELECT * FROM VALUES('Citizen Kane', 1941), ('Schindler\'s List', 1993) AS v1(title, year)
 ```
 {columns}
 The answer MUST contain query only.
@@ -115,10 +115,57 @@ EXPLAIN_DF_PROMPT = FewShotPromptTemplate(
     example_separator="\n\n",
 )
 
-PLOT_PROMPT = """
-Assume the result of the Spark SQL query is stored in a dataframe named 'df', visualize the query result using plotly.
-There is no need to install any package with pip.
+PLOT_PROMPT_TEMPLATE = """
+Given a pyspark dataframe `df`.
+The output columns of `df`:
+{columns}
+
+{explain}
+
+Now help me write python code to visualize the result of `df` using plotly:
+1. All the code MUST be in one code block.
+2. There is no need to install any package with pip.
+3. Show the plot directly, instead of saving into a HTML
 """
+
+PLOT_PROMPT = PromptTemplate(
+    input_variables=["columns", "explain"], template=PLOT_PROMPT_TEMPLATE
+)
+
+VERIFY_TEMPLATE = """
+Given 1) a PySpark dataframe, df, and 2) a description of expected properties, desc,
+generate a Python function to test whether the given dataframe satisfies the expected properties.
+Your generated function should take 1 parameter, df, and the return type should be a boolean.
+You will call the function, passing in df as the parameter, and return the output (True/False).
+
+In total, your output must follow the format below, exactly (no explanation words):
+1. function definition f, in Python
+2. 1 blank new line
+3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
+
+For example:
+Input:
+df = DataFrame[name: string, age: int]
+desc = "expect 5 columns"
+
+Output:
+"def has_5_columns(df) -> bool:
+    # Get the number of columns in the DataFrame
+    num_columns = len(df.columns)
+
+    # Check if the number of columns is equal to 5
+    if num_columns == 5:
+        return True
+    else:
+        return False
+
+result = has_5_columns(df)"
+
+Here is your input df: {df}
+Here is your input description: {desc}
+"""
+
+VERIFY_PROMPT = PromptTemplate(input_variables=["df", "desc"], template=VERIFY_TEMPLATE)
 
 UDF_TEMPLATE = """
 This is the documentation for a PySpark user-defined function (udf): pyspark.sql.functions.udf
