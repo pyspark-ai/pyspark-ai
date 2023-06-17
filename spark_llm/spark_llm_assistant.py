@@ -1,4 +1,6 @@
 import re
+import types
+from functools import partialmethod
 from typing import Callable, Optional, List
 from urllib.parse import urlparse
 
@@ -21,25 +23,26 @@ from spark_llm.prompt import (
     VERIFY_PROMPT
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
+from spark_llm.llm_utils import LLMUtils
 
 
 class SparkLLMAssistant:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-        " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                      " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
     }
 
     def __init__(
-        self,
-        llm: BaseLanguageModel,
-        web_search_tool: Optional[Callable[[str], str]] = None,
-        spark_session: Optional[SparkSession] = None,
-        enable_cache: bool = True,
-        encoding: Optional[Encoding] = None,
-        max_tokens_of_web_content: int = 3000,
-        verbose: bool = False,
+            self,
+            llm: BaseLanguageModel,
+            web_search_tool: Optional[Callable[[str], str]] = None,
+            spark_session: Optional[SparkSession] = None,
+            enable_cache: bool = True,
+            encoding: Optional[Encoding] = None,
+            max_tokens_of_web_content: int = 3000,
+            verbose: bool = False,
     ) -> None:
         """
         Initialize the SparkLLMAssistant object with the provided parameters.
@@ -69,6 +72,7 @@ class SparkLLMAssistant:
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = self._create_llm_chain(prompt=TRANSFORM_PROMPT)
         self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
+        self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._verbose = verbose
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
@@ -166,7 +170,7 @@ class SparkLLMAssistant:
         )
 
     def _create_dataframe_with_llm(
-        self, text: str, desc: str, columns: Optional[List[str]]
+            self, text: str, desc: str, columns: Optional[List[str]]
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
@@ -303,12 +307,7 @@ class SparkLLMAssistant:
         """
         Activates LLM utility functions for Spark DataFrame.
         """
-        DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(
-            df_instance, desc
-        )
-        DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
-        DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
-        DataFrame.llm_verify = lambda df_instance, desc: self.verify_df(df_instance, desc)
+        DataFrame.llm = LLMUtils(self)
 
     def commit(self):
         """
