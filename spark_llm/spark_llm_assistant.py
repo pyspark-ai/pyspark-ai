@@ -1,4 +1,6 @@
 import re
+import types
+from functools import partialmethod
 from typing import Callable, Optional, List
 from urllib.parse import urlparse
 
@@ -18,9 +20,10 @@ from spark_llm.prompt import (
     EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
-    VERIFY_PROMPT
+    VERIFY_PROMPT,
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
+from spark_llm.llm_utils import LLMUtils
 
 
 class SparkLLMAssistant:
@@ -69,6 +72,7 @@ class SparkLLMAssistant:
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = self._create_llm_chain(prompt=TRANSFORM_PROMPT)
         self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
+        self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._verbose = verbose
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
@@ -287,10 +291,7 @@ class SparkLLMAssistant:
         :param df: The Spark DataFrame to be verified
         :param desc: A description of the expectation to be verified
         """
-        llm_output = self._verify_chain.run(
-            df=df,
-            desc=desc
-        )
+        llm_output = self._verify_chain.run(df=df, desc=desc)
 
         self.log(f"Generated code:\n{llm_output}")
 
@@ -303,12 +304,7 @@ class SparkLLMAssistant:
         """
         Activates LLM utility functions for Spark DataFrame.
         """
-        DataFrame.llm_transform = lambda df_instance, desc: self.transform_df(
-            df_instance, desc
-        )
-        DataFrame.llm_explain = lambda df_instance: self.explain_df(df_instance)
-        DataFrame.llm_plot = lambda df_instance: self.plot_df(df_instance)
-        DataFrame.llm_verify = lambda df_instance, desc: self.verify_df(df_instance, desc)
+        DataFrame.llm = LLMUtils(self)
 
     def commit(self):
         """
