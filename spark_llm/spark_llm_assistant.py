@@ -246,23 +246,6 @@ class SparkLLMAssistant:
         inputs = func_signature.split("->")[0].strip()
         return_type = func_signature.split("->")[1].strip()
         func_name = func.__name__
-        
-#         if func_name not in self._udfs.keys():
-#             code = self._udf_chain.run(
-#                 inputs=inputs,
-#                 desc=desc,
-#                 return_type=return_type,
-#                 func_name=func_name
-#             )
-
-#             self.log(code)
-
-#             locals_ = {}
-#             exec(code, {}, locals_)
-
-#             self._udfs[func_name] = locals_[func_name]
-        
-#         return locals_[func_name]
 
         code = self._udf_chain.run(
             inputs=inputs,
