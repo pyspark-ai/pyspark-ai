@@ -127,35 +127,42 @@ A udf creates a deterministic, reusable function in Spark. It can take any data 
 and by default returns a String (although it can return any data type). 
 The point is to reuse a function on several dataframes and SQL functions.
 
-Here is an example udf which converts a string, s, to uppercase and returns the resulting string.
-Note that because it returns a string, we do not specify the returnType in the @udf tag.
+Given 1) input arguments, 2) a description of the udf functionality, and 3) the udf return type, 
+generate and return a callable udf.
 
-@udf
-def to_upper(s):
+Here is example 1:
+
+User input:
+1) Input args and types: (s: str)
+2) Input description: Convert string s to uppercase
+3) Return type: str
+4) Function name: to_upper
+
+Your output:
+def to_upper(s) -> str:
     if s is not None:
         return s.upper()
 
-Here is another example udf which takes an integer, x, and adds 1 to it, and returns the resulting integer.
-@udf(returnType=IntegerType())
-def add_one(x):
+Here is example 2:
+User input:
+1) Input args and types: (x: int)
+2) Input description: Add 1
+3) Return type: int
+4) Function name: add_one
+
+Your output:
+def add_one(x) -> int:
     if x is not None:
         return x + 1
         
-Assume you have a udf that takes some number of input parameters.
-Given an input description, return ONLY the code INSIDE the udf function definition (no explanation words).
+Return ONLY the callable resulting udf function (no explanation words).
 
-For example:
-for the above to_upper(s) udf, you would just return:
-"if s is not None:
-        return s.upper()"
-
-for the above add_one(x) udf, you would just return:
-"if x is not None:
-        return x + 1"
-
+Here are the input args and types: {inputs}
 Here is your input description: {desc}
+Here is the return type of the udf: {return_type}
+Here is the name of the udf: {func_name}
 """
 
 UDF_PROMPT = PromptTemplate(
-    input_variables=["desc"], template=UDF_TEMPLATE
+    input_variables=["inputs", "desc", "return_type", "func_name"], template=UDF_TEMPLATE
 )

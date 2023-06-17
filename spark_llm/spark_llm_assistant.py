@@ -61,6 +61,7 @@ class SparkLLMAssistant:
         self._transform_chain = LLMChain(llm=llm, prompt=TRANSFORM_PROMPT)
         self._udf_chain = LLMChain(llm=llm, prompt=UDF_PROMPT)
         self._verbose = verbose
+        self._udfs: Dict[str, Callable] = {}
 
     @staticmethod
     def _extract_view_name(query: str) -> str:
@@ -237,26 +238,47 @@ class SparkLLMAssistant:
         code = response.content.replace("```python", "```").split("```")[1]
         exec(code)
 
-#     def udf_llm(self, header: str, desc: str):
-#         code = self._udf_chain.run(
-#             desc=desc
-#         )
-#         # reformat, add indent for each line
-#         code_split = code.split("\n")
-#         new_code = "\n\t".join(code_split)
+    def udf(self, func: Callable) -> Callable:
+        from inspect import signature
         
-#         udf = f"""def {header}:\n\t{new_code}"""
-#         self.log(f"UDF:\n{udf}")
+        desc = func.__doc__
+        func_signature = str(signature(func))
+        inputs = func_signature.split("->")[0].strip()
+        return_type = func_signature.split("->")[1].strip()
+        func_name = func.__name__
+        
+#         if func_name not in self._udfs.keys():
+#             code = self._udf_chain.run(
+#                 inputs=inputs,
+#                 desc=desc,
+#                 return_type=return_type,
+#                 func_name=func_name
+#             )
 
-    def udf_llm(self, desc: str):
-        code = self._udf_chain.run(
-            desc=desc
-        )
-        # reformat, add indent for each line
-        code_split = code.split("\n")
-        new_code = "\n\t".join(code_split)
+#             self.log(code)
+
+#             locals_ = {}
+#             exec(code, {}, locals_)
+
+#             self._udfs[func_name] = locals_[func_name]
         
-        return new_code
+#         return locals_[func_name]
+
+        code = self._udf_chain.run(
+            inputs=inputs,
+            desc=desc,
+            return_type=return_type,
+            func_name=func_name
+        )
+
+        self.log(code)
+
+        locals_ = {}
+        exec(code, {}, locals_)
+
+        self._udfs[func_name] = locals_[func_name]
+
+        return locals_[func_name]
 
     def activate(self):
         """
