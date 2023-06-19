@@ -35,6 +35,12 @@ auto_df.show(n=5)
 auto_df.llm.plot()
 ```
 ![2022 USA national auto sales by brand](docs/_static/auto_sales.png)
+
+To plot with an instruction:
+```python
+auto_df.llm.plot("pie char for top 5 brands and the others' market shares")
+```
+![2022 USA national auto sales_market_share by brand](docs/_static/auto_sales_pie_char.png)
 ### DataFrame Transformation
 ```python
 auto_top_growth_df=auto_df.llm.transform("top brand with the highest growth")

@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame
-from typing import Type
+from typing import Type, Optional
 
 
 class LLMMethodWrapper:
@@ -42,11 +42,11 @@ class LLMMethodWrapper:
         """
         return self.assistant.explain_df(self.df_instance)
 
-    def plot(self) -> None:
+    def plot(self, desc: Optional[str] = None) -> None:
         """
         Plot the DataFrame.
         """
-        return self.assistant.plot_df(self.df_instance)
+        return self.assistant.plot_df(self.df_instance, desc)
 
     def verify(self, desc: str) -> None:
         """
