@@ -79,31 +79,13 @@ auto_df.createOrReplaceTempView("autoDF")
 spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_change_percentage) as 2021_sales from autoDF").show()
 ```
 
-+-------------+----------+
-|        brand|2021_sales|
-+-------------+----------+
-|       Toyota|   2032693|
-|         Ford|   1803509|
-|    Chevrolet|   1417348|
-|        Honda|   1315225|
-|      Hyundai|    739045|
-|          Kia|    700554|
-|         Jeep|    777968|
-|       Nissan|    910308|
-|       Subaru|    585874|
-|   Ram Trucks|    649040|
-|          GMC|    483784|
-|Mercedes-Benz|    327989|
-|          BMW|    335745|
-|   Volkswagen|    376336|
-|        Mazda|    331357|
-|        Lexus|    304357|
-|        Dodge|    216810|
-|         Audi|    196710|
-|     Cadillac|    118180|
-|     Chrysler|    115013|
-+-------------+----------+
-only showing top 20 rows
+| brand         |2021_sales|
+|---------------|-------------|
+| Toyota        |   2032693|
+| Ford          |   1803509|
+| Chevrolet     |   1417348|
+| Honda         |   1315225|
+| Hyundai       |    739045|
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
