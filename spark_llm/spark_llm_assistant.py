@@ -278,12 +278,9 @@ class SparkLLMAssistant:
         else:
             return explain_result
 
-    def plot_df(self, df: DataFrame, desc: Optional[str] = None) -> None:
-        instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
+    def plot_df(self, df: DataFrame) -> None:
         response = self._plot_chain.run(
-            columns=self._get_df_schema(df),
-            explain=self._get_df_explain(df),
-            instruction=instruction,
+            columns=self._get_df_schema(df), explain=self._get_df_explain(df)
         )
         self.log(response)
         codeblocks = self._extract_code_blocks(response)
