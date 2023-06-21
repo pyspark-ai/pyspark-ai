@@ -134,36 +134,24 @@ PLOT_PROMPT = PromptTemplate(
 )
 
 VERIFY_TEMPLATE = """
-Given 1) a PySpark dataframe, df, and 2) a description of expected properties, desc,
-generate a Python function to test whether the given dataframe satisfies the expected properties.
-Your generated function should take 1 parameter, df, and the return type should be a boolean.
-You will call the function, passing in df as the parameter, and return the output (True/False).
-
-In total, your output must follow the format below, exactly (no explanation words):
-1. function definition f, in Python
-2. 1 blank new line
-3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
+Given a description of expected properties of a Spark temp view `{view_name}`
+generate a Spark SQL query to retrieve ALL values that fail the expectation.
+You should ONLY output the SQL query code (no explanation words).
 
 For example:
 Input:
-df = DataFrame[name: string, age: int]
-desc = "expect 5 columns"
+desc = "expect no null column x"
 
 Output:
-"def has_5_columns(df) -> bool:
-    # Get the number of columns in the DataFrame
-    num_columns = len(df.columns)
+"select * from `{view_name}` where x is null"
 
-    # Check if the number of columns is equal to 5
-    if num_columns == 5:
-        return True
-    else:
-        return False
+Input:
+desc = "expect no A letter_grade"
 
-result = has_5_columns(df)"
+Output:
+"select * from `{view_name}` where letter_grade = 'A'"
 
-Here is your input df: {df}
 Here is your input description: {desc}
 """
 
-VERIFY_PROMPT = PromptTemplate(input_variables=["df", "desc"], template=VERIFY_TEMPLATE)
+VERIFY_PROMPT = PromptTemplate(input_variables=["view_name", "desc"], template=VERIFY_TEMPLATE)

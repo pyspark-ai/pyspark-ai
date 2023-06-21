@@ -1,3 +1,4 @@
+import os
 import re
 import types
 from functools import partialmethod
@@ -59,7 +60,7 @@ class SparkLLMAssistant:
         self._spark = spark_session or SparkSession.builder.getOrCreate()
         self._llm = llm
         self._web_search_tool = web_search_tool or self._default_web_search_tool
-        if enable_cache:
+        if enable_cache:          
             self._cache = Cache(database_path = cache_file_location)
             self._web_search_tool = SearchToolWithCache(
                 self._web_search_tool, self._cache
@@ -75,6 +76,9 @@ class SparkLLMAssistant:
         self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._verbose = verbose
+        
+        import os
+        self.log(os.getcwd())
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:
@@ -290,19 +294,29 @@ class SparkLLMAssistant:
 
     def verify_df(self, df: DataFrame, desc: str) -> None:
         """
-        This method creates and runs test cases for the provided PySpark dataframe transformation function.
+        This method verifies attributes of a PySpark dataframe.
 
         :param df: The Spark DataFrame to be verified
         :param desc: A description of the expectation to be verified
         """
-        llm_output = self._verify_chain.run(df=df, desc=desc)
+        
+        temp_view_name = "temp_view_for_transform"
+        df.createOrReplaceTempView(temp_view_name)
+        llm_result = self._verify_chain.run(
+            view_name=temp_view_name, desc=desc
+        )
+        sql_query = self._extract_code_blocks(llm_result)[0]
 
-        self.log(f"Generated code:\n{llm_output}")
-
-        locals_ = {}
-        exec(llm_output, {"df": df}, locals_)
-
-        self.log(f"\nResult: {locals_['result']}")
+        self.log(f"Generated SQL code:\n{sql_query}")
+        
+        new_df = self._spark.sql(sql_query)
+        
+        if new_df.count() == 0:
+            result = "Success"
+        else:
+            result = "Failed"
+        
+        self.log(f"""result: {result}""")
 
     def activate(self):
         """
