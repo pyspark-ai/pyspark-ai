@@ -123,8 +123,8 @@ The output columns of `df`:
 {explain}
 
 Now help me write python code to visualize the result of `df` using plotly:
-1. Do NOT use method 'append' of pandas DataFrame. 
-2. There is no need to install any package with pip. 
+1. Your code output should NOT include method 'append'.
+2. Your could should NOT install any package with pip. 
 3. Show the plot directly, instead of saving into a HTML.
 {instruction}
 """
@@ -143,13 +143,13 @@ Input:
 desc = "expect no null column x"
 
 Output:
-"select * from `{view_name}` where x is null"
+select * from `{view_name}` where x is null
 
 Input:
 desc = "expect no A letter_grade"
 
 Output:
-"select * from `{view_name}` where letter_grade = 'A'"
+select * from `{view_name}` where letter_grade = 'A'
 
 Here is your input description: {desc}
 """
