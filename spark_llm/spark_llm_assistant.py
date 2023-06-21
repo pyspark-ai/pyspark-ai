@@ -154,10 +154,6 @@ class SparkLLMAssistant:
         if self._verbose:
             self._logger.log(message)
 
-    def log_code(self, code: str, language: str) -> None:
-        if self._verbose:
-            self._logger.log_code(code, language)
-
     def _trim_text_from_end(self, text: str, max_tokens: int) -> str:
         """
         Trim text from the end based on the maximum number of tokens allowed.
@@ -194,8 +190,8 @@ class SparkLLMAssistant:
             query=desc, web_content=web_content, columns=sql_columns_hint
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
-        self.log(f"SQL query for the ingestion:\n")
-        self.log_code(sql_query, "sql")
+        formatted_sql_query=CodeLogger.colorize_code(sql_query, "sql")
+        self.log(f"SQL query for the ingestion:\n{formatted_sql_query}")
 
         view_name = self._extract_view_name(sql_query)
         self.log(f"Storing data into temp view: {view_name}\n")
@@ -267,8 +263,8 @@ class SparkLLMAssistant:
             view_name=temp_view_name, columns=schema_str, desc=desc
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
-        self.log(f"SQL query for the transform:")
-        self.log_code(sql_query, "sql")
+        formatted_sql_query=CodeLogger.colorize_code(sql_query, "sql")
+        self.log(f"SQL query for the transform:\n{formatted_sql_query}")
         return self._spark.sql(sql_query)
 
     def explain_df(self, df: DataFrame) -> str:
@@ -307,9 +303,8 @@ class SparkLLMAssistant:
         :param desc: A description of the expectation to be verified
         """
         llm_output = self._verify_chain.run(df=df, desc=desc)
-
-        self.log(f"Generated code:")
-        self.log_code(llm_output, "python")
+        formatted_code=CodeLogger.colorize_code(llm_output, "python")
+        self.log(f"Generated code:\n{formatted_code}")
 
         locals_ = {}
         exec(llm_output, {"df": df}, locals_)
@@ -332,8 +327,8 @@ class SparkLLMAssistant:
             udf_name=udf_name
         )
 
-        self.log(f"Creating following Python UDF:")
-        self.log_code(code, "python")
+        formatted_code=CodeLogger.colorize_code(code, "python")
+        self.log(f"Creating following Python UDF:\n{formatted_code}")
 
         locals_ = {}
         exec(code, globals(), locals_)

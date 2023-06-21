@@ -47,6 +47,3 @@ class CodeLogger:
                 colored_message += '\n```\n' + self.colorize_code(parts[i + 2], parts[i + 1]) + '```'
         # Log the message with colored code blocks
         self.logger.info(colored_message)
-
-    def log_code(self, code, language):
-        self.logger.info(self.colorize_code(code, language))
