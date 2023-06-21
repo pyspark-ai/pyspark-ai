@@ -57,8 +57,6 @@ auto_top_growth_df.llm.explain()
 
 > In summary, this dataframe is retrieving the brand with the highest sales change in 2022 compared to 2021. It presents the results sorted by sales change in descending order and only returns the top result.
 
-Refer to [example.ipynb](https://github.com/gengliangwang/spark-llm/blob/main/examples/example.ipynb) for more detailed usage examples.
-
 ### DataFrame Attribute Verification
 ```python
 auto_top_growth_df.llm.verify("expect sales change percentage to be between -100 to 100")
@@ -93,6 +91,8 @@ The SparkLLMAssistant supports a simple in-memory and persistent cache system. I
 ```python
 assistant.commit()
 ```
+
+Refer to [example.ipynb](https://github.com/gengliangwang/spark-llm/blob/main/examples/example.ipynb) for more detailed usage examples.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
