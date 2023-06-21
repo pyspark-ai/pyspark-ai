@@ -144,6 +144,12 @@ In total, your output must follow the format below, exactly (no explanation word
 2. 1 blank new line
 3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
 
+Include any necessary import statements INSIDE the function definition.
+For example:
+def gen_random():
+    import random
+    return random.randint(0, 10)
+
 For example:
 Input:
 df = DataFrame[name: string, age: int]
@@ -167,3 +173,75 @@ Here is your input description: {desc}
 """
 
 VERIFY_PROMPT = PromptTemplate(input_variables=["df", "desc"], template=VERIFY_TEMPLATE)
+
+UDF_PREFIX = """
+This is the documentation for a PySpark user-defined function (udf): pyspark.sql.functions.udf
+
+A udf creates a deterministic, reusable function in Spark. It can take any data type as a parameter, 
+and by default returns a String (although it can return any data type). 
+The point is to reuse a function on several dataframes and SQL functions.
+
+Given 1) input arguments, 2) a description of the udf functionality,
+3) the udf return type, and 4) the udf function name, 
+generate and return a callable udf.
+        
+Return ONLY the callable resulting udf function (no explanation words). 
+Include any necessary import statements INSIDE the function definition.
+For example:
+def gen_random():
+    import random
+    return random.randint(0, 10)
+"""
+
+UDF_SUFFIX = """
+input_args_types: {input_args_types}
+input_desc: {desc}
+return_type: {return_type}
+udf_name: {udf_name}
+output:\n
+"""
+
+_udf_output1 = """
+def to_upper(s) -> str:
+    if s is not None:
+        return s.upper()
+"""
+
+_udf_output2 = """
+def add_one(x) -> int:
+    if x is not None:
+        return x + 1
+"""
+
+_udf_examples = [{"input_args_types": "(s: str)", 
+                  "desc": "Convert string s to uppercase", 
+                  "return_type": "str", 
+                  "udf_name": "to_upper", 
+                  "output": _udf_output1},
+                {"input_args_types": "(x: int)", 
+                  "desc": "Add 1", 
+                  "return_type": "int", 
+                  "udf_name": "add_one", 
+                  "output": _udf_output2}]
+
+_udf_formatter = """
+input_args_types: {input_args_types}
+desc: {desc}
+return_type: {return_type}
+udf_name: {udf_name}
+output: {output}
+"""
+
+_udf_prompt = PromptTemplate(
+    input_variables=["input_args_types", "desc", "return_type", "udf_name", "output"], template=_udf_formatter
+)
+
+UDF_PROMPT = FewShotPromptTemplate(
+    examples=_udf_examples,
+    example_prompt=_udf_prompt,
+    prefix=UDF_PREFIX,
+    suffix=UDF_SUFFIX,
+    input_variables=["input_args_types", "desc", "return_type", "udf_name"],
+    example_separator="\n\n",
+)
+

@@ -21,6 +21,7 @@ from spark_llm.prompt import (
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
     VERIFY_PROMPT,
+    UDF_PROMPT
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
 from spark_llm.llm_utils import LLMUtils
@@ -74,6 +75,7 @@ class SparkLLMAssistant:
         self._transform_chain = self._create_llm_chain(prompt=TRANSFORM_PROMPT)
         self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
+        self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
         self._verbose = verbose
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
@@ -303,6 +305,29 @@ class SparkLLMAssistant:
         exec(llm_output, {"df": df}, locals_)
 
         self.log(f"\nResult: {locals_['result']}")
+
+    def udf(self, func: Callable) -> Callable:
+        from inspect import signature
+
+        desc = func.__doc__
+        func_signature = str(signature(func))
+        input_args_types = func_signature.split("->")[0].strip()
+        return_type = func_signature.split("->")[1].strip()
+        udf_name = func.__name__
+
+        code = self._udf_chain.run(
+            input_args_types=input_args_types,
+            desc=desc,
+            return_type=return_type,
+            udf_name=udf_name
+        )
+
+        self.log(code)
+
+        locals_ = {}
+        exec(code, globals(), locals_)
+
+        return locals_[udf_name]
 
     def activate(self):
         """

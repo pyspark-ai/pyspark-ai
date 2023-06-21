@@ -66,6 +66,27 @@ auto_top_growth_df.llm.verify("expect sales change percentage to be between -100
 
 > result: True
 
+### UDF Generation
+```python
+@assistant.udf
+def previous_years_sales(brand: str, current_year_sale: int, sales_change_percentage: float) -> int:
+    """Calculate previous years sales from sales change percentage"""
+    ...
+    
+spark.udf.register("previous_years_sales", previous_years_sales)
+auto_df.createOrReplaceTempView("autoDF")
+
+spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_change_percentage) as 2021_sales from autoDF").show()
+```
+
+| brand         |2021_sales|
+|---------------|-------------|
+| Toyota        |   2032693|
+| Ford          |   1803509|
+| Chevrolet     |   1417348|
+| Honda         |   1315225|
+| Hyundai       |    739045|
+
 ### Cache
 The SparkLLMAssistant supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache that can be persisted through the `commit()` method. Cache lookup is always performed on the persistent cache only.
 
