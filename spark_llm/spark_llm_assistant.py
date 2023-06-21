@@ -1,4 +1,3 @@
-import os
 import re
 import types
 from functools import partialmethod
@@ -14,6 +13,7 @@ from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
 from spark_llm.cache import Cache
+from spark_llm.code_logger import CodeLogger
 from spark_llm.llm_chain_with_cache import LLMChainWithCache
 from spark_llm.prompt import (
     SEARCH_PROMPT,
@@ -22,6 +22,7 @@ from spark_llm.prompt import (
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
     VERIFY_PROMPT,
+    UDF_PROMPT
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
 from spark_llm.llm_utils import LLMUtils
@@ -60,7 +61,7 @@ class SparkLLMAssistant:
         self._spark = spark_session or SparkSession.builder.getOrCreate()
         self._llm = llm
         self._web_search_tool = web_search_tool or self._default_web_search_tool
-        if enable_cache:          
+        if enable_cache:
             self._cache = Cache(database_path = cache_file_location)
             self._web_search_tool = SearchToolWithCache(
                 self._web_search_tool, self._cache
@@ -75,10 +76,10 @@ class SparkLLMAssistant:
         self._transform_chain = self._create_llm_chain(prompt=TRANSFORM_PROMPT)
         self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
+        self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
         self._verbose = verbose
-        
-        import os
-        self.log(os.getcwd())
+        if verbose:
+            self._logger = CodeLogger("spark_llm_assistant")
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:
@@ -151,7 +152,11 @@ class SparkLLMAssistant:
 
     def log(self, message: str) -> None:
         if self._verbose:
-            print(message)
+            self._logger.log(message)
+
+    def log_code(self, code: str, language: str) -> None:
+        if self._verbose:
+            self._logger.log_code(code, language)
 
     def _trim_text_from_end(self, text: str, max_tokens: int) -> str:
         """
@@ -189,7 +194,8 @@ class SparkLLMAssistant:
             query=desc, web_content=web_content, columns=sql_columns_hint
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
-        self.log(f"SQL query for the ingestion:\n {sql_query}\n")
+        self.log(f"SQL query for the ingestion:\n")
+        self.log_code(sql_query, "sql")
 
         view_name = self._extract_view_name(sql_query)
         self.log(f"Storing data into temp view: {view_name}\n")
@@ -261,7 +267,8 @@ class SparkLLMAssistant:
             view_name=temp_view_name, columns=schema_str, desc=desc
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
-        self.log(f"SQL query for the transform:\n{sql_query}")
+        self.log(f"SQL query for the transform:")
+        self.log_code(sql_query, "sql")
         return self._spark.sql(sql_query)
 
     def explain_df(self, df: DataFrame) -> str:
@@ -299,7 +306,7 @@ class SparkLLMAssistant:
         :param df: The Spark DataFrame to be verified
         :param desc: A description of the expectation to be verified
         """
-        
+
         temp_view_name = "temp_view_for_transform"
         df.createOrReplaceTempView(temp_view_name)
         llm_result = self._verify_chain.run(
@@ -308,15 +315,39 @@ class SparkLLMAssistant:
         sql_query = self._extract_code_blocks(llm_result)[0]
 
         self.log(f"Generated SQL code:\n{sql_query}")
-        
+
         new_df = self._spark.sql(sql_query)
-        
+
         if new_df.count() == 0:
             result = "Success"
         else:
             result = "Failed"
-        
+
         self.log(f"""result: {result}""")
+
+    def udf(self, func: Callable) -> Callable:
+        from inspect import signature
+
+        desc = func.__doc__
+        func_signature = str(signature(func))
+        input_args_types = func_signature.split("->")[0].strip()
+        return_type = func_signature.split("->")[1].strip()
+        udf_name = func.__name__
+
+        code = self._udf_chain.run(
+            input_args_types=input_args_types,
+            desc=desc,
+            return_type=return_type,
+            udf_name=udf_name
+        )
+
+        self.log(f"Creating following Python UDF:")
+        self.log_code(code, "python")
+
+        locals_ = {}
+        exec(code, globals(), locals_)
+
+        return locals_[udf_name]
 
     def activate(self):
         """

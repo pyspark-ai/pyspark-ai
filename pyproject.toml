@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "spark-llm"
-version = "0.1.5"
+version = "0.1.6"
 description = "LLM assistant for the development of Spark applications"
 authors = ["Gengliang Wang <gengliang@apache.org>"]
 license = "Apache-2.0"
@@ -29,6 +29,7 @@ pyspark = "^3.4.0"
 openai = "^0.27.8"
 langchain = "^0.0.201"
 pandas = "^2.0.2"
+pygments = "^2.15.1"
 
 
 [tool.poetry.dev-dependencies]
