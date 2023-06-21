@@ -123,10 +123,9 @@ The output columns of `df`:
 {explain}
 
 Now help me write python code to visualize the result of `df` using plotly:
-1. The converted pandas DataFrame doesn't have attribute or method 'append'. 
-2. All the code MUST be in one code block.
-3. There is no need to install any package with pip. 
-4. Show the plot directly, instead of saving into a HTML.
+1. Do NOT use method 'append' of pandas DataFrame. 
+2. There is no need to install any package with pip. 
+3. Show the plot directly, instead of saving into a HTML.
 {instruction}
 """
 
