@@ -13,6 +13,7 @@ from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
 from spark_llm.cache import Cache
+from spark_llm.code_logger import CodeLogger
 from spark_llm.llm_chain_with_cache import LLMChainWithCache
 from spark_llm.prompt import (
     SEARCH_PROMPT,
@@ -77,6 +78,8 @@ class SparkLLMAssistant:
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
         self._verbose = verbose
+        if verbose:
+            self._logger = CodeLogger("spark_llm_assistant")
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:
@@ -149,7 +152,11 @@ class SparkLLMAssistant:
 
     def log(self, message: str) -> None:
         if self._verbose:
-            print(message)
+            self._logger.log(message)
+
+    def log_code(self, code: str, language: str) -> None:
+        if self._verbose:
+            self._logger.log_code(code, language)
 
     def _trim_text_from_end(self, text: str, max_tokens: int) -> str:
         """
@@ -187,7 +194,8 @@ class SparkLLMAssistant:
             query=desc, web_content=web_content, columns=sql_columns_hint
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
-        self.log(f"SQL query for the ingestion:\n {sql_query}\n")
+        self.log(f"SQL query for the ingestion:\n")
+        self.log_code(sql_query, "sql")
 
         view_name = self._extract_view_name(sql_query)
         self.log(f"Storing data into temp view: {view_name}\n")
@@ -259,7 +267,8 @@ class SparkLLMAssistant:
             view_name=temp_view_name, columns=schema_str, desc=desc
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
-        self.log(f"SQL query for the transform:\n{sql_query}")
+        self.log(f"SQL query for the transform:")
+        self.log_code(sql_query, "sql")
         return self._spark.sql(sql_query)
 
     def explain_df(self, df: DataFrame) -> str:
@@ -299,7 +308,8 @@ class SparkLLMAssistant:
         """
         llm_output = self._verify_chain.run(df=df, desc=desc)
 
-        self.log(f"Generated code:\n{llm_output}")
+        self.log(f"Generated code:")
+        self.log_code(llm_output, "python")
 
         locals_ = {}
         exec(llm_output, {"df": df}, locals_)
@@ -322,7 +332,8 @@ class SparkLLMAssistant:
             udf_name=udf_name
         )
 
-        self.log(f"Creating following Python UDF:\n{code}")
+        self.log(f"Creating following Python UDF:")
+        self.log_code(code, "python")
 
         locals_ = {}
         exec(code, globals(), locals_)
