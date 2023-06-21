@@ -13,13 +13,13 @@ from langchain.chat_models import ChatOpenAI
 from spark_llm import SparkLLMAssistant
 
 llm = ChatOpenAI(model_name='gpt-4') # using gpt-4 can achieve better results
-assistant=SparkLLMAssistant(llm=llm)
+assistant = SparkLLMAssistant(llm=llm)
 assistant.activate() # active partial functions for Spark DataFrame
 ```
 
 ### Data Ingestion
 ```python
-auto_df=assistant.create_df("2022 USA national auto sales by brand")
+auto_df = assistant.create_df("2022 USA national auto sales by brand")
 auto_df.show(n=5)
 ```
 | rank | brand     | us_sales_2022 | sales_change_vs_2021 |
@@ -86,6 +86,13 @@ spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_ch
 | Chevrolet     |   1417348|
 | Honda         |   1315225|
 | Hyundai       |    739045|
+
+### Cache
+The SparkLLMAssistant supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache that can be persisted through the `commit()` method. Cache lookup is always performed on the persistent cache only.
+
+```python
+assistant.commit()
+```
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

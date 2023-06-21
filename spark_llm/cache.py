@@ -15,7 +15,7 @@ class Cache:
         _sqlite_cache: An SQLiteCache instance that acts as the persistent cache.
     """
 
-    def __init__(self, database_path: str = ".spark_llm.db"):
+    def __init__(self, database_path: str):
         """
         Initializes a new instance of the Cache class.
 
