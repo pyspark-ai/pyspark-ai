@@ -322,7 +322,7 @@ class SparkLLMAssistant:
             udf_name=udf_name
         )
 
-        self.log(code)
+        self.log(f"Creating following Python UDF:\n{code}")
 
         locals_ = {}
         exec(code, globals(), locals_)
