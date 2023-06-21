@@ -52,7 +52,7 @@ TRANSFORM_PROMPT = PromptTemplate(
 EXPLAIN_PREFIX = """You are an Apache Spark SQL expert, who can summary what a dataframe retrieves. Given an analyzed 
 query plan of a dataframe, you will 
 1. convert the dataframe to SQL query. Note that an explain output contains plan 
-nodes separated by "\n". Each plan node has its own expressions and expression ids. 
+nodes separated by `\\n`. Each plan node has its own expressions and expression ids. 
 2. summary what the sql query retrieves. 
 """
 
@@ -61,18 +61,18 @@ EXPLAIN_SUFFIX = "analyzed_plan: {input}\nexplain:"
 _plan1 = """
 GlobalLimit 100
     +- LocalLimit 100
-       +- Sort [d_year#778 ASC NULLS FIRST, sum_agg#743 DESC NULLS LAST, brand_id#741 ASC NULLS FIRST], true
-          +- Aggregate [d_year#778, i_brand#912, i_brand_id#911], [d_year#778, i_brand_id#911 AS brand_id#741, i_brand#912 AS brand#742, sum(ss_ext_sales_price#896) AS sum_agg#743]
-             +- Filter (((d_date_sk#772 = ss_sold_date_sk#881) AND (ss_item_sk#883 = i_item_sk#904)) AND ((i_manufact_id#917 = 128) AND (d_moy#780 = 11)))
+       +- Sort [d_year ASC NULLS FIRST, sum_agg DESC NULLS LAST, brand_id ASC NULLS FIRST], true
+          +- Aggregate [d_year, i_brand, i_brand_id], [d_year, i_brand_id AS brand_id, i_brand AS brand, sum(ss_ext_sales_price) AS sum_agg]
+             +- Filter (((d_date_sk = ss_sold_date_sk) AND (ss_item_sk = i_item_sk)) AND ((i_manufact_id = 128) AND (d_moy = 11)))
                 +- Join Inner
                    :- Join Inner
                    :  :- SubqueryAlias dt
-                   :  :  +- SubqueryAlias main.tpcds_sf1_delta.date_dim
-                   :  :     +- Relation main.tpcds_sf1_delta.date_dim[d_date_sk#772,d_date_id#773,d_date#774,d_month_seq#775,d_week_seq#776,d_quarter_seq#777,d_year#778,d_dow#779,d_moy#780,d_dom#781,d_qoy#782,d_fy_year#783,d_fy_quarter_seq#784,d_fy_week_seq#785,d_day_name#786,d_quarter_name#787,d_holiday#788,d_weekend#789,d_following_holiday#790,d_first_dom#791,d_last_dom#792,d_same_day_ly#793,d_same_day_lq#794,d_current_day#795,... 4 more fields] parquet
-                   :  +- SubqueryAlias main.tpcds_sf1_delta.store_sales
-                   :     +- Relation main.tpcds_sf1_delta.store_sales[ss_sold_date_sk#881,ss_sold_time_sk#882,ss_item_sk#883,ss_customer_sk#884,ss_cdemo_sk#885,ss_hdemo_sk#886,ss_addr_sk#887,ss_store_sk#888,ss_promo_sk#889,ss_ticket_number#890L,ss_quantity#891,ss_wholesale_cost#892,ss_list_price#893,ss_sales_price#894,ss_ext_discount_amt#895,ss_ext_sales_price#896,ss_ext_wholesale_cost#897,ss_ext_list_price#898,ss_ext_tax#899,ss_coupon_amt#900,ss_net_paid#901,ss_net_paid_inc_tax#902,ss_net_profit#903] parquet
-                   +- SubqueryAlias main.tpcds_sf1_delta.item
-                      +- Relation main.tpcds_sf1_delta.item[i_item_sk#904,i_item_id#905,i_rec_start_date#906,i_rec_end_date#907,i_item_desc#908,i_current_price#909,i_wholesale_cost#910,i_brand_id#911,i_brand#912,i_class_id#913,i_class#914,i_category_id#915,i_category#916,i_manufact_id#917,i_manufact#918,i_size#919,i_formulation#920,i_color#921,i_units#922,i_container#923,i_manager_id#924,i_product_name#925] parquet
+                   :  :  +- SubqueryAlias spark_catalog.tpcds_sf1_delta.date_dim
+                   :  :     +- Relation spark_catalog.tpcds_sf1_delta.date_dim[d_date_sk,d_date_id,d_date,d_month_seq,d_week_seq,d_quarter_seq,d_year,d_dow,d_moy,d_dom,d_qoy,d_fy_year,d_fy_quarter_seq,d_fy_week_seq,d_day_name,d_quarter_name,d_holiday,d_weekend,d_following_holiday,d_first_dom,d_last_dom,d_same_day_ly,d_same_day_lq,d_current_day,... 4 more fields] parquet
+                   :  +- SubqueryAlias spark_catalog.tpcds_sf1_delta.store_sales
+                   :     +- Relation spark_catalog.tpcds_sf1_delta.store_sales[ss_sold_date_sk,ss_sold_time_sk,ss_item_sk,ss_customer_sk,ss_cdemo_sk,ss_hdemo_sk,ss_addr_sk,ss_store_sk,ss_promo_sk,ss_ticket_numberL,ss_quantity,ss_wholesale_cost,ss_list_price,ss_sales_price,ss_ext_discount_amt,ss_ext_sales_price,ss_ext_wholesale_cost,ss_ext_list_price,ss_ext_tax,ss_coupon_amt,ss_net_paid,ss_net_paid_inc_tax,ss_net_profit] parquet
+                   +- SubqueryAlias spark_catalog.tpcds_sf1_delta.item
+                      +- Relation spark_catalog.tpcds_sf1_delta.item[i_item_sk,i_item_id,i_rec_start_date,i_rec_end_date,i_item_desc,i_current_price,i_wholesale_cost,i_brand_id,i_brand,i_class_id,i_class,i_category_id,i_category,i_manufact_id,i_manufact,i_size,i_formulation,i_color,i_units,i_container,i_manager_id,i_product_name] parquet
 """
 
 _explain1 = """
@@ -123,8 +123,8 @@ The output columns of `df`:
 {explain}
 
 Now help me write python code to visualize the result of `df` using plotly:
-1. All the code MUST be in one code block.
-2. There is no need to install any package with pip.
+1. Do NOT use method 'append' of pandas DataFrame. 
+2. There is no need to install any package with pip. 
 3. Show the plot directly, instead of saving into a HTML.
 {instruction}
 """
