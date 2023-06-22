@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 from langchain.base_language import BaseLanguageModel
 from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from tiktoken import Encoding
 
 from spark_llm import SparkLLMAssistant
@@ -129,6 +130,39 @@ class URLTestCase(unittest.TestCase):
         url = "www.example.com"
         result = SparkLLMAssistant._is_http_or_https_url(url)
         self.assertFalse(result)
+
+class SparkTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.spark = (SparkSession
+                     .builder
+                     .master("local[*]")
+                     .appName("Unit-tests")
+                     .getOrCreate())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.spark.stop()
+
+class LLMExplainDf(SparkTestCase):
+    def setUp(self):
+        self.llm_mock = MagicMock(spec=BaseLanguageModel)
+        self.assistant_mock = SparkLLMAssistant(llm=self.llm_mock, cache_file_location="test_cache.json")
+    def test_explain_df(self):
+        pass
+    def test_gets_schema(self):
+        data = [("John", "Smith", 123),
+                ("Jane", "Doe", 456)]
+
+        schema = StructType([StructField("firstname", StringType(), True),
+                             StructField("lastname", StringType(), True),
+                             StructField("id", IntegerType(), True)])
+
+        df = self.spark.createDataFrame(data=data, schema=schema)
+
+        result = self.assistant_mock._get_df_schema(df)
+
+        print(result)
 
 
 if __name__ == "__main__":
