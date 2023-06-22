@@ -24,11 +24,11 @@ class LLMChainWithCache(LLMChain):
         tags: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> str:
+        assert not args, "The chain expected no arguments"
         prompt_str = self.prompt.format_prompt(**kwargs).to_string()
-        args_str = self._sort_and_stringify(*args)
-        cached_result = self.cache.lookup(prompt_str, args_str)
+        cached_result = self.cache.lookup(prompt_str)
         if cached_result is not None:
             return cached_result
         result = super().run(*args, callbacks=callbacks, tags=tags, **kwargs)
-        self.cache.update(prompt_str, args_str, result)
+        self.cache.update(prompt_str, result)
         return result
