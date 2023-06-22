@@ -10,7 +10,8 @@ class SearchToolWithCache:
 
     def search(self, query: str) -> str:
         # Try to get the result from the cache
-        cached_result = self.cache.lookup(query, "")
+        key = f"web_search:{query}"
+        cached_result = self.cache.lookup(key)
         if cached_result is not None:
             return cached_result
 
@@ -18,6 +19,6 @@ class SearchToolWithCache:
         result = self.web_search_tool(query)
 
         # Update the cache with the new result
-        self.cache.update(query, "", result)
+        self.cache.update(key, result)
 
         return result

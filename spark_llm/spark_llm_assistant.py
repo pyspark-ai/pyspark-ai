@@ -42,7 +42,8 @@ class SparkLLMAssistant:
         web_search_tool: Optional[Callable[[str], str]] = None,
         spark_session: Optional[SparkSession] = None,
         enable_cache: bool = True,
-        cache_file_location: str = ".spark_llm.db",
+        cache_file_format: str = "json",
+        cache_file_location: str = "spark_llm_cache.json",
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         verbose: bool = False,
@@ -62,7 +63,7 @@ class SparkLLMAssistant:
         self._llm = llm
         self._web_search_tool = web_search_tool or self._default_web_search_tool
         if enable_cache:
-            self._cache = Cache(database_path = cache_file_location)
+            self._cache = Cache(cache_file_location=cache_file_location, file_format=cache_file_format)
             self._web_search_tool = SearchToolWithCache(
                 self._web_search_tool, self._cache
             ).search
