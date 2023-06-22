@@ -21,41 +21,59 @@ class LLMMethodWrapper:
         self.assistant = assistant
         self.df_instance = df_instance
 
-    def transform(self, desc: str) -> DataFrame:
+    def transform(self, desc: str, lookup_cache: bool = True) -> DataFrame:
         """
         Transform the DataFrame using the given description.
 
         Args:
             desc: A string description specifying the transformation.
+            lookup_cache: Indicates whether to utilize a cache for this method.
+                If `True`, fetches cached data, if available.
+                If `False`, retrieves fresh data and updates cache.
 
         Returns:
             The transformed DataFrame.
         """
-        return self.assistant.transform_df(self.df_instance, desc)
+        return self.assistant.transform_df(self.df_instance, desc, lookup_cache)
 
-    def explain(self) -> str:
+    def explain(self, lookup_cache: bool = True) -> str:
         """
         Explain the DataFrame.
 
+        Args:
+            lookup_cache: Indicates whether to utilize a cache for this method.
+                If `True`, fetches cached data, if available.
+                If `False`, retrieves fresh data and updates cache.
+
         Returns:
             A string explanation of the DataFrame.
-        """
-        return self.assistant.explain_df(self.df_instance)
 
-    def plot(self, desc: Optional[str] = None) -> None:
+        """
+        return self.assistant.explain_df(self.df_instance, lookup_cache)
+
+    def plot(self, desc: Optional[str] = None, lookup_cache: bool = True) -> None:
         """
         Plot the DataFrame.
-        """
-        return self.assistant.plot_df(self.df_instance, desc)
 
-    def verify(self, desc: str) -> None:
+        Args:
+            desc: A string description specifying the plot.
+            lookup_cache: Indicates whether to utilize a cache for this method.
+                If `True`, fetches cached data, if available.
+                If `False`, retrieves fresh data and updates cache.
+        """
+        return self.assistant.plot_df(self.df_instance, desc, lookup_cache)
+
+    def verify(self, desc: str, lookup_cache: bool = True) -> None:
         """
         Verify the DataFrame using the given description.
 
         Args:
             desc: A string description specifying what to verify in the DataFrame.
+            lookup_cache: Indicates whether to utilize a cache for this method.
+                If `True`, fetches cached data, if available.
+                If `False`, retrieves fresh data and updates cache.
         """
-        return self.assistant.verify_df(self.df_instance, desc)
+        return self.assistant.verify_df(self.df_instance, desc, lookup_cache)
 
 
 class LLMUtils:
