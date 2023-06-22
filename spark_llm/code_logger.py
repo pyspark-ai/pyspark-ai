@@ -4,8 +4,8 @@ from pygments import highlight
 from pygments.lexers import get_lexer_by_name, PythonLexer, SqlLexer
 from pygments.formatters import TerminalFormatter
 
-GREEN = '\033[92m'  # terminal code for green
-RESET = '\033[0m'  # reset terminal color
+GREEN = "\033[92m"  # terminal code for green
+RESET = "\033[0m"  # reset terminal color
 
 
 # Custom Formatter
@@ -19,17 +19,17 @@ class CodeLogger:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
         handler = logging.StreamHandler()
-        handler.setFormatter(CustomFormatter('%(message)s'))  # output only the message
+        handler.setFormatter(CustomFormatter("%(message)s"))  # output only the message
         self.logger.addHandler(handler)
 
     @staticmethod
     def colorize_code(code, language):
-        if not language or language.lower() == 'python':
+        if not language or language.lower() == "python":
             lexer = PythonLexer()
-        elif language.lower() == 'sql':
+        elif language.lower() == "sql":
             lexer = SqlLexer()
         else:
-            raise ValueError(f'Unsupported language: {language}')
+            raise ValueError(f"Unsupported language: {language}")
         return highlight(code, lexer, TerminalFormatter())
 
     def log(self, message):
@@ -44,6 +44,8 @@ class CodeLogger:
             colored_message += parts[i]
             # If there is a code block, colorize it and add it to the message
             if i + 2 < len(parts):
-                colored_message += '\n```\n' + self.colorize_code(parts[i + 2], parts[i + 1]) + '```'
+                colored_message += (
+                    "\n```\n" + self.colorize_code(parts[i + 2], parts[i + 1]) + "```"
+                )
         # Log the message with colored code blocks
         self.logger.info(colored_message)

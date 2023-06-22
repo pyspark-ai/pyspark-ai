@@ -98,7 +98,7 @@ class JsonCache(FileCache):
         # If cache file exists, load it into memory.
         self.cache = {}
         if os.path.exists(self.filepath):
-            with open(self.filepath, 'r') as f:
+            with open(self.filepath, "r") as f:
                 for line in f:
                     if line.strip():  # Avoid empty lines
                         line_cache = json.loads(line)
@@ -138,10 +138,10 @@ class JsonCache(FileCache):
         """
         # Append the staging cache to the existing cache
         self.cache.update(staging_cache)
-        with open(self.filepath, 'a') as f:
+        with open(self.filepath, "a") as f:
             for key, value in staging_cache.items():
                 json.dump({"key": key, "value": value}, f)
-                f.write('\n')
+                f.write("\n")
         # Clear the staging cache
         self.staging_cache = {}
 

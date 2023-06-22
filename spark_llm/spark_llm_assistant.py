@@ -22,7 +22,7 @@ from spark_llm.prompt import (
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
     VERIFY_PROMPT,
-    UDF_PROMPT
+    UDF_PROMPT,
 )
 from spark_llm.search_tool_with_cache import SearchToolWithCache
 from spark_llm.llm_utils import LLMUtils
@@ -31,22 +31,22 @@ from spark_llm.llm_utils import LLMUtils
 class SparkLLMAssistant:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-                      " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
     }
 
     def __init__(
-            self,
-            llm: BaseLanguageModel,
-            web_search_tool: Optional[Callable[[str], str]] = None,
-            spark_session: Optional[SparkSession] = None,
-            enable_cache: bool = True,
-            cache_file_format: str = "json",
-            cache_file_location: str = "spark_llm_cache.json",
-            encoding: Optional[Encoding] = None,
-            max_tokens_of_web_content: int = 3000,
-            verbose: bool = False,
+        self,
+        llm: BaseLanguageModel,
+        web_search_tool: Optional[Callable[[str], str]] = None,
+        spark_session: Optional[SparkSession] = None,
+        enable_cache: bool = True,
+        cache_file_format: str = "json",
+        cache_file_location: str = "spark_llm_cache.json",
+        encoding: Optional[Encoding] = None,
+        max_tokens_of_web_content: int = 3000,
+        verbose: bool = False,
     ) -> None:
         """
         Initialize the SparkLLMAssistant object with the provided parameters.
@@ -64,7 +64,9 @@ class SparkLLMAssistant:
         self._web_search_tool = web_search_tool or self._default_web_search_tool
         if enable_cache:
             self._enable_cache = enable_cache
-            self._cache = Cache(cache_file_location=cache_file_location, file_format=cache_file_format)
+            self._cache = Cache(
+                cache_file_location=cache_file_location, file_format=cache_file_format
+            )
             self._web_search_tool = SearchToolWithCache(
                 self._web_search_tool, self._cache
             ).search
@@ -169,17 +171,22 @@ class SparkLLMAssistant:
             tokens = tokens[:max_tokens]
         return self._encoding.decode(tokens)
 
-    def _get_url_from_search_tool(self, desc: str, columns: Optional[List[str]], use_cache: bool) -> str:
+    def _get_url_from_search_tool(
+        self, desc: str, columns: Optional[List[str]], use_cache: bool
+    ) -> str:
         search_result = self._web_search_tool(desc)
         search_columns_hint = self._generate_search_prompt(columns)
         # Run the LLM chain to pick the best search result
         tags = self._get_tags(use_cache)
         return self._search_llm_chain.run(
-           tags=tags, query=desc, search_results=search_result, columns={search_columns_hint}
+            tags=tags,
+            query=desc,
+            search_results=search_result,
+            columns={search_columns_hint},
         )
 
     def _create_dataframe_with_llm(
-            self, text: str, desc: str, columns: Optional[List[str]], use_cache: bool
+        self, text: str, desc: str, columns: Optional[List[str]], use_cache: bool
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
@@ -218,14 +225,18 @@ class SparkLLMAssistant:
     def _get_df_explain(self, df: DataFrame, use_cache: bool) -> str:
         raw_analyzed_str = df._jdf.queryExecution().analyzed().toString()
         tags = self._get_tags(use_cache)
-        return self._explain_chain.run(tags=tags, input=self._trim_hash_id(raw_analyzed_str))
+        return self._explain_chain.run(
+            tags=tags, input=self._trim_hash_id(raw_analyzed_str)
+        )
 
     def _get_tags(self, use_cache: bool) -> Optional[List[str]]:
         if self._enable_cache and not use_cache:
             return SKIP_CACHE_TAGS
         return None
 
-    def create_df(self, desc: str, columns: Optional[List[str]] = None, use_cache: bool = True) -> DataFrame:
+    def create_df(
+        self, desc: str, columns: Optional[List[str]] = None, use_cache: bool = True
+    ) -> DataFrame:
         """
         Create a Spark DataFrame by querying an LLM from web search result.
 
@@ -257,9 +268,13 @@ class SparkLLMAssistant:
         # If the input is a URL link, use the title of web page as the dataset's description.
         if is_url:
             desc = soup.title.string
-        return self._create_dataframe_with_llm(soup.get_text(), desc, columns, use_cache)
+        return self._create_dataframe_with_llm(
+            soup.get_text(), desc, columns, use_cache
+        )
 
-    def transform_df(self, df: DataFrame, desc: str, use_cache: bool = True) -> DataFrame:
+    def transform_df(
+        self, df: DataFrame, desc: str, use_cache: bool = True
+    ) -> DataFrame:
         """
         This method applies a transformation to a provided Spark DataFrame, the specifics of which are determined by the 'desc' parameter.
 
@@ -272,7 +287,7 @@ class SparkLLMAssistant:
         temp_view_name = "temp_view_for_transform"
         df.createOrReplaceTempView(temp_view_name)
         schema_str = self._get_df_schema(df)
-        tags=self._get_tags(use_cache)
+        tags = self._get_tags(use_cache)
         llm_result = self._transform_chain.run(
             tags=tags, view_name=temp_view_name, columns=schema_str, desc=desc
         )
@@ -298,9 +313,11 @@ class SparkLLMAssistant:
         else:
             return explain_result
 
-    def plot_df(self, df: DataFrame, desc: Optional[str] = None, use_cache: bool = True) -> None:
+    def plot_df(
+        self, df: DataFrame, desc: Optional[str] = None, use_cache: bool = True
+    ) -> None:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
-        tags=self._get_tags(use_cache)
+        tags = self._get_tags(use_cache)
         response = self._plot_chain.run(
             tags=tags,
             columns=self._get_df_schema(df),
@@ -343,7 +360,7 @@ class SparkLLMAssistant:
             input_args_types=input_args_types,
             desc=desc,
             return_type=return_type,
-            udf_name=udf_name
+            udf_name=udf_name,
         )
 
         formatted_code = CodeLogger.colorize_code(code, "python")

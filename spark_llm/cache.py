@@ -15,9 +15,9 @@ class Cache:
         _file_cache: An instance of either JsonCache or SQLiteCacheWrapper that acts as the persistent cache.
     """
 
-    def __init__(self,
-                 cache_file_location: str = ".spark_llm.json",
-                 file_format: str = "json"):
+    def __init__(
+        self, cache_file_location: str = ".spark_llm.json", file_format: str = "json"
+    ):
         """
         Initializes a new instance of the Cache class.
 

@@ -213,16 +213,22 @@ def add_one(x) -> int:
         return x + 1
 """
 
-_udf_examples = [{"input_args_types": "(s: str)", 
-                  "desc": "Convert string s to uppercase", 
-                  "return_type": "str", 
-                  "udf_name": "to_upper", 
-                  "output": _udf_output1},
-                {"input_args_types": "(x: int)", 
-                  "desc": "Add 1", 
-                  "return_type": "int", 
-                  "udf_name": "add_one", 
-                  "output": _udf_output2}]
+_udf_examples = [
+    {
+        "input_args_types": "(s: str)",
+        "desc": "Convert string s to uppercase",
+        "return_type": "str",
+        "udf_name": "to_upper",
+        "output": _udf_output1,
+    },
+    {
+        "input_args_types": "(x: int)",
+        "desc": "Add 1",
+        "return_type": "int",
+        "udf_name": "add_one",
+        "output": _udf_output2,
+    },
+]
 
 _udf_formatter = """
 input_args_types: {input_args_types}
@@ -233,7 +239,8 @@ output: {output}
 """
 
 _udf_prompt = PromptTemplate(
-    input_variables=["input_args_types", "desc", "return_type", "udf_name", "output"], template=_udf_formatter
+    input_variables=["input_args_types", "desc", "return_type", "udf_name", "output"],
+    template=_udf_formatter,
 )
 
 UDF_PROMPT = FewShotPromptTemplate(
@@ -244,4 +251,3 @@ UDF_PROMPT = FewShotPromptTemplate(
     input_variables=["input_args_types", "desc", "return_type", "udf_name"],
     example_separator="\n\n",
 )
-
