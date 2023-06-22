@@ -9,11 +9,9 @@ pip install spark-llm
 ## Usage
 ### Initialization
 ```python
-from langchain.chat_models import ChatOpenAI
 from spark_llm import SparkLLMAssistant
 
-llm = ChatOpenAI(model_name='gpt-4') # using gpt-4 can achieve better results
-assistant = SparkLLMAssistant(llm=llm)
+assistant = SparkLLMAssistant()
 assistant.activate() # active partial functions for Spark DataFrame
 ```
 

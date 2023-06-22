@@ -9,6 +9,7 @@ import tiktoken
 from bs4 import BeautifulSoup
 from langchain import LLMChain, GoogleSearchAPIWrapper, BasePromptTemplate
 from langchain.base_language import BaseLanguageModel
+from langchain.chat_models import ChatOpenAI
 from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
@@ -38,7 +39,7 @@ class SparkLLMAssistant:
 
     def __init__(
         self,
-        llm: BaseLanguageModel,
+        llm: BaseLanguageModel = ChatOpenAI(model_name='gpt-4', temperature=0),
         web_search_tool: Optional[Callable[[str], str]] = None,
         spark_session: Optional[SparkSession] = None,
         enable_cache: bool = True,
