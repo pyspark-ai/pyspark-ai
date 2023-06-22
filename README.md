@@ -36,7 +36,7 @@ auto_df.llm.plot()
 
 To plot with an instruction:
 ```python
-auto_df.llm.plot("pie char for top 5 brands and the others' market shares")
+auto_df.llm.plot("pie chart for US sales market shares, show the top 5 brands and the sum of others")
 ```
 ![2022 USA national auto sales_market_share by brand](docs/_static/auto_sales_pie_char.png)
 ### DataFrame Transformation
@@ -84,8 +84,7 @@ spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_ch
 | Hyundai       |    739045|
 
 ### Cache
-The SparkLLMAssistant supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache that can be persisted through the `commit()` method. Cache lookup is always performed on the persistent cache only.
-
+The SparkLLMAssistant supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache, which gets updated for LLM and web search results. The staging cache can be persisted through the commit() method. Cache lookup is always performed on both in-memory staging cache and persistent cache.
 ```python
 assistant.commit()
 ```
