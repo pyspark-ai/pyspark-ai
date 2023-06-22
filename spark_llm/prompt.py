@@ -116,16 +116,20 @@ EXPLAIN_DF_PROMPT = FewShotPromptTemplate(
 )
 
 PLOT_PROMPT_TEMPLATE = """
+You are an Apache Spark SQL expert programmer.
+
 Given a pyspark dataframe `df`.
+
 The output columns of `df`:
 {columns}
 
-{explain}
+And an explanation of `df`: {explain}
 
-Now help me write python code to visualize the result of `df` using plotly:
-1. Do NOT use method 'append' of pandas DataFrame. 
-2. There is no need to install any package with pip. 
-3. Show the plot directly, instead of saving into a HTML.
+Write python code to visualize the result of `df` using plotly.
+Your could should NOT include the method 'append'. 
+There is no need to install any package with pip. 
+Display the plot directly, instead of saving into an HTML.
+Ensure that your code is correct.
 {instruction}
 """
 
