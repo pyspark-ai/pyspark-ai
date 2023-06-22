@@ -1,5 +1,6 @@
 import re
 import logging
+import sys
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name, PythonLexer, SqlLexer
 from pygments.formatters import TerminalFormatter
@@ -18,7 +19,7 @@ class CodeLogger:
     def __init__(self, name):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
-        handler = logging.StreamHandler()
+        handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(CustomFormatter("%(message)s"))  # output only the message
         self.logger.addHandler(handler)
 
