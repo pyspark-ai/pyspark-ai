@@ -6,6 +6,7 @@ from pyspark.sql import SparkSession
 from tiktoken import Encoding
 
 from spark_llm import SparkLLMAssistant
+from spark_llm.search_tool_with_cache import SearchToolWithCache
 
 
 class SparkLLMAssistantInitializationTestCase(unittest.TestCase):
@@ -15,9 +16,12 @@ class SparkLLMAssistantInitializationTestCase(unittest.TestCase):
         self.llm_mock = MagicMock(spec=BaseLanguageModel)
         self.spark_session_mock = MagicMock(spec=SparkSession)
         self.encoding_mock = MagicMock(spec=Encoding)
+        self.web_search_tool_mock = MagicMock(spec=SearchToolWithCache.search)
         self.assistant = SparkLLMAssistant(
             llm=self.llm_mock,
+            web_search_tool=self.web_search_tool_mock,
             spark_session=self.spark_session_mock,
+            enable_cache=False,
             encoding=self.encoding_mock,
         )
 
@@ -26,7 +30,7 @@ class SparkLLMAssistantInitializationTestCase(unittest.TestCase):
         self.assertEqual(self.assistant._spark, self.spark_session_mock)
         self.assertEqual(self.assistant._llm, self.llm_mock)
         self.assertEqual(
-            self.assistant._web_search_tool, self.assistant._default_web_search_tool
+            self.assistant._web_search_tool, self.web_search_tool_mock
         )
         self.assertEqual(self.assistant._encoding, self.encoding_mock)
         self.assertEqual(self.assistant._max_tokens_of_web_content, 3000)
