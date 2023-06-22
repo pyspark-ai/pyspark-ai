@@ -173,12 +173,12 @@ class SparkLLMAssistant:
         return self._encoding.decode(tokens)
 
     def _get_url_from_search_tool(
-        self, desc: str, columns: Optional[List[str]], use_cache: bool
+        self, desc: str, columns: Optional[List[str]], cache: bool
     ) -> str:
         search_result = self._web_search_tool(desc)
         search_columns_hint = self._generate_search_prompt(columns)
         # Run the LLM chain to pick the best search result
-        tags = self._get_tags(use_cache)
+        tags = self._get_tags(cache)
         return self._search_llm_chain.run(
             tags=tags,
             query=desc,
@@ -187,7 +187,7 @@ class SparkLLMAssistant:
         )
 
     def _create_dataframe_with_llm(
-        self, text: str, desc: str, columns: Optional[List[str]], use_cache: bool
+        self, text: str, desc: str, columns: Optional[List[str]], cache: bool
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
@@ -197,7 +197,7 @@ class SparkLLMAssistant:
         sql_columns_hint = self._generate_sql_prompt(columns)
 
         # Run the LLM chain to get an ingestion SQL query
-        tags = self._get_tags(use_cache)
+        tags = self._get_tags(cache)
         llm_result = self._sql_llm_chain.run(
             tags=tags, query=desc, web_content=web_content, columns=sql_columns_hint
         )
@@ -223,20 +223,20 @@ class SparkLLMAssistant:
 
         return trimmed_plan
 
-    def _get_df_explain(self, df: DataFrame, use_cache: bool) -> str:
+    def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
         raw_analyzed_str = df._jdf.queryExecution().analyzed().toString()
-        tags = self._get_tags(use_cache)
+        tags = self._get_tags(cache)
         return self._explain_chain.run(
             tags=tags, input=self._trim_hash_id(raw_analyzed_str)
         )
 
-    def _get_tags(self, use_cache: bool) -> Optional[List[str]]:
-        if self._enable_cache and not use_cache:
+    def _get_tags(self, cache: bool) -> Optional[List[str]]:
+        if self._enable_cache and not cache:
             return SKIP_CACHE_TAGS
         return None
 
     def create_df(
-        self, desc: str, columns: Optional[List[str]] = None, use_cache: bool = True
+        self, desc: str, columns: Optional[List[str]] = None, cache: bool = True
     ) -> DataFrame:
         """
         Create a Spark DataFrame by querying an LLM from web search result.
@@ -244,7 +244,7 @@ class SparkLLMAssistant:
         :param desc: the description of the result DataFrame, which will be used for
                      web searching
         :param columns: the expected column names in the result DataFrame
-        :param use_cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
+        :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
 
         :return: a Spark DataFrame
         """
@@ -252,7 +252,7 @@ class SparkLLMAssistant:
         is_url = self._is_http_or_https_url(url)
         # If the input is not a valid URL, use search tool to get the dataset.
         if not is_url:
-            url = self._get_url_from_search_tool(desc, columns, use_cache)
+            url = self._get_url_from_search_tool(desc, columns, cache)
 
         self.log(f"Parsing URL: {url}\n")
         try:
@@ -270,25 +270,25 @@ class SparkLLMAssistant:
         if is_url:
             desc = soup.title.string
         return self._create_dataframe_with_llm(
-            soup.get_text(), desc, columns, use_cache
+            soup.get_text(), desc, columns, cache
         )
 
     def transform_df(
-        self, df: DataFrame, desc: str, use_cache: bool = True
+        self, df: DataFrame, desc: str, cache: bool = True
     ) -> DataFrame:
         """
         This method applies a transformation to a provided Spark DataFrame, the specifics of which are determined by the 'desc' parameter.
 
         :param df: The Spark DataFrame that is to be transformed.
         :param desc: A natural language string that outlines the specific transformation to be applied on the DataFrame.
-        :param use_cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
+        :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
 
         :return: Returns a new Spark DataFrame that is the result of applying the specified transformation on the input DataFrame.
         """
         temp_view_name = "temp_view_for_transform"
         df.createOrReplaceTempView(temp_view_name)
         schema_str = self._get_df_schema(df)
-        tags = self._get_tags(use_cache)
+        tags = self._get_tags(cache)
         llm_result = self._transform_chain.run(
             tags=tags, view_name=temp_view_name, columns=schema_str, desc=desc
         )
@@ -297,16 +297,16 @@ class SparkLLMAssistant:
         self.log(f"SQL query for the transform:\n{formatted_sql_query}")
         return self._spark.sql(sql_query)
 
-    def explain_df(self, df: DataFrame, use_cache: bool = True) -> str:
+    def explain_df(self, df: DataFrame, cache: bool = True) -> str:
         """
         This method generates a natural language explanation of the SQL plan of the input Spark DataFrame.
 
         :param df: The Spark DataFrame to be explained.
-        :param use_cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
+        :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
 
         :return: A string explanation of the DataFrame's SQL plan, detailing what the DataFrame is intended to retrieve.
         """
-        explain_result = self._get_df_explain(df, use_cache)
+        explain_result = self._get_df_explain(df, cache)
         # If there is code block in the explain result, ignore it.
         if "```" in explain_result:
             summary = explain_result.split("```")[-1]
@@ -315,14 +315,14 @@ class SparkLLMAssistant:
             return explain_result
 
     def plot_df(
-        self, df: DataFrame, desc: Optional[str] = None, use_cache: bool = True
+        self, df: DataFrame, desc: Optional[str] = None, cache: bool = True
     ) -> None:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
-        tags = self._get_tags(use_cache)
+        tags = self._get_tags(cache)
         response = self._plot_chain.run(
             tags=tags,
             columns=self._get_df_schema(df),
-            explain=self._get_df_explain(df, use_cache),
+            explain=self._get_df_explain(df, cache),
             instruction=instruction,
         )
         self.log(response)
@@ -330,15 +330,15 @@ class SparkLLMAssistant:
         for code in codeblocks:
             exec(code)
 
-    def verify_df(self, df: DataFrame, desc: str, use_cache: bool = True) -> None:
+    def verify_df(self, df: DataFrame, desc: str, cache: bool = True) -> None:
         """
         This method creates and runs test cases for the provided PySpark dataframe transformation function.
 
         :param df: The Spark DataFrame to be verified
         :param desc: A description of the expectation to be verified
-        :param use_cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
+        :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
         """
-        tags = self._get_tags(use_cache)
+        tags = self._get_tags(cache)
         llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
         formatted_code = CodeLogger.colorize_code(llm_output, "python")
         self.log(f"Generated code:\n{formatted_code}")
