@@ -2,15 +2,12 @@ import unittest
 from unittest.mock import MagicMock
 
 from chispa.dataframe_comparer import assert_df_equality
-
-from langchain.chat_models import ChatOpenAI
 from langchain.base_language import BaseLanguageModel
-from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from tiktoken import Encoding
 
 from spark_llm import SparkLLMAssistant
 from spark_llm.search_tool_with_cache import SearchToolWithCache
+from pyspark.sql import SparkSession
 
 
 class SparkLLMAssistantInitializationTestCase(unittest.TestCase):
@@ -149,8 +146,7 @@ class SparkTestCase(unittest.TestCase):
 
 class CacheRetrievalTestCase(SparkTestCase):
     def setUp(self):
-        llm = ChatOpenAI(model_name='gpt-4')  # using gpt-4 can achieve better results
-        self.assistant = SparkLLMAssistant(llm=llm, cache_file_location="tests/test_cache.json")
+        self.assistant = SparkLLMAssistant(cache_file_location="tests/test_cache.json")
         self.languages_df1 = self.assistant.create_df("top 5 most popular programming languages 2022")
         self.assistant.commit()
 
