@@ -89,7 +89,7 @@ The SparkLLMAssistant supports a simple in-memory and persistent cache system. I
 assistant.commit()
 ```
 
-Refer to [example.ipynb](https://github.com/gengliangwang/spark-llm/blob/main/examples/example.ipynb) for more detailed usage examples.
+Refer to [example.ipynb](https://github.com/databrickslabs/spark-llm/blob/master/examples/example.ipynb) for more detailed usage examples.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
