@@ -1,4 +1,5 @@
 import re
+import pandas as pd  # noqa: F401
 
 from typing import Callable, Optional, List
 from urllib.parse import urlparse
