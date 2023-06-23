@@ -1,12 +1,13 @@
 import unittest
 from unittest.mock import MagicMock
 
+from chispa.dataframe_comparer import assert_df_equality
 from langchain.base_language import BaseLanguageModel
-from pyspark.sql import SparkSession
 from tiktoken import Encoding
 
 from spark_llm import SparkLLMAssistant
 from spark_llm.search_tool_with_cache import SearchToolWithCache
+from pyspark.sql import SparkSession
 
 
 class SparkLLMAssistantInitializationTestCase(unittest.TestCase):
@@ -129,6 +130,57 @@ class URLTestCase(unittest.TestCase):
         url = "www.example.com"
         result = SparkLLMAssistant._is_http_or_https_url(url)
         self.assertFalse(result)
+
+class SparkTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.spark = (SparkSession
+                     .builder
+                     .master("local[*]")
+                     .appName("Unit-tests")
+                     .getOrCreate())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.spark.stop()
+
+class CacheRetrievalTestCase(SparkTestCase):
+    def setUp(self):
+        self.assistant = SparkLLMAssistant(cache_file_location="tests/test_cache.json")
+        self.languages_df1 = self.assistant.create_df("top 5 most popular programming languages 2022")
+        self.assistant.commit()
+
+    def test_create_df(self):
+        languages_df2 = self.assistant.create_df("top 5 most popular programming languages 2022")
+
+        assert_df_equality(self.languages_df1, languages_df2)
+
+    def test_transform_df(self):
+        transform_df1 = self.assistant.transform_df(self.languages_df1, "alphabetical order by programming language")
+        self.assistant.commit()
+        transform_df2 = self.assistant.transform_df(self.languages_df1, "alphabetical order by programming language")
+
+        assert_df_equality(transform_df1, transform_df2)
+
+    def test_explain_df(self):
+        explain1 = self.assistant.explain_df(self.languages_df1)
+        self.assistant.commit()
+        explain2 = self.assistant.explain_df(self.languages_df1)
+
+        self.assertEqual(explain1, explain2)
+
+    def test_udf(self):
+        @self.assistant.udf
+        def udf1(s: str) -> str:
+            """reverse letters in string s"""
+
+        self.assistant.commit()
+
+        @self.assistant.udf
+        def udf2(s: str) -> str:
+            """reverse letters in string s"""
+
+        self.assertEqual(udf1("test"), udf2("test"))
 
 
 if __name__ == "__main__":
