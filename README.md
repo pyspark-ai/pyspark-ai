@@ -11,21 +11,22 @@ Python is ... the new byte code.
 ## Installation
 
 ```bash
-pip install spark-llm
+pip install pyspark-ai
 ```
 
 ## Usage
 ### Initialization
-```python
-from spark_llm import SparkLLMAssistant
 
-assistant = SparkLLMAssistant()
-assistant.activate() # active partial functions for Spark DataFrame
+```python
+from pyspark_ai import SparkAI
+
+spark_ai = SparkAI()
+spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
 
 ### Data Ingestion
 ```python
-auto_df = assistant.create_df("2022 USA national auto sales by brand")
+auto_df = spark_ai.create_df("2022 USA national auto sales by brand")
 auto_df.show(n=5)
 ```
 | rank | brand     | us_sales_2022 | sales_change_vs_2021 |
@@ -38,18 +39,18 @@ auto_df.show(n=5)
 
 ### Plot
 ```python
-auto_df.llm.plot()
+auto_df.ai.plot()
 ```
 ![2022 USA national auto sales by brand](docs/_static/auto_sales.png)
 
 To plot with an instruction:
 ```python
-auto_df.llm.plot("pie chart for US sales market shares, show the top 5 brands and the sum of others")
+auto_df.ai.plot("pie chart for US sales market shares, show the top 5 brands and the sum of others")
 ```
 ![2022 USA national auto sales_market_share by brand](docs/_static/auto_sales_pie_char.png)
 ### DataFrame Transformation
 ```python
-auto_top_growth_df=auto_df.llm.transform("top brand with the highest growth")
+auto_top_growth_df=auto_df.ai.transform("top brand with the highest growth")
 auto_top_growth_df.show()
 ```
 | brand    | us_sales_2022 | sales_change_vs_2021 |
@@ -58,21 +59,21 @@ auto_top_growth_df.show()
 
 ### DataFrame Explanation
 ```python
-auto_top_growth_df.llm.explain()
+auto_top_growth_df.ai.explain()
 ```
 
 > In summary, this dataframe is retrieving the brand with the highest sales change in 2022 compared to 2021. It presents the results sorted by sales change in descending order and only returns the top result.
 
 ### DataFrame Attribute Verification
 ```python
-auto_top_growth_df.llm.verify("expect sales change percentage to be between -100 to 100")
+auto_top_growth_df.ai.verify("expect sales change percentage to be between -100 to 100")
 ```
 
 > result: True
 
 ### UDF Generation
 ```python
-@assistant.udf
+@spark_ai.udf
 def previous_years_sales(brand: str, current_year_sale: int, sales_change_percentage: float) -> int:
     """Calculate previous years sales from sales change percentage"""
     ...
@@ -92,12 +93,12 @@ spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_ch
 | Hyundai       |    739045|
 
 ### Cache
-The SparkLLMAssistant supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache, which gets updated for LLM and web search results. The staging cache can be persisted through the commit() method. Cache lookup is always performed on both in-memory staging cache and persistent cache.
+The SparkAI supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache, which gets updated for LLM and web search results. The staging cache can be persisted through the commit() method. Cache lookup is always performed on both in-memory staging cache and persistent cache.
 ```python
-assistant.commit()
+spark_ai.commit()
 ```
 
-Refer to [example.ipynb](https://github.com/databrickslabs/spark-llm/blob/master/examples/example.ipynb) for more detailed usage examples.
+Refer to [example.ipynb](https://github.com/databrickslabs/pyspark-ai/blob/master/examples/example.ipynb) for more detailed usage examples.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

@@ -2,23 +2,23 @@ from pyspark.sql import DataFrame
 from typing import Type, Optional
 
 
-class LLMMethodWrapper:
+class AIMethodWrapper:
     """
-    This class wraps the LLM utility functions to allow them to be used directly
+    This class wraps the AI utility functions to allow them to be used directly
     on DataFrame instances. An instance of this class is created each time the
-    utility functions are accessed, with the DataFrame instance and LLM assistant
+    utility functions are accessed, with the DataFrame and SparkAI instance
     passed to it.
     """
 
-    def __init__(self, assistant, df_instance: DataFrame):
+    def __init__(self, spark_ai, df_instance: DataFrame):
         """
-        Initialize the LLMMethodWrapper with the given LLM assistant and DataFrame instance.
+        Initialize the AIMethodWrapper with the given SparkAI and DataFrame instance.
 
         Args:
-            assistant: The SparkLLMAssistant instance containing the LLM utility methods.
+            spark_ai: The SparkAI instance containing the AI utility methods.
             df_instance: The DataFrame instance on which the utility methods will be used.
         """
-        self.assistant = assistant
+        self.spark_ai = spark_ai
         self.df_instance = df_instance
 
     def transform(self, desc: str, cache: bool = True) -> DataFrame:
@@ -34,7 +34,7 @@ class LLMMethodWrapper:
         Returns:
             The transformed DataFrame.
         """
-        return self.assistant.transform_df(self.df_instance, desc, cache)
+        return self.spark_ai.transform_df(self.df_instance, desc, cache)
 
     def explain(self, cache: bool = True) -> str:
         """
@@ -49,7 +49,7 @@ class LLMMethodWrapper:
             A string explanation of the DataFrame.
 
         """
-        return self.assistant.explain_df(self.df_instance, cache)
+        return self.spark_ai.explain_df(self.df_instance, cache)
 
     def plot(self, desc: Optional[str] = None, cache: bool = True) -> None:
         """
@@ -61,7 +61,7 @@ class LLMMethodWrapper:
                 If `True`, fetches cached data, if available.
                 If `False`, retrieves fresh data and updates cache.
         """
-        return self.assistant.plot_df(self.df_instance, desc, cache)
+        return self.spark_ai.plot_df(self.df_instance, desc, cache)
 
     def verify(self, desc: str, cache: bool = True) -> None:
         """
@@ -73,35 +73,35 @@ class LLMMethodWrapper:
                 If `True`, fetches cached data, if available.
                 If `False`, retrieves fresh data and updates cache.
         """
-        return self.assistant.verify_df(self.df_instance, desc, cache)
+        return self.spark_ai.verify_df(self.df_instance, desc, cache)
 
 
-class LLMUtils:
+class AIUtils:
     """
-    This class is a descriptor that is used to add LLM utility methods to DataFrame instances.
-    When the utility methods are accessed, it returns a new LLMMethodWrapper instance with the
-    DataFrame instance and LLM assistant passed to it.
+    This class is a descriptor that is used to add AI utility methods to DataFrame instances.
+    When the utility methods are accessed, it returns a new AIMethodWrapper instance with the
+    DataFrame and SparkAI instance passed to it.
     """
 
-    def __init__(self, llm_assistant):
+    def __init__(self, spark_ai):
         """
-        Initialize the LLMUtils descriptor with the given LLM assistant.
+        Initialize the AIUtils descriptor with the given SparkAI.
 
         Args:
-            llm_assistant: The SparkLLMAssistant instance containing the LLM utility methods.
+            spark_ai: The SparkAI instance containing the AI utility methods.
         """
-        self.assistant = llm_assistant
+        self.spark_ai = spark_ai
 
-    def __get__(self, instance: DataFrame, owner: Type[DataFrame]) -> LLMMethodWrapper:
+    def __get__(self, instance: DataFrame, owner: Type[DataFrame]) -> AIMethodWrapper:
         """
-        This method is called when the LLM utility methods are accessed on a DataFrame instance.
-        It returns a new LLMMethodWrapper instance with the DataFrame instance and LLM assistant passed to it.
+        This method is called when the AI utility methods are accessed on a DataFrame instance.
+        It returns a new AIMethodWrapper instance with the DataFrame instance and SparkAI passed to it.
 
         Args:
             instance: The DataFrame instance on which the utility methods are being accessed.
             owner: The class (DataFrame) to which this descriptor is added.
 
         Returns:
-            A new LLMMethodWrapper instance.
+            A new AIMethodWrapper instance.
         """
-        return LLMMethodWrapper(self.assistant, instance)
+        return AIMethodWrapper(self.spark_ai, instance)

@@ -1,6 +1,5 @@
 import re
-import types
-from functools import partialmethod
+
 from typing import Callable, Optional, List
 from urllib.parse import urlparse
 
@@ -13,10 +12,10 @@ from langchain.chat_models import ChatOpenAI
 from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
-from spark_llm.cache import Cache
-from spark_llm.code_logger import CodeLogger
-from spark_llm.llm_chain_with_cache import LLMChainWithCache, SKIP_CACHE_TAGS
-from spark_llm.prompt import (
+from pyspark_ai.cache import Cache
+from pyspark_ai.code_logger import CodeLogger
+from pyspark_ai.llm_chain_with_cache import LLMChainWithCache, SKIP_CACHE_TAGS
+from pyspark_ai.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     EXPLAIN_DF_PROMPT,
@@ -25,11 +24,11 @@ from spark_llm.prompt import (
     VERIFY_PROMPT,
     UDF_PROMPT,
 )
-from spark_llm.search_tool_with_cache import SearchToolWithCache
-from spark_llm.llm_utils import LLMUtils
+from pyspark_ai.search_tool_with_cache import SearchToolWithCache
+from pyspark_ai.ai_utils import AIUtils
 
 
-class SparkLLMAssistant:
+class SparkAI:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
         " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -50,7 +49,7 @@ class SparkLLMAssistant:
         verbose: bool = False,
     ) -> None:
         """
-        Initialize the SparkLLMAssistant object with the provided parameters.
+        Initialize the SparkAI object with the provided parameters.
 
         :param llm: LLM instance for selecting web search result
                                  and writing the ingestion SQL query.
@@ -84,7 +83,7 @@ class SparkLLMAssistant:
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
         self._verbose = verbose
         if verbose:
-            self._logger = CodeLogger("spark_llm_assistant")
+            self._logger = CodeLogger("spark_ai")
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:
@@ -374,9 +373,9 @@ class SparkLLMAssistant:
 
     def activate(self):
         """
-        Activates LLM utility functions for Spark DataFrame.
+        Activates AI utility functions for Spark DataFrame.
         """
-        DataFrame.llm = LLMUtils(self)
+        DataFrame.ai = AIUtils(self)
 
     def commit(self):
         """

@@ -1,6 +1,6 @@
 from typing import Callable
 
-from spark_llm.cache import Cache
+from pyspark_ai.cache import Cache
 
 
 class SearchToolWithCache:
