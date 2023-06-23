@@ -1,4 +1,12 @@
-# LLM Assistant for Apache Spark
+# English SDK for Apache Spark
+
+<div align="center">
+<h2>
+English is the new programming language;<br />
+Generative AI is the new compiler;<br />
+Python is ... the new byte code.
+</h2>
+</div>
 
 ## Installation
 
