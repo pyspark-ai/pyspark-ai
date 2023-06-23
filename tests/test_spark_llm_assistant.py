@@ -1,6 +1,9 @@
 import unittest
 from unittest.mock import MagicMock
 
+from chispa.dataframe_comparer import assert_df_equality
+
+from langchain.chat_models import ChatOpenAI
 from langchain.base_language import BaseLanguageModel
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
@@ -144,25 +147,44 @@ class SparkTestCase(unittest.TestCase):
     def tearDownClass(cls):
         cls.spark.stop()
 
-class LLMExplainDf(SparkTestCase):
+class CacheRetrievalTestCase(SparkTestCase):
     def setUp(self):
-        self.llm_mock = MagicMock(spec=BaseLanguageModel)
-        self.assistant_mock = SparkLLMAssistant(llm=self.llm_mock, cache_file_location="test_cache.json")
+        llm = ChatOpenAI(model_name='gpt-4')  # using gpt-4 can achieve better results
+        self.assistant = SparkLLMAssistant(llm=llm, cache_file_location="tests/test_cache.json")
+        self.languages_df1 = self.assistant.create_df("top 5 most popular programming languages 2022")
+        self.assistant.commit()
+
+    def test_create_df(self):
+        languages_df2 = self.assistant.create_df("top 5 most popular programming languages 2022")
+
+        assert_df_equality(self.languages_df1, languages_df2)
+
+    def test_transform_df(self):
+        transform_df1 = self.assistant.transform_df(self.languages_df1, "alphabetical order by programming language")
+        self.assistant.commit()
+        transform_df2 = self.assistant.transform_df(self.languages_df1, "alphabetical order by programming language")
+
+        assert_df_equality(transform_df1, transform_df2)
+
     def test_explain_df(self):
-        pass
-    def test_gets_schema(self):
-        data = [("John", "Smith", 123),
-                ("Jane", "Doe", 456)]
+        explain1 = self.assistant.explain_df(self.languages_df1)
+        self.assistant.commit()
+        explain2 = self.assistant.explain_df(self.languages_df1)
 
-        schema = StructType([StructField("firstname", StringType(), True),
-                             StructField("lastname", StringType(), True),
-                             StructField("id", IntegerType(), True)])
+        self.assertEqual(explain1, explain2)
 
-        df = self.spark.createDataFrame(data=data, schema=schema)
+    def test_udf(self):
+        @self.assistant.udf
+        def udf1(s: str) -> str:
+            """reverse letters in string s"""
 
-        result = self.assistant_mock._get_df_schema(df)
+        self.assistant.commit()
 
-        print(result)
+        @self.assistant.udf
+        def udf2(s: str) -> str:
+            """reverse letters in string s"""
+
+        self.assertEqual(udf1("test"), udf2("test"))
 
 
 if __name__ == "__main__":
