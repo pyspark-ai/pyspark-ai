@@ -1,3 +1,4 @@
+import os
 import re
 import pandas as pd  # noqa: F401
 
@@ -44,7 +45,7 @@ class SparkAI:
         spark_session: Optional[SparkSession] = None,
         enable_cache: bool = True,
         cache_file_format: str = "json",
-        cache_file_location: str = "spark_llm_cache.json",
+        cache_file_location: Optional[str] = None,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         verbose: bool = False,
@@ -65,8 +66,18 @@ class SparkAI:
         self._web_search_tool = web_search_tool or self._default_web_search_tool
         if enable_cache:
             self._enable_cache = enable_cache
+            if cache_file_location is not None:
+                # if there is parameter setting for it, use the parameter
+                self._cache_file_location = cache_file_location
+            elif 'AI_CACHE_FILE_LOCATION' in os.environ:
+                # otherwise read from env variable AI_CACHE_FILE_LOCATION
+                self._cache_file_location = os.environ['AI_CACHE_FILE_LOCATION']
+            else:
+                # use default value "spark_ai_cache.json"
+                self._cache_file_location = "spark_ai_cache.json"
             self._cache = Cache(
-                cache_file_location=cache_file_location, file_format=cache_file_format
+                cache_file_location=self._cache_file_location,
+                file_format=cache_file_format
             )
             self._web_search_tool = SearchToolWithCache(
                 self._web_search_tool, self._cache
