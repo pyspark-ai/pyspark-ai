@@ -3,7 +3,7 @@ from typing import Any, Optional, List
 from langchain import LLMChain
 from langchain.callbacks.manager import Callbacks
 
-from spark_llm.cache import Cache
+from pyspark_ai.cache import Cache
 
 SKIP_CACHE_TAGS = ["SKIP_CACHE"]
 

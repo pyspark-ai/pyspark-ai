@@ -16,11 +16,12 @@ pip install spark-llm
 
 ## Usage
 ### Initialization
+
 ```python
-from spark_llm import SparkLLMAssistant
+from pyspark_ai import SparkLLMAssistant
 
 assistant = SparkLLMAssistant()
-assistant.activate() # active partial functions for Spark DataFrame
+assistant.activate()  # active partial functions for Spark DataFrame
 ```
 
 ### Data Ingestion

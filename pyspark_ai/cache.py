@@ -1,6 +1,6 @@
 from typing import Optional, Dict
 
-from spark_llm.file_cache import JsonCache, SQLiteCacheWrapper
+from pyspark_ai.file_cache import JsonCache, SQLiteCacheWrapper
 
 
 class Cache:
@@ -16,14 +16,14 @@ class Cache:
     """
 
     def __init__(
-        self, cache_file_location: str = ".spark_llm.json", file_format: str = "json"
+        self, cache_file_location: str = ".pyspark_ai.json", file_format: str = "json"
     ):
         """
         Initializes a new instance of the Cache class.
 
         Args:
             cache_file_location (str, optional): The path to the cache file for the JsonCache or SQLiteCacheWrapper.
-                Defaults to ".spark_llm.json".
+                Defaults to ".pyspark_ai.json".
             file_format (str, optional): The format of the file to use for the cache. Defaults to "json".
         """
         self._staging_updates: Dict[str, str] = {}

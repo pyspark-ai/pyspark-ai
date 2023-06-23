@@ -13,10 +13,10 @@ from langchain.chat_models import ChatOpenAI
 from pyspark.sql import SparkSession, DataFrame
 from tiktoken import Encoding
 
-from spark_llm.cache import Cache
-from spark_llm.code_logger import CodeLogger
-from spark_llm.llm_chain_with_cache import LLMChainWithCache, SKIP_CACHE_TAGS
-from spark_llm.prompt import (
+from pyspark_ai.cache import Cache
+from pyspark_ai.code_logger import CodeLogger
+from pyspark_ai.llm_chain_with_cache import LLMChainWithCache, SKIP_CACHE_TAGS
+from pyspark_ai.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     EXPLAIN_DF_PROMPT,
@@ -25,8 +25,8 @@ from spark_llm.prompt import (
     VERIFY_PROMPT,
     UDF_PROMPT,
 )
-from spark_llm.search_tool_with_cache import SearchToolWithCache
-from spark_llm.llm_utils import LLMUtils
+from pyspark_ai.search_tool_with_cache import SearchToolWithCache
+from pyspark_ai.llm_utils import LLMUtils
 
 
 class SparkLLMAssistant:

@@ -5,8 +5,8 @@ from chispa.dataframe_comparer import assert_df_equality
 from langchain.base_language import BaseLanguageModel
 from tiktoken import Encoding
 
-from spark_llm import SparkLLMAssistant
-from spark_llm.search_tool_with_cache import SearchToolWithCache
+from pyspark_ai import SparkLLMAssistant
+from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark.sql import SparkSession
 
 
