@@ -83,7 +83,7 @@ class SparkAI:
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
         self._verbose = verbose
         if verbose:
-            self._logger = CodeLogger("spark_llm_assistant")
+            self._logger = CodeLogger("spark_ai")
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:

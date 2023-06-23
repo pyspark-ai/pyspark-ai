@@ -1,4 +1,4 @@
-"""LLM Assistant for Apache Spark"""
+"""English SDK for Apache Spark"""
 
 from pyspark_ai.pyspark_ai import SparkAI
 

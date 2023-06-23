@@ -12,10 +12,10 @@ class AIMethodWrapper:
 
     def __init__(self, spark_ai, df_instance: DataFrame):
         """
-        Initialize the AIMethodWrapper with the given AI assistant and DataFrame instance.
+        Initialize the AIMethodWrapper with the given SparkAI and DataFrame instance.
 
         Args:
-            assistant: The SparkAIAssistant instance containing the AI utility methods.
+            spark_ai: The SparkAI instance containing the AI utility methods.
             df_instance: The DataFrame instance on which the utility methods will be used.
         """
         self.spark_ai = spark_ai
@@ -80,12 +80,12 @@ class AIUtils:
     """
     This class is a descriptor that is used to add AI utility methods to DataFrame instances.
     When the utility methods are accessed, it returns a new AIMethodWrapper instance with the
-    DataFrame instance and AI assistant passed to it.
+    DataFrame and SparkAI instance passed to it.
     """
 
     def __init__(self, spark_ai):
         """
-        Initialize the AIUtils descriptor with the given AI assistant.
+        Initialize the AIUtils descriptor with the given SparkAI.
 
         Args:
             spark_ai: The SparkAI instance containing the AI utility methods.
@@ -95,7 +95,7 @@ class AIUtils:
     def __get__(self, instance: DataFrame, owner: Type[DataFrame]) -> AIMethodWrapper:
         """
         This method is called when the AI utility methods are accessed on a DataFrame instance.
-        It returns a new AIMethodWrapper instance with the DataFrame instance and AI assistant passed to it.
+        It returns a new AIMethodWrapper instance with the DataFrame instance and SparkAI passed to it.
 
         Args:
             instance: The DataFrame instance on which the utility methods are being accessed.
