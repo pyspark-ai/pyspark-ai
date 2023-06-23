@@ -1,3 +1,4 @@
+import os
 import re
 import pandas as pd  # noqa: F401
 
@@ -29,6 +30,10 @@ from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.ai_utils import AIUtils
 
 
+CACHE_FILE_FORMAT: str = os.environ.get("AI_CACHE_FILE_FORMAT", "json")
+CACHE_FILE_LOCATION: str = os.environ.get("AI_CACHE_FILE_LOCATION", "spark_llm_cache.json")
+
+
 class SparkAI:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
@@ -43,8 +48,8 @@ class SparkAI:
         web_search_tool: Optional[Callable[[str], str]] = None,
         spark_session: Optional[SparkSession] = None,
         enable_cache: bool = True,
-        cache_file_format: str = "json",
-        cache_file_location: str = "spark_llm_cache.json",
+        cache_file_format: str = CACHE_FILE_FORMAT,
+        cache_file_location: str = CACHE_FILE_LOCATION,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         verbose: bool = False,
