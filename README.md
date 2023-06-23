@@ -39,18 +39,18 @@ auto_df.show(n=5)
 
 ### Plot
 ```python
-auto_df.llm.plot()
+auto_df.ai.plot()
 ```
 ![2022 USA national auto sales by brand](docs/_static/auto_sales.png)
 
 To plot with an instruction:
 ```python
-auto_df.llm.plot("pie chart for US sales market shares, show the top 5 brands and the sum of others")
+auto_df.ai.plot("pie chart for US sales market shares, show the top 5 brands and the sum of others")
 ```
 ![2022 USA national auto sales_market_share by brand](docs/_static/auto_sales_pie_char.png)
 ### DataFrame Transformation
 ```python
-auto_top_growth_df=auto_df.llm.transform("top brand with the highest growth")
+auto_top_growth_df=auto_df.ai.transform("top brand with the highest growth")
 auto_top_growth_df.show()
 ```
 | brand    | us_sales_2022 | sales_change_vs_2021 |
@@ -59,14 +59,14 @@ auto_top_growth_df.show()
 
 ### DataFrame Explanation
 ```python
-auto_top_growth_df.llm.explain()
+auto_top_growth_df.ai.explain()
 ```
 
 > In summary, this dataframe is retrieving the brand with the highest sales change in 2022 compared to 2021. It presents the results sorted by sales change in descending order and only returns the top result.
 
 ### DataFrame Attribute Verification
 ```python
-auto_top_growth_df.llm.verify("expect sales change percentage to be between -100 to 100")
+auto_top_growth_df.ai.verify("expect sales change percentage to be between -100 to 100")
 ```
 
 > result: True
@@ -98,7 +98,7 @@ The SparkAI supports a simple in-memory and persistent cache system. It keeps an
 spark_ai.commit()
 ```
 
-Refer to [example.ipynb](https://github.com/databrickslabs/spark-llm/blob/master/examples/example.ipynb) for more detailed usage examples.
+Refer to [example.ipynb](https://github.com/databrickslabs/pyspark-ai/blob/master/examples/example.ipynb) for more detailed usage examples.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
