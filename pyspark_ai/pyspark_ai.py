@@ -25,7 +25,7 @@ from pyspark_ai.prompt import (
     UDF_PROMPT,
 )
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
-from pyspark_ai.llm_utils import LLMUtils
+from pyspark_ai.ai_utils import AIUtils
 
 
 class SparkAI:
@@ -49,7 +49,7 @@ class SparkAI:
         verbose: bool = False,
     ) -> None:
         """
-        Initialize the SparkLLMAssistant object with the provided parameters.
+        Initialize the SparkAI object with the provided parameters.
 
         :param llm: LLM instance for selecting web search result
                                  and writing the ingestion SQL query.
@@ -373,9 +373,9 @@ class SparkAI:
 
     def activate(self):
         """
-        Activates LLM utility functions for Spark DataFrame.
+        Activates AI utility functions for Spark DataFrame.
         """
-        DataFrame.llm = LLMUtils(self)
+        DataFrame.ai = AIUtils(self)
 
     def commit(self):
         """

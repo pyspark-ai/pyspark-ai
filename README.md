@@ -11,7 +11,7 @@ Python is ... the new byte code.
 ## Installation
 
 ```bash
-pip install spark-llm
+pip install pyspark-ai
 ```
 
 ## Usage
@@ -20,13 +20,13 @@ pip install spark-llm
 ```python
 from pyspark_ai import SparkAI
 
-assistant = SparkAI()
-assistant.activate()  # active partial functions for Spark DataFrame
+spark_ai = SparkAI()
+spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
 
 ### Data Ingestion
 ```python
-auto_df = assistant.create_df("2022 USA national auto sales by brand")
+auto_df = spark_ai.create_df("2022 USA national auto sales by brand")
 auto_df.show(n=5)
 ```
 | rank | brand     | us_sales_2022 | sales_change_vs_2021 |
@@ -73,7 +73,7 @@ auto_top_growth_df.llm.verify("expect sales change percentage to be between -100
 
 ### UDF Generation
 ```python
-@assistant.udf
+@spark_ai.udf
 def previous_years_sales(brand: str, current_year_sale: int, sales_change_percentage: float) -> int:
     """Calculate previous years sales from sales change percentage"""
     ...
@@ -93,9 +93,9 @@ spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_ch
 | Hyundai       |    739045|
 
 ### Cache
-The SparkLLMAssistant supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache, which gets updated for LLM and web search results. The staging cache can be persisted through the commit() method. Cache lookup is always performed on both in-memory staging cache and persistent cache.
+The SparkAI supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache, which gets updated for LLM and web search results. The staging cache can be persisted through the commit() method. Cache lookup is always performed on both in-memory staging cache and persistent cache.
 ```python
-assistant.commit()
+spark_ai.commit()
 ```
 
 Refer to [example.ipynb](https://github.com/databrickslabs/spark-llm/blob/master/examples/example.ipynb) for more detailed usage examples.
