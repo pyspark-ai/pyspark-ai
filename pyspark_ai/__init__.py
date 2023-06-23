@@ -1,5 +1,5 @@
 """LLM Assistant for Apache Spark"""
 
-from pyspark_ai.spark_llm_assistant import SparkLLMAssistant
+from pyspark_ai.pyspark_ai import SparkAI
 
-__all__ = ["SparkLLMAssistant"]
+__all__ = ["SparkAI"]

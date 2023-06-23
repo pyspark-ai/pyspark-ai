@@ -1,6 +1,5 @@
 import re
-import types
-from functools import partialmethod
+
 from typing import Callable, Optional, List
 from urllib.parse import urlparse
 
@@ -29,7 +28,7 @@ from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.llm_utils import LLMUtils
 
 
-class SparkLLMAssistant:
+class SparkAI:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
         " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
