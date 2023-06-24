@@ -25,8 +25,17 @@ spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
 
 ### Data Ingestion
+If you have [set up the Google Python client](https://developers.google.com/docs/api/quickstart/python), you can ingest data via search engine:
 ```python
 auto_df = spark_ai.create_df("2022 USA national auto sales by brand")
+```
+Otherwise, you can ingest data via URL:
+```python
+auto_df = spark_ai.create_df("https://www.carpro.com/blog/full-year-2022-national-auto-sales-by-brand")
+```
+
+Take a look at the data:
+```python
 auto_df.show(n=5)
 ```
 | rank | brand     | us_sales_2022 | sales_change_vs_2021 |
@@ -50,7 +59,7 @@ auto_df.ai.plot("pie chart for US sales market shares, show the top 5 brands and
 ![2022 USA national auto sales_market_share by brand](docs/_static/auto_sales_pie_char.png)
 ### DataFrame Transformation
 ```python
-auto_top_growth_df=auto_df.ai.transform("top brand with the highest growth")
+auto_top_growth_df=auto_df.ai.transform("brand with the highest growth")
 auto_top_growth_df.show()
 ```
 | brand    | us_sales_2022 | sales_change_vs_2021 |
