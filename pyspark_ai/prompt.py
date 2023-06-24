@@ -126,9 +126,10 @@ The output columns of `df`:
 And an explanation of `df`: {explain}
 
 Write python code to visualize the result of `df` using plotly.
-Your code should NOT include the method 'append'. 
+Your code must NOT include the method 'append'. 
 There is no need to install any package with pip. 
 Display the plot directly, instead of saving into an HTML.
+
 Ensure that your code is correct.
 {instruction}
 """

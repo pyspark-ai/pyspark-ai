@@ -284,7 +284,7 @@ class SparkAI:
                 page_content = self._cache.lookup(key=url)
             else:
                 page_content = soup.get_text()
-                self._cache.update(key=url, value=page_content)
+                self._cache.update(key=url, val=page_content)
         
         # If the input is a URL link, use the title of web page as the dataset's description.
         if is_url:
