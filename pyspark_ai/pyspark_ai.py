@@ -277,11 +277,20 @@ class SparkAI:
             return
 
         soup = BeautifulSoup(response.text, "html.parser")
+        
+        # add url and page content to cache
+        if cache:
+            if self._cache.lookup(key=url):
+                page_content = self._cache.lookup(key=url)
+            else:
+                page_content = soup.get_text()
+                self._cache.update(key=url, val=page_content)
+        
         # If the input is a URL link, use the title of web page as the dataset's description.
         if is_url:
             desc = soup.title.string
         return self._create_dataframe_with_llm(
-            soup.get_text(), desc, columns, cache
+            page_content, desc, columns, cache
         )
 
     def transform_df(
