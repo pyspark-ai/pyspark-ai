@@ -1,3 +1,5 @@
+import contextlib
+import io
 import os
 import re
 import pandas as pd  # noqa: F401
@@ -234,8 +236,31 @@ class SparkAI:
 
         return trimmed_plan
 
+    @staticmethod
+    def _parse_explain_string(df: DataFrame) -> str:
+        """
+        Helper function to parse the content of the extended explain
+        string to extract the analyzed logical plan. As Spark does not provide
+        access to the logical plane without accessing the query execution object
+        directly, the value is extracted from the explain text representation.
+
+        :param df: The dataframe to extract the logical plan from.
+        :return: The analyzed logical plan.
+        """
+        with contextlib.redirect_stdout(io.StringIO()) as f:
+            df.explain(extended=True)
+        explain = f.getvalue()
+        splitted = explain.split("\n")
+        # The two index operations will fail if Spark changes the textual
+        # plan representation.
+        begin = splitted.index("== Analyzed Logical Plan ==")
+        end = splitted.index("== Optimized Logical Plan ==")
+        # The analyzed logical plan starts two lines after the section marker.
+        # The first line is the output schema.
+        return "\n".join(splitted[begin + 2:end])
+
     def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
-        raw_analyzed_str = df._jdf.queryExecution().analyzed().toString()
+        raw_analyzed_str = self._parse_explain_string(df)
         tags = self._get_tags(cache)
         return self._explain_chain.run(
             tags=tags, input=self._trim_hash_id(raw_analyzed_str)
@@ -277,7 +302,7 @@ class SparkAI:
             return
 
         soup = BeautifulSoup(response.text, "html.parser")
-        
+
         # add url and page content to cache
         if cache:
             if self._cache.lookup(key=url):
@@ -285,7 +310,7 @@ class SparkAI:
             else:
                 page_content = soup.get_text()
                 self._cache.update(key=url, val=page_content)
-        
+
         # If the input is a URL link, use the title of web page as the dataset's description.
         if is_url:
             desc = soup.title.string
@@ -397,6 +422,9 @@ class SparkAI:
         Activates AI utility functions for Spark DataFrame.
         """
         DataFrame.ai = AIUtils(self)
+        # Patch the Spark Connect DataFrame as well.
+        from pyspark.sql.connect.dataframe import DataFrame as CDataFrame
+        CDataFrame.ai = AIUtils(self)
 
     def commit(self):
         """
