@@ -50,7 +50,7 @@ auto_df.ai.plot("pie chart for US sales market shares, show the top 5 brands and
 ![2022 USA national auto sales_market_share by brand](docs/_static/auto_sales_pie_char.png)
 ### DataFrame Transformation
 ```python
-auto_top_growth_df=auto_df.ai.transform("top brand with the highest growth")
+auto_top_growth_df=auto_df.ai.transform("brand with the highest growth")
 auto_top_growth_df.show()
 ```
 | brand    | us_sales_2022 | sales_change_vs_2021 |
