@@ -183,5 +183,15 @@ class CacheRetrievalTestCase(SparkTestCase):
         self.assertEqual(udf1("test"), udf2("test"))
 
 
+class SparkAnalysisTest(SparkTestCase):
+
+    def test_analysis_handling(self):
+        self.assistant = SparkAI()
+        df = self.spark.range(100).groupBy("id").count()
+        left = self.assistant._parse_explain_string(df)
+        right = df._jdf.queryExecution().analyzed().toString()
+        self.assertEqual(left, right)
+
+
 if __name__ == "__main__":
     unittest.main()
