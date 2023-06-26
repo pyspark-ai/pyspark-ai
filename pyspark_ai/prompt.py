@@ -23,7 +23,8 @@ I got the following answer from a web page:
 ```
 {web_content}
 ```
-Now help me write a SQL query to store the answer into a temp view.
+Now help me write a SQL query to store the answer into a temp view. 
+Give each column a clearly descriptive name (no abbreviations).
 Here is an example of how to store data into a temp view:
 ```
 CREATE OR REPLACE TEMP VIEW movies AS SELECT * FROM VALUES('Citizen Kane', 1941), ('Schindler\'s List', 1993) AS v1(title, year)
@@ -42,7 +43,7 @@ Given a Spark temp view `{view_name}` with the following columns:
 {columns}
 ```
 Write a Spark SQL query to retrieve: {desc}
-The answer MUST contain query only.
+The answer MUST contain query only. Ensure your answer is correct.
 """
 
 TRANSFORM_PROMPT = PromptTemplate(
@@ -117,18 +118,18 @@ EXPLAIN_DF_PROMPT = FewShotPromptTemplate(
 
 PLOT_PROMPT_TEMPLATE = """
 You are an Apache Spark SQL expert programmer.
+It is forbidden to include old deprecated APIs in your code.
+For example, you will not use the pandas method "append" because it is deprecated.
 
-Given a pyspark dataframe `df`.
-
-The output columns of `df`:
+Given a pyspark dataframe `df`, with the output columns:
 {columns}
 
 And an explanation of `df`: {explain}
 
-Write python code to visualize the result of `df` using plotly.
-Your code must NOT include the method 'append'. 
-There is no need to install any package with pip. 
+Write Python code to visualize the result of `df` using plotly. Your code may NOT call "append" on any pandas dataframe.
+There is no need to install any package with pip. Do include any necessary import statements.
 Display the plot directly, instead of saving into an HTML.
+Remember to ensure that your output does NOT include "append" anywhere.
 
 Ensure that your code is correct.
 {instruction}
