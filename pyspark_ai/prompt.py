@@ -146,7 +146,7 @@ Your generated function should take 1 parameter, df, and the return type should 
 You will call the function, passing in df as the parameter, and return the output (True/False).
 
 In total, your output must follow the format below, exactly (no explanation words):
-1. function definition f, in Python
+1. function definition f, in Python (Do NOT surround the function definition with quotes)
 2. 1 blank new line
 3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
 
@@ -162,7 +162,7 @@ df = DataFrame[name: string, age: int]
 desc = "expect 5 columns"
 
 Output:
-"def has_5_columns(df) -> bool:
+def has_5_columns(df) -> bool:
     # Get the number of columns in the DataFrame
     num_columns = len(df.columns)
 
@@ -172,7 +172,7 @@ Output:
     else:
         return False
 
-result = has_5_columns(df)"
+result = has_5_columns(df)
 
 Here is your input df: {df}
 Here is your input description: {desc}
@@ -191,7 +191,7 @@ Given 1) input arguments, 2) a description of the udf functionality,
 3) the udf return type, and 4) the udf function name, 
 generate and return a callable udf.
         
-Return ONLY the callable resulting udf function (no explanation words). 
+Return ONLY the callable resulting udf function (no explanation words).
 Include any necessary import statements INSIDE the function definition.
 For example:
 def gen_random():
