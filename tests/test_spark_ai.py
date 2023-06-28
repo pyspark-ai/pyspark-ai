@@ -144,9 +144,10 @@ class SparkTestCase(unittest.TestCase):
     def tearDownClass(cls):
         cls.spark.stop()
 
+
 class CacheRetrievalTestCase(SparkTestCase):
     def setUp(self):
-        self.spark_ai = SparkAI(cache_file_location="tests/test_cache.json")
+        self.spark_ai = SparkAI(cache_file_location="test_cache.json")
         self.languages_df1 = self.spark_ai.create_df("top 5 most popular programming languages 2022")
         self.spark_ai.commit()
 
