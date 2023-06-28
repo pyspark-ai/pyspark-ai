@@ -10,15 +10,15 @@ from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark.sql import SparkSession
 
 
-class SparkLLMAssistantInitializationTestCase(unittest.TestCase):
-    """Test cases for SparkLLMAssistant initialization."""
+class SparkAIInitializationTestCase(unittest.TestCase):
+    """Test cases for SparkAI initialization."""
 
     def setUp(self):
         self.llm_mock = MagicMock(spec=BaseLanguageModel)
         self.spark_session_mock = MagicMock(spec=SparkSession)
         self.encoding_mock = MagicMock(spec=Encoding)
         self.web_search_tool_mock = MagicMock(spec=SearchToolWithCache.search)
-        self.assistant = SparkAI(
+        self.spark_ai = SparkAI(
             llm=self.llm_mock,
             web_search_tool=self.web_search_tool_mock,
             spark_session=self.spark_session_mock,
@@ -28,32 +28,32 @@ class SparkLLMAssistantInitializationTestCase(unittest.TestCase):
 
     def test_initialization_with_default_values(self):
         """Tests if the class initializes correctly with default values."""
-        self.assertEqual(self.assistant._spark, self.spark_session_mock)
-        self.assertEqual(self.assistant._llm, self.llm_mock)
+        self.assertEqual(self.spark_ai._spark, self.spark_session_mock)
+        self.assertEqual(self.spark_ai._llm, self.llm_mock)
         self.assertEqual(
-            self.assistant._web_search_tool, self.web_search_tool_mock
+            self.spark_ai._web_search_tool, self.web_search_tool_mock
         )
-        self.assertEqual(self.assistant._encoding, self.encoding_mock)
-        self.assertEqual(self.assistant._max_tokens_of_web_content, 3000)
+        self.assertEqual(self.spark_ai._encoding, self.encoding_mock)
+        self.assertEqual(self.spark_ai._max_tokens_of_web_content, 3000)
 
 
-class SparkLLMAssistantTrimTextTestCase(unittest.TestCase):
-    """Test cases for the _trim_text_from_end method of the SparkLLMAssistant."""
+class SparkAITrimTextTestCase(unittest.TestCase):
+    """Test cases for the _trim_text_from_end method of the SparkAI."""
 
     def setUp(self):
         self.llm_mock = MagicMock(spec=BaseLanguageModel)
-        self.assistant = SparkAI(llm=self.llm_mock)
+        self.spark_ai = SparkAI(llm=self.llm_mock)
 
     def test_trim_text_from_end_with_text_shorter_than_max_tokens(self):
         """Tests if the function correctly returns the same text when it's shorter than the max token limit."""
         text = "This is a text"
-        result = self.assistant._trim_text_from_end(text, max_tokens=10)
+        result = self.spark_ai._trim_text_from_end(text, max_tokens=10)
         self.assertEqual(result, text)
 
     def test_trim_text_from_end_with_text_longer_than_max_tokens(self):
         """Tests if the function correctly trims text to the max token limit."""
         text = "This is a longer text"
-        result = self.assistant._trim_text_from_end(text, max_tokens=2)
+        result = self.spark_ai._trim_text_from_end(text, max_tokens=2)
         self.assertEqual(result, "This is")
 
 
@@ -144,39 +144,40 @@ class SparkTestCase(unittest.TestCase):
     def tearDownClass(cls):
         cls.spark.stop()
 
+
 class CacheRetrievalTestCase(SparkTestCase):
     def setUp(self):
-        self.assistant = SparkAI(cache_file_location="tests/test_cache.json")
-        self.languages_df1 = self.assistant.create_df("top 5 most popular programming languages 2022")
-        self.assistant.commit()
+        self.spark_ai = SparkAI(cache_file_location="test_cache.json")
+        self.languages_df1 = self.spark_ai.create_df("top 5 most popular programming languages 2022")
+        self.spark_ai.commit()
 
     def test_create_df(self):
-        languages_df2 = self.assistant.create_df("top 5 most popular programming languages 2022")
+        languages_df2 = self.spark_ai.create_df("top 5 most popular programming languages 2022")
 
         assert_df_equality(self.languages_df1, languages_df2)
 
     def test_transform_df(self):
-        transform_df1 = self.assistant.transform_df(self.languages_df1, "alphabetical order by programming language")
-        self.assistant.commit()
-        transform_df2 = self.assistant.transform_df(self.languages_df1, "alphabetical order by programming language")
+        transform_df1 = self.spark_ai.transform_df(self.languages_df1, "alphabetical order by programming language")
+        self.spark_ai.commit()
+        transform_df2 = self.spark_ai.transform_df(self.languages_df1, "alphabetical order by programming language")
 
         assert_df_equality(transform_df1, transform_df2)
 
     def test_explain_df(self):
-        explain1 = self.assistant.explain_df(self.languages_df1)
-        self.assistant.commit()
-        explain2 = self.assistant.explain_df(self.languages_df1)
+        explain1 = self.spark_ai.explain_df(self.languages_df1)
+        self.spark_ai.commit()
+        explain2 = self.spark_ai.explain_df(self.languages_df1)
 
         self.assertEqual(explain1, explain2)
 
     def test_udf(self):
-        @self.assistant.udf
+        @self.spark_ai.udf
         def udf1(s: str) -> str:
             """reverse letters in string s"""
 
-        self.assistant.commit()
+        self.spark_ai.commit()
 
-        @self.assistant.udf
+        @self.spark_ai.udf
         def udf2(s: str) -> str:
             """reverse letters in string s"""
 
@@ -186,9 +187,9 @@ class CacheRetrievalTestCase(SparkTestCase):
 class SparkAnalysisTest(SparkTestCase):
 
     def test_analysis_handling(self):
-        self.assistant = SparkAI()
+        self.spark_ai = SparkAI()
         df = self.spark.range(100).groupBy("id").count()
-        left = self.assistant._parse_explain_string(df)
+        left = self.spark_ai._parse_explain_string(df)
         right = df._jdf.queryExecution().analyzed().toString()
         self.assertEqual(left, right)
 
