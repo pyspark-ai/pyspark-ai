@@ -42,7 +42,7 @@ class SparkAI:
 
     def __init__(
         self,
-        llm: BaseLanguageModel = ChatOpenAI(model_name='gpt-4', temperature=0),
+        llm: Optional[BaseLanguageModel] = None,
         web_search_tool: Optional[Callable[[str], str]] = None,
         spark_session: Optional[SparkSession] = None,
         enable_cache: bool = True,
@@ -64,6 +64,8 @@ class SparkAI:
         :param max_tokens_of_web_content: maximum tokens of web content after encoding
         """
         self._spark = spark_session or SparkSession.builder.getOrCreate()
+        if llm is None:
+            llm = ChatOpenAI(model_name='gpt-4', temperature=0)
         self._llm = llm
         self._web_search_tool = web_search_tool or self._default_web_search_tool
         if enable_cache:
