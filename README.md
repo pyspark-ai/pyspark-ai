@@ -14,6 +14,15 @@ Python is ... the new byte code.
 pip install pyspark-ai
 ```
 
+## Configuring OpenAI LLMs
+As of June 2023, our extensive testing suggests the most effective utilization with the English SDK and GPT-4.
+
+To use OpenAI's Language Learning Models (LLMs), you can set your OpenAI secret key as the `OPENAI_API_KEY` environment variable. This key can be found in your [OpenAI account](https://platform.openai.com/account/api-keys). Example:
+```bash
+export OPENAI_API_KEY='sk-...'
+```
+By default, the `SparkAI` instances will use the GPT-4 model. However, you're encouraged to experiment with creating and implementing other LLMs, which can be passed during the initialization of `SparkAI` instances for various use-cases.
+
 ## Usage
 ### Initialization
 
