@@ -1,6 +1,6 @@
 <div align="center">
 <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/1097932/249671627-a2374536-1a7c-41ef-bdf8-efdf4d840b7b.svg" width="260" height="200" alt="English SDK for Apache Spark">
-<h2 style="margin-top: -40px;">
+<h2 style="margin-top: -60px;">
 English is the new programming language;<br />
 Generative AI is the new compiler;<br />
 Python is ... the new byte code.
