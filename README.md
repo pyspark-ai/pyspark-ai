@@ -1,7 +1,6 @@
-# English SDK for Apache Spark
-
 <div align="center">
-<h2>
+<img src="https://raw.githubusercontent.com/databrickslabs/pyspark-ai/master/docs/_static/english-sdk-spark.svg" width="260" height="200" alt="English SDK for Apache Spark">
+<h2 style="margin-top: -40px;">
 English is the new programming language;<br />
 Generative AI is the new compiler;<br />
 Python is ... the new byte code.
