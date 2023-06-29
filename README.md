@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://raw.githubusercontent.com/databrickslabs/pyspark-ai/master/docs/_static/english-sdk-spark.svg" width="260" height="200" alt="English SDK for Apache Spark">
+<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/1097932/249671627-a2374536-1a7c-41ef-bdf8-efdf4d840b7b.svg" width="260" height="200" alt="English SDK for Apache Spark">
 <h2 style="margin-top: -40px;">
 English is the new programming language;<br />
 Generative AI is the new compiler;<br />
