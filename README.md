@@ -1,6 +1,6 @@
-# English SDK for Apache Spark
-
 <div align="center">
+
+![English SDK for Apache Spark](./docs/_static/english-sdk-spark.svg)
 <h2>
 English is the new programming language;<br />
 Generative AI is the new compiler;<br />
