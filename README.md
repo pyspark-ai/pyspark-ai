@@ -21,7 +21,7 @@ To use OpenAI's Language Learning Models (LLMs), you can set your OpenAI secret 
 ```bash
 export OPENAI_API_KEY='sk-...'
 ```
-By default, the `SparkAI` instances will use the GPT-4 model. However, you're encouraged to experiment with creating and implementing other LLMs, which can be passed during the initialization of `SparkAI` instances for various use-cases.
+By default, the `SparkAI` instances will use the GPT 3.5 (gpt-3.5-turbo). However, you're encouraged to experiment with creating and implementing other LLMs, which can be passed during the initialization of `SparkAI` instances for various use-cases.
 
 ## Usage
 ### Initialization
