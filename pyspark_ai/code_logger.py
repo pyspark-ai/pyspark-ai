@@ -19,9 +19,10 @@ class CodeLogger:
     def __init__(self, name):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setFormatter(CustomFormatter("%(message)s"))  # output only the message
-        self.logger.addHandler(handler)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler(sys.stdout)
+            handler.setFormatter(CustomFormatter("%(message)s"))  # output only the message
+            self.logger.addHandler(handler)
 
     @staticmethod
     def colorize_code(code, language):
