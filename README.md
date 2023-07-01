@@ -27,10 +27,18 @@ By default, the `SparkAI` instances will use the GPT-4 model. However, you're en
 ### Initialization
 
 ```python
+from langchain.chat_models import ChatOpenAI
 from pyspark_ai import SparkAI
 
-spark_ai = SparkAI()
-spark_ai.activate()  # active partial functions for Spark DataFrame
+# Initialize ChatOpenAI with 'gpt-4'
+# If 'gpt-4' is unavailable, use 'gpt-3.5-turbo' (might lower output quality)
+llm = ChatOpenAI(model_name='gpt-4', temperature=0)
+
+# Initialize SparkAI with the ChatOpenAI model
+spark_ai = SparkAI(llm=llm, verbose=True)
+
+# Activate partial functions for Spark DataFrame
+spark_ai.activate()
 ```
 
 ### Data Ingestion
