@@ -30,7 +30,6 @@ By default, the `SparkAI` instances will use the GPT-4 model. However, you're en
 from langchain.chat_models import ChatOpenAI
 from pyspark_ai import SparkAI
 
-# Initialize ChatOpenAI with 'gpt-4'
 # If 'gpt-4' is unavailable, use 'gpt-3.5-turbo' (might lower output quality)
 llm = ChatOpenAI(model_name='gpt-4', temperature=0)
 
