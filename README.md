@@ -1,12 +1,15 @@
 <div align="center">
 
 ![English SDK for Apache Spark](./docs/_static/english-sdk-spark.svg)
-<h2>
-English is the new programming language;<br />
-Generative AI is the new compiler;<br />
-Python is ... the new byte code.
-</h2>
 </div>
+
+## Introduction
+The English SDK for Apache Spark is an extremely simple yet powerful tool. It takes English instructions and compile them into PySpark objects like DataFrames.
+Its goal is to make Spark more user-friendly and accessible, allowing you to focus your efforts on extracting insights from your data.
+
+For a more comprehensive introduction and background to our project, we have the following resources:
+- [Blog Post](https://www.databricks.com/blog/introducing-english-new-programming-language-apache-spark): A detailed walkthrough of our project.
+- [Demo Video](https://www.youtube.com/watch?v=yj7XlTB1Jvc&t=511s): DATA+AI summit announcement video with demo.
 
 ## Installation
 
@@ -30,7 +33,6 @@ By default, the `SparkAI` instances will use the GPT-4 model. However, you're en
 from langchain.chat_models import ChatOpenAI
 from pyspark_ai import SparkAI
 
-# Initialize ChatOpenAI with 'gpt-4'
 # If 'gpt-4' is unavailable, use 'gpt-3.5-turbo' (might lower output quality)
 llm = ChatOpenAI(model_name='gpt-4', temperature=0)
 
