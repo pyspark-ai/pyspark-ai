@@ -9,7 +9,7 @@ Its goal is to make Spark more user-friendly and accessible, allowing you to foc
 
 For a more comprehensive introduction and background to our project, we have the following resources:
 - [Blog Post](https://www.databricks.com/blog/introducing-english-new-programming-language-apache-spark): A detailed walkthrough of our project.
-- [Demo Video](https://www.youtube.com/watch?v=yj7XlTB1Jvc&t=511s): DATA+AI summit announcement video with demo.
+- [Demo Video](https://www.youtube.com/watch?v=yj7XlTB1Jvc&t=511s): 2023 Data + AI summit announcement video with demo.
 
 ## Installation
 
