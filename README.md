@@ -19,7 +19,7 @@ pip install pyspark-ai
 ```
 
 ## Configuring OpenAI LLMs
-As of June 2023, our extensive testing suggests the most effective utilization with the English SDK and GPT-4.
+As of June 2023, our extensive testing suggests that the most effective utilization is with the English SDK and GPT-4.
 
 To use OpenAI's Language Learning Models (LLMs), you can set your OpenAI secret key as the `OPENAI_API_KEY` environment variable. This key can be found in your [OpenAI account](https://platform.openai.com/account/api-keys). Example:
 ```bash
