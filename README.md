@@ -19,7 +19,7 @@ pip install pyspark-ai
 ```
 
 ## Configuring OpenAI LLMs
-As of June 2023, our extensive testing suggests that the most effective utilization is with the English SDK and GPT-4.
+As of July 2023, we have found that the GPT-4 works optimally with the English SDK. This superior AI model is readily accessible to all developers through the OpenAI API.
 
 To use OpenAI's Language Learning Models (LLMs), you can set your OpenAI secret key as the `OPENAI_API_KEY` environment variable. This key can be found in your [OpenAI account](https://platform.openai.com/account/api-keys). Example:
 ```bash
@@ -31,17 +31,10 @@ By default, the `SparkAI` instances will use the GPT-4 model. However, you're en
 ### Initialization
 
 ```python
-from langchain.chat_models import ChatOpenAI
 from pyspark_ai import SparkAI
 
-# If 'gpt-4' is unavailable, use 'gpt-3.5-turbo' (might lower output quality)
-llm = ChatOpenAI(model_name='gpt-4', temperature=0)
-
-# Initialize SparkAI with the ChatOpenAI model
-spark_ai = SparkAI(llm=llm, verbose=True)
-
-# Activate partial functions for Spark DataFrame
-spark_ai.activate()
+spark_ai = SparkAI()
+spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
 
 ### Data Ingestion
