@@ -35,22 +35,22 @@ from pyspark_ai.ai_utils import AIUtils
 class SparkAI:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-        " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                      " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
     }
 
     def __init__(
-        self,
-        llm: Optional[BaseLanguageModel] = None,
-        web_search_tool: Optional[Callable[[str], str]] = None,
-        spark_session: Optional[SparkSession] = None,
-        enable_cache: bool = True,
-        cache_file_format: str = "json",
-        cache_file_location: Optional[str] = None,
-        encoding: Optional[Encoding] = None,
-        max_tokens_of_web_content: int = 3000,
-        verbose: bool = False,
+            self,
+            llm: Optional[BaseLanguageModel] = None,
+            web_search_tool: Optional[Callable[[str], str]] = None,
+            spark_session: Optional[SparkSession] = None,
+            enable_cache: bool = True,
+            cache_file_format: str = "json",
+            cache_file_location: Optional[str] = None,
+            encoding: Optional[Encoding] = None,
+            max_tokens_of_web_content: int = 3000,
+            verbose: bool = False,
     ) -> None:
         """
         Initialize the SparkAI object with the provided parameters.
@@ -188,7 +188,7 @@ class SparkAI:
         return self._encoding.decode(tokens)
 
     def _get_url_from_search_tool(
-        self, desc: str, columns: Optional[List[str]], cache: bool
+            self, desc: str, columns: Optional[List[str]], cache: bool
     ) -> str:
         search_result = self._web_search_tool(desc)
         search_columns_hint = self._generate_search_prompt(columns)
@@ -202,7 +202,7 @@ class SparkAI:
         )
 
     def _create_dataframe_with_llm(
-        self, text: str, desc: str, columns: Optional[List[str]], cache: bool
+            self, text: str, desc: str, columns: Optional[List[str]], cache: bool
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
@@ -274,7 +274,7 @@ class SparkAI:
         return None
 
     def create_df(
-        self, desc: str, columns: Optional[List[str]] = None, cache: bool = True
+            self, desc: str, columns: Optional[List[str]] = None, cache: bool = True
     ) -> DataFrame:
         """
         Create a Spark DataFrame by querying an LLM from web search result.
@@ -321,7 +321,7 @@ class SparkAI:
         )
 
     def transform_df(
-        self, df: DataFrame, desc: str, cache: bool = True
+            self, df: DataFrame, desc: str, cache: bool = True
     ) -> DataFrame:
         """
         This method applies a transformation to a provided Spark DataFrame, the specifics of which are determined by the 'desc' parameter.
@@ -362,7 +362,7 @@ class SparkAI:
             return explain_result
 
     def plot_df(
-        self, df: DataFrame, desc: Optional[str] = None, cache: bool = True
+            self, df: DataFrame, desc: Optional[str] = None, cache: bool = True
     ) -> None:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
@@ -425,8 +425,12 @@ class SparkAI:
         """
         DataFrame.ai = AIUtils(self)
         # Patch the Spark Connect DataFrame as well.
-        from pyspark.sql.connect.dataframe import DataFrame as CDataFrame
-        CDataFrame.ai = AIUtils(self)
+        try:
+            from pyspark.sql.connect.dataframe import DataFrame as CDataFrame
+            CDataFrame.ai = AIUtils(self)
+        except ImportError:
+            self.log("The pyspark.sql.connect.dataframe module could not be imported. "
+                     "This might be due to your PySpark version being below 3.4.")
 
     def commit(self):
         """
