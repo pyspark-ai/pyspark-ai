@@ -24,6 +24,6 @@ jobs:
         with:
           version: 1.5.1
       - name: Setup
-        run: poetry install --no-dev
+        run: poetry install
       - name: Run tests
         run: poetry run python -u -m unittest discover
