@@ -134,6 +134,7 @@ class URLTestCase(unittest.TestCase):
 class SparkTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.llm_mock = MagicMock(spec=BaseLanguageModel)
         cls.spark = (SparkSession
                      .builder
                      .master("local[*]")
@@ -145,9 +146,13 @@ class SparkTestCase(unittest.TestCase):
         cls.spark.stop()
 
 
+@unittest.skip("need to mock google search api")
 class CacheRetrievalTestCase(SparkTestCase):
     def setUp(self):
-        self.spark_ai = SparkAI(cache_file_location="test_cache.json")
+        self.spark_ai = SparkAI(
+            llm=self.llm_mock,
+            cache_file_location="test_cache.json"
+        )
         self.languages_df1 = self.spark_ai.create_df("top 5 most popular programming languages 2022")
         self.spark_ai.commit()
 
@@ -187,7 +192,7 @@ class CacheRetrievalTestCase(SparkTestCase):
 class SparkAnalysisTest(SparkTestCase):
 
     def test_analysis_handling(self):
-        self.spark_ai = SparkAI()
+        self.spark_ai = SparkAI(llm=self.llm_mock)
         df = self.spark.range(100).groupBy("id").count()
         left = self.spark_ai._parse_explain_string(df)
         right = df._jdf.queryExecution().analyzed().toString()
