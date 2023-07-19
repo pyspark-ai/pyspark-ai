@@ -146,47 +146,52 @@ class SparkTestCase(unittest.TestCase):
         cls.spark.stop()
 
 
-@unittest.skip("need to mock google search api")
 class CacheRetrievalTestCase(SparkTestCase):
+    # test of cache retrieval works with a pre-populated cache
+
     def setUp(self):
         self.spark_ai = SparkAI(
             llm=self.llm_mock,
-            cache_file_location="test_cache.json"
+            cache_file_location="tests/test_cache.json"
         )
-        self.languages_df1 = self.spark_ai.create_df("top 5 most popular programming languages 2022")
-        self.spark_ai.commit()
+        self.df1 = self.spark_ai.create_df("2022 USA national auto sales by brand")
 
     def test_create_df(self):
-        languages_df2 = self.spark_ai.create_df("top 5 most popular programming languages 2022")
+        df2 = self.spark_ai.create_df("2022 USA national auto sales by brand")
 
-        assert_df_equality(self.languages_df1, languages_df2)
+        assert_df_equality(self.df1, df2)
 
     def test_transform_df(self):
-        transform_df1 = self.spark_ai.transform_df(self.languages_df1, "alphabetical order by programming language")
+        transform_df1 = self.spark_ai.transform_df(self.df1, "brand with the highest growth")
         self.spark_ai.commit()
-        transform_df2 = self.spark_ai.transform_df(self.languages_df1, "alphabetical order by programming language")
+        transform_df2 = self.spark_ai.transform_df(self.df1, "brand with the highest growth")
 
         assert_df_equality(transform_df1, transform_df2)
 
     def test_explain_df(self):
-        explain1 = self.spark_ai.explain_df(self.languages_df1)
+        explain1 = self.spark_ai.explain_df(self.df1)
         self.spark_ai.commit()
-        explain2 = self.spark_ai.explain_df(self.languages_df1)
+        explain2 = self.spark_ai.explain_df(self.df1)
 
         self.assertEqual(explain1, explain2)
 
     def test_udf(self):
         @self.spark_ai.udf
-        def udf1(s: str) -> str:
-            """reverse letters in string s"""
+        def convert_grades1(grade_percent: float) -> str:
+            """Convert the grade percent to a letter grade using standard cutoffs"""
+            ...
 
         self.spark_ai.commit()
 
         @self.spark_ai.udf
-        def udf2(s: str) -> str:
-            """reverse letters in string s"""
+        def convert_grades2(grade_percent: float) -> str:
+            """Convert the grade percent to a letter grade using standard cutoffs"""
+            ...
 
-        self.assertEqual(udf1("test"), udf2("test"))
+        import random
+        grade = random.randint(1, 100)
+
+        self.assertEqual(convert_grades1(grade), convert_grades2(grade))
 
 
 class SparkAnalysisTest(SparkTestCase):
