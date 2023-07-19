@@ -50,7 +50,7 @@ class SparkAI:
             cache_file_location: Optional[str] = None,
             encoding: Optional[Encoding] = None,
             max_tokens_of_web_content: int = 3000,
-            verbose: bool = False,
+            verbose: bool = True,
     ) -> None:
         """
         Initialize the SparkAI object with the provided parameters.
@@ -333,6 +333,8 @@ class SparkAI:
         :return: Returns a new Spark DataFrame that is the result of applying the specified transformation on the input DataFrame.
         """
         temp_view_name = "temp_view_for_transform"
+        create_temp_view_code = CodeLogger.colorize_code(f"df.createOrReplaceTempView(\"{temp_view_name}\")", "python")
+        self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)
         schema_str = self._get_df_schema(df)
         tags = self._get_tags(cache)
