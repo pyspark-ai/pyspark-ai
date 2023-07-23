@@ -1,4 +1,5 @@
 import contextlib
+import hashlib
 import io
 import os
 import re
@@ -26,7 +27,7 @@ from pyspark_ai.prompt import (
     TRANSFORM_PROMPT,
     PLOT_PROMPT,
     VERIFY_PROMPT,
-    UDF_PROMPT,
+    UDF_PROMPT, PYSPARK_TRANSFORM_PROMPT,
 )
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.ai_utils import AIUtils
@@ -94,6 +95,7 @@ class SparkAI:
         self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
         self._transform_chain = self._create_llm_chain(prompt=TRANSFORM_PROMPT)
+        self._pyspark_transform_chain = self._create_llm_chain(prompt=PYSPARK_TRANSFORM_PROMPT)
         self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
@@ -323,7 +325,7 @@ class SparkAI:
         )
 
     def transform_df(
-            self, df: DataFrame, desc: str, cache: bool = True
+            self, df: DataFrame, desc: str, cache: bool = True, language: str = "SQL"
     ) -> DataFrame:
         """
         This method applies a transformation to a provided Spark DataFrame, the specifics of which are determined by the 'desc' parameter.
@@ -331,22 +333,65 @@ class SparkAI:
         :param df: The Spark DataFrame that is to be transformed.
         :param desc: A natural language string that outlines the specific transformation to be applied on the DataFrame.
         :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
+        :param language: One of 'SQL', 'Python'. Determines if the code generatino should be done in Python or SQL.
 
         :return: Returns a new Spark DataFrame that is the result of applying the specified transformation on the input DataFrame.
         """
-        temp_view_name = "temp_view_for_transform"
-        create_temp_view_code = CodeLogger.colorize_code(f"df.createOrReplaceTempView(\"{temp_view_name}\")", "python")
-        self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
-        df.createOrReplaceTempView(temp_view_name)
+        if language not in ("SQL", "Python"):
+            raise ValueError(f"Language must be one of 'Python', 'SQL', was: {language}")
+
+        # Get the schema of the input dataframe
         schema_str = self._get_df_schema(df)
         tags = self._get_tags(cache)
-        llm_result = self._transform_chain.run(
-            tags=tags, view_name=temp_view_name, columns=schema_str, desc=desc
-        )
-        sql_query = self._extract_code_blocks(llm_result)[0]
-        formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
-        self.log(f"SQL query for the transform:\n{formatted_sql_query}")
-        return self._spark.sql(sql_query)
+
+        if language == "SQL":
+            temp_view_name = "temp_view_for_transform"
+            create_temp_view_code = CodeLogger.colorize_code(f"df.createOrReplaceTempView(\"{temp_view_name}\")",
+                                                             "python")
+            self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
+            df.createOrReplaceTempView(temp_view_name)
+            llm_result = self._transform_chain.run(
+                tags=tags, view_name=temp_view_name, columns=schema_str, desc=desc
+            )
+            sql_query = self._extract_code_blocks(llm_result)[0]
+            formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
+            self.log(f"SQL query for the transform:\n{formatted_sql_query}")
+
+            # Create the result and copy the history.
+            rdf = self._spark.sql(sql_query)
+            if hasattr(rdf, "ai"):
+                rdf.ai.push_all(*df.ai.history())
+                rdf.ai.push(desc, llm_result, df)
+            return rdf
+        else: # language == 'Python'
+            # Generate the Python code for the transform.
+            llm_result = self._pyspark_transform_chain.run(
+                tags=tags, columns=schema_str, desc=desc
+            )
+
+            # Log the generated code:
+            python_code = "\n".join(self._extract_code_blocks(llm_result))
+            self.log(f"Python Code for the transform: \n{CodeLogger.colorize_code(python_code, 'python')}")
+
+            # Check that the Python Code does not contain any SparkSession creation logic.
+            if "SparkSession.builder" in python_code:
+                raise ValueError("Generated python code must not contain references to "
+                                 "creating a new SparkSesssion. Refine prompt and retry.")
+
+            # Compile/ Evaluate the code from the LLM answer and check if it passes compilation / evaluation.
+            # In case of exceptions, propagate them upwards.
+            env = {"transform_df": None}
+            try:
+                exec(compile(python_code, "PySpark-CodeGen", "exec"), env)
+            except Exception as e:
+                raise Exception("Could not evaluate Python code", e)
+
+            result = env["transform_df"](df)
+            if hasattr(result, "ai"):
+                result.ai.push_all(df.ai.history())
+                result.ai.push(desc, llm_result, df)
+            return result
+
 
     def explain_df(self, df: DataFrame, cache: bool = True) -> str:
         """
