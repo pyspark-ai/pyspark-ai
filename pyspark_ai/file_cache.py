@@ -153,29 +153,3 @@ class JsonCache(FileCache):
         self.cache = {}
         self.staging_cache = {}
         os.remove(self.filepath)
-
-
-class PythonModuleCache(FileCache):
-    def __init__(self, filepath: str):
-        self.filepath = filepath
-        # If cache file exists, load it into memory.
-        self.cache = {}
-        os.makedirs(self.filepath, exist_ok=True)
-        # Check if there is an __init__.py file
-        with open(os.path.join(filepath, "__init__.py"), "w+") as fid:
-            fid.write()
-
-        # Create an empty staging cache for storing changes before they are committed.
-        self.staging_cache = {}
-
-    def update(self, key: str, value: str) -> None:
-        pass
-
-    def lookup(self, key: str) -> Optional[str]:
-        pass
-
-    def commit_staging_cache(self, staging_cache: Dict[str, str]) -> None:
-        pass
-
-    def clear(self, **kwargs: Any) -> None:
-        pass
