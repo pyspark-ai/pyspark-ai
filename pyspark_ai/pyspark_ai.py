@@ -388,7 +388,7 @@ class SparkAI:
 
             result = env["transform_df"](df)
             if hasattr(result, "ai"):
-                result.ai.push_all(df.ai.history())
+                result.ai.push_all(*df.ai.history())
                 result.ai.push(desc, llm_result, df)
             return result
 

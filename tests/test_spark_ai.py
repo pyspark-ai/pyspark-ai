@@ -231,6 +231,8 @@ class TransformationHistoryTest(SparkTestCase):
                                 cache_file_location="tests/test_cache_history.json")
         self.spark_ai.activate()
 
+    def tearDown(self) -> None:
+        self.spark_ai.commit()
 
     def test_no_history(self) -> None:
         df = self.spark.range(100)
@@ -254,6 +256,23 @@ class TransformationHistoryTest(SparkTestCase):
 
         prompt_two = "add a column with the name y and the value 2"
         df_two = df_one.ai.transform(prompt_two)
+        self.assertEqual(2, len(df_two.ai.history()))
+        self.assertEqual(1, len(df_one.ai.history()))
+
+        element: AIHistoryElement = df_two.ai.history()[0]
+        self.assertEqual(prompt_one, element.prompt)
+
+        element: AIHistoryElement = df_two.ai.history()[1]
+        self.assertEqual(prompt_two, element.prompt)
+
+    def test_add_multiple_history_python(self) -> None:
+        df = self.spark.range(100)
+        prompt_one = "add a column with the name x and the value 1"
+        df_one = df.ai.transform(prompt_one, language="Python")
+        self.assertEqual(1, len(df_one.ai.history()))
+
+        prompt_two = "add a column with the name y and the value 2"
+        df_two = df_one.ai.transform(prompt_two, language="Python")
         self.assertEqual(2, len(df_two.ai.history()))
         self.assertEqual(1, len(df_one.ai.history()))
 

@@ -66,6 +66,8 @@ In addition the generated code must follow adhere to the following requirements:
   * The answer must not contain code outside of the function definition (except imports).
   * The generated code MUST NOT call the generated function.
   * The generated code must not create or use a SparSession but only use the input `df` variable.
+  * Do not provide examples of the usage of the function.
+  * Do not provide more than one code block.
 
 Ensure your answer is correct.
 """
