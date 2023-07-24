@@ -391,6 +391,13 @@ class SparkAI:
         """
         tags = self._get_tags(cache)
         llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
+
+        if "```" in llm_output:
+            llm_output_arr = llm_output.split("```python")
+            llm_output = ""
+            for ele in llm_output_arr:
+                llm_output += ele.split("```")[0]
+
         formatted_code = CodeLogger.colorize_code(llm_output, "python")
         self.log(f"Generated code:\n{formatted_code}")
 
