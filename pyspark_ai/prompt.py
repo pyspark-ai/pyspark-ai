@@ -126,7 +126,8 @@ Given a pyspark dataframe `df`, with the output columns:
 
 And an explanation of `df`: {explain}
 
-Write Python code to visualize the result of `df` using plotly. Your code may NOT call "append" on any pandas dataframe.
+Write Python code to visualize the result of `df` using plotly. Make sure to use the EXACT same column names of `df`.
+Your code may NOT call "append" on any pandas dataframe.
 There is no need to install any package with pip. Do include any necessary import statements.
 Display the plot directly, instead of saving into an HTML.
 Remember to ensure that your output does NOT include "append" anywhere.
