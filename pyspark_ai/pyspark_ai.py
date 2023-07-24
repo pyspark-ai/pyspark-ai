@@ -378,8 +378,11 @@ class SparkAI:
         )
         self.log(response)
         codeblocks = self._extract_code_blocks(response)
-        for code in codeblocks:
-            exec(code)
+        code = "\n".join(codeblocks)
+        try:
+            exec(compile(code, "plot_df-CodeGen", "exec"))
+        except Exception as e:
+            raise Exception("Could not evaluate Python code", e)
 
     def verify_df(self, df: DataFrame, desc: str, cache: bool = True) -> None:
         """
@@ -395,8 +398,10 @@ class SparkAI:
         self.log(f"Generated code:\n{formatted_code}")
 
         locals_ = {}
-        exec(llm_output, {"df": df}, locals_)
-
+        try:
+            exec(compile(llm_output, "verify_df-CodeGen", "exec"), {"df": df}, locals_)
+        except Exception as e:
+            raise Exception("Could not evaluate Python code", e)
         self.log(f"\nResult: {locals_['result']}")
 
     def udf(self, func: Callable) -> Callable:
@@ -419,8 +424,10 @@ class SparkAI:
         self.log(f"Creating following Python UDF:\n{formatted_code}")
 
         locals_ = {}
-        exec(code, globals(), locals_)
-
+        try:
+            exec(compile(code, "udf-CodeGen", "exec"), globals(), locals_)
+        except Exception as e:
+            raise Exception("Could not evaluate Python code", e)
         return locals_[udf_name]
 
     def activate(self):
