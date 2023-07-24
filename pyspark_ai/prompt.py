@@ -150,13 +150,12 @@ In total, your output must follow the format below, exactly (no explanation word
 2. 1 blank new line
 3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
 
-Include any necessary import statements INSIDE the function definition.
-For example:
+Include any necessary import statements INSIDE the function definition, like this:
 def gen_random():
     import random
     return random.randint(0, 10)
 
-For example:
+Your output must follow the format of the example below, exactly:
 Input:
 df = DataFrame[name: string, age: int]
 desc = "expect 5 columns"
