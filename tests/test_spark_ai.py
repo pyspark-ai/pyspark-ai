@@ -3,12 +3,15 @@ from unittest.mock import MagicMock
 
 from chispa.dataframe_comparer import assert_df_equality
 from langchain.base_language import BaseLanguageModel
+from langchain.chat_models import ChatOpenAI
 from tiktoken import Encoding
 
 from pyspark_ai import SparkAI
+from pyspark_ai.ai_utils import AIHistoryElement, AIUtils
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark.sql import SparkSession
 
+import pyspark.sql.functions as F
 
 class SparkAIInitializationTestCase(unittest.TestCase):
     """Test cases for SparkAI initialization."""
@@ -202,6 +205,82 @@ class SparkAnalysisTest(SparkTestCase):
         left = self.spark_ai._parse_explain_string(df)
         right = df._jdf.queryExecution().analyzed().toString()
         self.assertEqual(left, right)
+
+
+class PysparkGenerationTest(SparkTestCase):
+
+    def test_simple_python_code(self):
+        self.spark_ai = SparkAI(ChatOpenAI(model_name="gpt-3.5-turbo"),
+                                verbose=True,
+                                enable_cache=True,
+                                cache_file_location="tests/pyspark_generation_test.json")
+        df = self.spark.range(100)
+        res = self.spark_ai.transform_df(df, "Show the sum of id", cache=True, language='Python')
+
+        expected = df.agg(F.sum("id")).collect()[0][0]
+        actual = res.collect()[0][0]
+        self.assertEqual(expected, actual, f"{res.explain()} should contain the sum over id")
+        self.spark_ai.commit()
+
+
+
+class TransformationHistoryTest(SparkTestCase):
+
+    def setUp(self) -> None:
+        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-3.5-turbo"),
+                                cache_file_location="tests/test_cache_history.json")
+        self.spark_ai.activate()
+
+    def tearDown(self) -> None:
+        self.spark_ai.commit()
+
+    def test_no_history(self) -> None:
+        df = self.spark.range(100)
+        print(type(df.ai))
+        self.assertEqual(0, len(df.ai.history()), "Should have empty history")
+
+    def test_add_history(self) -> None:
+        df = self.spark.range(100)
+        prompt = "add a column with the name x and the value 1"
+        df_one = df.ai.transform(prompt)
+        self.assertEqual(1, len(df_one.ai.history()))
+        element: AIHistoryElement = df_one.ai.history()[0]
+        self.assertEqual(prompt, element.prompt)
+        self.assertEqual(df, element.df)
+
+    def test_add_multiple_history(self) -> None:
+        df = self.spark.range(100)
+        prompt_one = "add a column with the name x and the value 1"
+        df_one = df.ai.transform(prompt_one)
+        self.assertEqual(1, len(df_one.ai.history()))
+
+        prompt_two = "add a column with the name y and the value 2"
+        df_two = df_one.ai.transform(prompt_two)
+        self.assertEqual(2, len(df_two.ai.history()))
+        self.assertEqual(1, len(df_one.ai.history()))
+
+        element: AIHistoryElement = df_two.ai.history()[0]
+        self.assertEqual(prompt_one, element.prompt)
+
+        element: AIHistoryElement = df_two.ai.history()[1]
+        self.assertEqual(prompt_two, element.prompt)
+
+    def test_add_multiple_history_python(self) -> None:
+        df = self.spark.range(100)
+        prompt_one = "add a column with the name x and the value 1"
+        df_one = df.ai.transform(prompt_one, language="Python")
+        self.assertEqual(1, len(df_one.ai.history()))
+
+        prompt_two = "add a column with the name y and the value 2"
+        df_two = df_one.ai.transform(prompt_two, language="Python")
+        self.assertEqual(2, len(df_two.ai.history()))
+        self.assertEqual(1, len(df_one.ai.history()))
+
+        element: AIHistoryElement = df_two.ai.history()[0]
+        self.assertEqual(prompt_one, element.prompt)
+
+        element: AIHistoryElement = df_two.ai.history()[1]
+        self.assertEqual(prompt_two, element.prompt)
 
 
 if __name__ == "__main__":

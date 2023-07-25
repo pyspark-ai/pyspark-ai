@@ -1,6 +1,27 @@
 from pyspark.sql import DataFrame
-from typing import Type, Optional
+from typing import Type, Optional, List, Iterable
 
+class AIHistoryElement:
+
+    def __init__(self, prompt: str, llm_result: str, df: DataFrame) -> None:
+        self._prompt = prompt
+        self._llm_result = llm_result
+        self._df = df
+
+    @property
+    def prompt(self):
+        return self._prompt
+
+    @property
+    def llm_result(self):
+        return self._llm_result
+
+    @property
+    def df(self):
+        return self._df
+
+    def __repr__(self) -> str:
+        return f"<AIHistoryElement prompt: {self._prompt}>"
 
 class AIMethodWrapper:
     """
@@ -20,8 +41,9 @@ class AIMethodWrapper:
         """
         self.spark_ai = spark_ai
         self.df_instance = df_instance
+        self._history: List[AIHistoryElement] = []
 
-    def transform(self, desc: str, cache: bool = True) -> DataFrame:
+    def transform(self, desc: str, cache: bool = True, language: str = 'SQL') -> DataFrame:
         """
         Transform the DataFrame using the given description.
 
@@ -34,7 +56,7 @@ class AIMethodWrapper:
         Returns:
             The transformed DataFrame.
         """
-        return self.spark_ai.transform_df(self.df_instance, desc, cache)
+        return self.spark_ai.transform_df(self.df_instance, desc=desc, cache=cache, language=language)
 
     def explain(self, cache: bool = True) -> str:
         """
@@ -75,6 +97,17 @@ class AIMethodWrapper:
         """
         return self.spark_ai.verify_df(self.df_instance, desc, cache)
 
+    def history(self) -> Iterable[AIHistoryElement]:
+        return self._history
+
+    def push_all(self, *history: AIHistoryElement) -> None:
+        for h in history:
+            self._history.append(h)
+
+    def push(self, prompt: str, llm_result: str, df: DataFrame) -> None:
+        self._history.append(AIHistoryElement(prompt, llm_result, df))
+
+
 
 class AIUtils:
     """
@@ -92,6 +125,7 @@ class AIUtils:
         """
         self.spark_ai = spark_ai
 
+
     def __get__(self, instance: DataFrame, owner: Type[DataFrame]) -> AIMethodWrapper:
         """
         This method is called when the AI utility methods are accessed on a DataFrame instance.
@@ -104,4 +138,21 @@ class AIUtils:
         Returns:
             A new AIMethodWrapper instance.
         """
-        return AIMethodWrapper(self.spark_ai, instance)
+        try:
+            # This will trigger an AttributeError in PySpark, but yield a colum in
+            # Spark Connect.
+            ai = instance._ai
+            try:
+                # Spark Connect specific behavior below:
+                from pyspark.sql.connect.column import Column as CColumn
+                if type(ai) == CColumn:
+                    instance._ai = AIMethodWrapper(self.spark_ai, instance)
+                ai = instance._ai
+            except ImportError as e:
+                print(e)
+                # If Spark Connect is not available, simply ignore this error.
+                pass
+            return ai
+        except AttributeError:
+            instance._ai = AIMethodWrapper(self.spark_ai, instance)
+            return instance._ai

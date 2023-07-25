@@ -50,6 +50,32 @@ TRANSFORM_PROMPT = PromptTemplate(
     input_variables=["view_name", "columns", "desc"], template=TRANSFORM_TEMPLATE
 )
 
+PYSPARK_TEMPLATE = """
+Given a PySpark dataframe with the following schema:
+
+```
+{columns}
+```
+
+Write a Python function called `transform_df` with the input parameter `df` of the type DataFrame that performs the
+following transformation and returns a new dataframe: {desc}
+
+In addition the generated code must follow adhere to the following requirements:
+
+  * The answer code MUST contain one function only.
+  * The answer must not contain code outside of the function definition (except imports).
+  * The generated code MUST NOT call the generated function.
+  * The generated code must not create or use a SparSession but only use the input `df` variable.
+  * Do not provide examples of the usage of the function.
+  * Do not provide more than one code block.
+
+Ensure your answer is correct.
+"""
+
+PYSPARK_TRANSFORM_PROMPT = PromptTemplate(
+    input_variables=["columns", "desc"], template=PYSPARK_TEMPLATE
+)
+
 EXPLAIN_PREFIX = """You are an Apache Spark SQL expert, who can summary what a dataframe retrieves. Given an analyzed 
 query plan of a dataframe, you will 
 1. convert the dataframe to SQL query. Note that an explain output contains plan 
