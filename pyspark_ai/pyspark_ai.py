@@ -395,7 +395,10 @@ class SparkAI:
         tags = self._get_tags(cache)
         llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
 
-        llm_output = self._extract_code_blocks(llm_output)
+        codeblocks = self._extract_code_blocks(llm_output)
+        llm_output = "\n".join(codeblocks)
+
+        self.log(f"LLM Output:\n{llm_output}")
 
         formatted_code = CodeLogger.colorize_code(llm_output, "python")
         self.log(f"Generated code:\n{formatted_code}")

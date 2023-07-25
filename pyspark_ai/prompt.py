@@ -121,15 +121,18 @@ You are an Apache Spark SQL expert programmer.
 It is forbidden to include old deprecated APIs in your code.
 For example, you will not use the pandas method "append" because it is deprecated.
 
-Given a pyspark dataframe `df`, with the output columns:
+Given a pyspark DataFrame `df`, with the output columns:
 {columns}
 
 And an explanation of `df`: {explain}
 
-Write Python code to visualize the result of `df` using plotly. Your code may NOT call "append" on any pandas dataframe.
+Write Python code to visualize the result of `df` using plotly. Make sure to use the exact column names of `df`.
+Your code may NOT contain "append" anywhere. Instead of append, use pd.concat.
 There is no need to install any package with pip. Do include any necessary import statements.
 Display the plot directly, instead of saving into an HTML.
-Remember to ensure that your output does NOT include "append" anywhere.
+Do not use scatter plot to display any kind of percentage data.
+You must import and start your Spark session if you use a Spark DataFrame.
+Remember to ensure that your code does NOT include "append" anywhere, under any circumstance (use pd.concat instead).
 
 Ensure that your code is correct.
 {instruction}
