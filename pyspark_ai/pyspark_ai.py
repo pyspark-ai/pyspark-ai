@@ -2,6 +2,8 @@ import contextlib
 import io
 import os
 import re
+import uuid
+
 import pandas as pd  # noqa: F401
 
 from typing import Callable, Optional, List
@@ -30,6 +32,7 @@ from pyspark_ai.prompt import (
 )
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.ai_utils import AIUtils
+from pyspark_ai.temp_view_utils import random_view_name, replace_view_name
 
 
 class SparkAI:
@@ -213,14 +216,15 @@ class SparkAI:
 
         # Run the LLM chain to get an ingestion SQL query
         tags = self._get_tags(cache)
+        temp_view_name = random_view_name()
         llm_result = self._sql_llm_chain.run(
-            tags=tags, query=desc, web_content=web_content, columns=sql_columns_hint
+            tags=tags, query=desc, web_content=web_content, view_name=temp_view_name, columns=sql_columns_hint
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
+        # The actual view name used in the SQL query may be different from the temp view name because of caching.
+        view_name = self._extract_view_name(sql_query)
         formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
         self.log(f"SQL query for the ingestion:\n{formatted_sql_query}")
-
-        view_name = self._extract_view_name(sql_query)
         self.log(f"Storing data into temp view: {view_name}\n")
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
@@ -260,6 +264,7 @@ class SparkAI:
         # The analyzed logical plan starts two lines after the section marker.
         # The first line is the output schema.
         return "\n".join(splitted[begin + 2:end])
+
 
     def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
         raw_analyzed_str = self._parse_explain_string(df)
@@ -334,7 +339,7 @@ class SparkAI:
 
         :return: Returns a new Spark DataFrame that is the result of applying the specified transformation on the input DataFrame.
         """
-        temp_view_name = "temp_view_for_transform"
+        temp_view_name = random_view_name()
         create_temp_view_code = CodeLogger.colorize_code(f"df.createOrReplaceTempView(\"{temp_view_name}\")", "python")
         self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)
@@ -343,7 +348,9 @@ class SparkAI:
         llm_result = self._transform_chain.run(
             tags=tags, view_name=temp_view_name, columns=schema_str, desc=desc
         )
-        sql_query = self._extract_code_blocks(llm_result)[0]
+        sql_query_from_response = self._extract_code_blocks(llm_result)[0]
+        # Replace the temp view name in case the view name is from the cache.
+        sql_query = replace_view_name(sql_query_from_response, temp_view_name)
         formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
         self.log(f"SQL query for the transform:\n{formatted_sql_query}")
         return self._spark.sql(sql_query)

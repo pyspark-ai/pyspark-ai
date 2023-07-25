@@ -152,7 +152,7 @@ class CacheRetrievalTestCase(SparkTestCase):
     def setUp(self):
         self.spark_ai = SparkAI(
             llm=self.llm_mock,
-            cache_file_location="tests/test_cache.json"
+            cache_file_location="examples/spark_ai_cache.json"
         )
         self.df1 = self.spark_ai.create_df("2022 USA national auto sales by brand")
 

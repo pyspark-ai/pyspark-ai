@@ -4,6 +4,7 @@ from langchain import LLMChain
 from langchain.callbacks.manager import Callbacks
 
 from pyspark_ai.cache import Cache
+from pyspark_ai.temp_view_utils import canonize_string
 
 SKIP_CACHE_TAGS = ["SKIP_CACHE"]
 
@@ -27,7 +28,7 @@ class LLMChainWithCache(LLMChain):
         **kwargs: Any,
     ) -> str:
         assert not args, "The chain expected no arguments"
-        prompt_str = self.prompt.format_prompt(**kwargs).to_string()
+        prompt_str = canonize_string(self.prompt.format_prompt(**kwargs).to_string())
         use_cache = tags != SKIP_CACHE_TAGS
         cached_result = (
             self.cache.lookup(prompt_str) if use_cache else None
