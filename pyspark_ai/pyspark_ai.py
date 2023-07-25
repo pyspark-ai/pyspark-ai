@@ -32,7 +32,7 @@ from pyspark_ai.prompt import (
 )
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.ai_utils import AIUtils
-from pyspark_ai.temp_view_utils import random_view_name
+from pyspark_ai.temp_view_utils import random_view_name, replace_view_name
 
 
 class SparkAI:
@@ -216,11 +216,13 @@ class SparkAI:
 
         # Run the LLM chain to get an ingestion SQL query
         tags = self._get_tags(cache)
-        view_name = random_view_name()
+        temp_view_name = random_view_name()
         llm_result = self._sql_llm_chain.run(
-            tags=tags, query=desc, web_content=web_content, view_name=view_name, columns=sql_columns_hint
+            tags=tags, query=desc, web_content=web_content, view_name=temp_view_name, columns=sql_columns_hint
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
+        # The actual view name used in the SQL query may be different from the temp view name because of caching.
+        view_name = self._extract_view_name(sql_query)
         formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
         self.log(f"SQL query for the ingestion:\n{formatted_sql_query}")
         self.log(f"Storing data into temp view: {view_name}\n")
@@ -346,7 +348,9 @@ class SparkAI:
         llm_result = self._transform_chain.run(
             tags=tags, view_name=temp_view_name, columns=schema_str, desc=desc
         )
-        sql_query = self._extract_code_blocks(llm_result)[0]
+        sql_query_from_response = self._extract_code_blocks(llm_result)[0]
+        # Replace the temp view name in case the view name is from the cache.
+        sql_query = replace_view_name(sql_query_from_response, temp_view_name)
         formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
         self.log(f"SQL query for the transform:\n{formatted_sql_query}")
         return self._spark.sql(sql_query)
