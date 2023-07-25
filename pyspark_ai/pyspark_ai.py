@@ -2,6 +2,8 @@ import contextlib
 import io
 import os
 import re
+import uuid
+
 import pandas as pd  # noqa: F401
 
 from typing import Callable, Optional, List
@@ -213,14 +215,13 @@ class SparkAI:
 
         # Run the LLM chain to get an ingestion SQL query
         tags = self._get_tags(cache)
+        view_name = self._random_temp_view_name()
         llm_result = self._sql_llm_chain.run(
-            tags=tags, query=desc, web_content=web_content, columns=sql_columns_hint
+            tags=tags, query=desc, web_content=web_content, view_name=view_name, columns=sql_columns_hint
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
         formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
         self.log(f"SQL query for the ingestion:\n{formatted_sql_query}")
-
-        view_name = self._extract_view_name(sql_query)
         self.log(f"Storing data into temp view: {view_name}\n")
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
@@ -260,6 +261,13 @@ class SparkAI:
         # The analyzed logical plan starts two lines after the section marker.
         # The first line is the output schema.
         return "\n".join(splitted[begin + 2:end])
+
+    @staticmethod
+    def _random_temp_view_name() -> str:
+        """
+        Generate a random temp view name.
+        """
+        return f"temp_view_{uuid.uuid4().hex[:6]}"
 
     def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
         raw_analyzed_str = self._parse_explain_string(df)
@@ -334,7 +342,7 @@ class SparkAI:
 
         :return: Returns a new Spark DataFrame that is the result of applying the specified transformation on the input DataFrame.
         """
-        temp_view_name = "temp_view_for_transform"
+        temp_view_name = self._random_temp_view_name()
         create_temp_view_code = CodeLogger.colorize_code(f"df.createOrReplaceTempView(\"{temp_view_name}\")", "python")
         self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)

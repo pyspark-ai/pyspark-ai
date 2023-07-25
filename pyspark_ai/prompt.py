@@ -25,16 +25,17 @@ I got the following answer from a web page:
 ```
 Now help me write a SQL query to store the answer into a temp view. 
 Give each column a clearly descriptive name (no abbreviations).
-Here is an example of how to store data into a temp view:
+If a column can be either String or Numeric, ingest it as Numeric.
+Here is an example of how to store data into the temp view {view_name}:
 ```
-CREATE OR REPLACE TEMP VIEW movies AS SELECT * FROM VALUES('Citizen Kane', 1941), ('Schindler\'s List', 1993) AS v1(title, year)
+CREATE OR REPLACE TEMP VIEW {view_name} AS SELECT * FROM VALUES('Citizen Kane', 1941), ('Schindler\'s List', 1993) AS v1(title, year)
 ```
 {columns}
-The answer MUST contain query only.
+The answer MUST contain query only and the temp view MUST be {view_name}.
 """
 
 SQL_PROMPT = PromptTemplate(
-    input_variables=["query", "web_content", "columns"], template=SQL_TEMPLATE
+    input_variables=["query", "web_content", "view_name", "columns"], template=SQL_TEMPLATE
 )
 
 TRANSFORM_TEMPLATE = """
