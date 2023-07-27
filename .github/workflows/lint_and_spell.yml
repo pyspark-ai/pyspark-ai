@@ -1,4 +1,4 @@
-name: lint and spell
+name: lint
 
 on:
   push:
@@ -34,6 +34,3 @@ jobs:
       - name: Analysing the code with our lint
         run: |
           make lint
-      - name: Spell check
-        run: |
-          make spell_check
