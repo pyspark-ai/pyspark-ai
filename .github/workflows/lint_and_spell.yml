@@ -36,4 +36,4 @@ jobs:
           make lint
       - name: Spell check
         run: |
-          make spell
+          make spell_check
