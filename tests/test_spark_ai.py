@@ -150,20 +150,21 @@ class CacheRetrievalTestCase(SparkTestCase):
         self.spark_ai = SparkAI(
             llm=self.llm_mock, cache_file_location="examples/spark_ai_cache.json"
         )
-        self.df1 = self.spark_ai.create_df("2022 USA national auto sales by brand")
+        self.url = "https://en.wikipedia.org/wiki/List_of_presidents_of_the_United_States"
+        self.df1 = self.spark_ai.create_df(self.url, ["president", "vice_president"])
 
     def test_create_df(self):
-        df2 = self.spark_ai.create_df("2022 USA national auto sales by brand")
+        df2 = self.spark_ai.create_df(self.url, ["president", "vice_president"])
 
         assert_df_equality(self.df1, df2)
 
     def test_transform_df(self):
         transform_df1 = self.spark_ai.transform_df(
-            self.df1, "brand with the highest growth"
+            self.df1, "presidents who were also vice presidents"
         )
         self.spark_ai.commit()
         transform_df2 = self.spark_ai.transform_df(
-            self.df1, "brand with the highest growth"
+            self.df1, "presidents who were also vice presidents"
         )
 
         assert_df_equality(transform_df1, transform_df2)
