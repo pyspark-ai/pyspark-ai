@@ -267,7 +267,7 @@ class SparkAI:
         end = splitted.index("== Optimized Logical Plan ==")
         # The analyzed logical plan starts two lines after the section marker.
         # The first line is the output schema.
-        return "\n".join(splitted[begin + 2 : end])
+        return "\n".join(splitted[begin + 2: end])
 
     def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
         raw_analyzed_str = self._parse_explain_string(df)
