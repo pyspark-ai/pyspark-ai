@@ -1,4 +1,4 @@
-.PHONY: all format lint test tests help
+.PHONY: all format lint test spell_check spell_fix help
 
 # Default target executed when no arguments are given to make.
 all: help
@@ -21,7 +21,6 @@ lint lint_diff:
 
 format format_diff:
 	poetry run black $(PYTHON_FILES)
-	poetry run autopep8 --in-place --aggressive --recursive --max-line-length 120 $(PYTHON_FILES)
 
 spell_check:
 	poetry run codespell --toml pyproject.toml
@@ -38,5 +37,5 @@ help:
 	@echo 'format                       - run code formatters'
 	@echo 'lint                         - run linters'
 	@echo 'test                         - run unit tests'
-	@echo 'tests                        - run unit tests'
-	@echo 'test TEST_FILE=<test_file>   - run all tests in file'
+	@echo 'spell_check                  - run spell check'
+	@echo 'spell_fix                    - fix spelling errors'
