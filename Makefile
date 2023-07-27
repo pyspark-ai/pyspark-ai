@@ -23,10 +23,10 @@ format format_diff:
 	poetry run black $(PYTHON_FILES)
 
 spell_check:
-	poetry run codespell --toml pyproject.toml
+	poetry run codespell --toml pyproject.toml $(PYTHON_FILES)
 
 spell_fix:
-	poetry run codespell --toml pyproject.toml -w
+	poetry run codespell --toml pyproject.toml -w $(PYTHON_FILES)
 
 ######################
 # HELP

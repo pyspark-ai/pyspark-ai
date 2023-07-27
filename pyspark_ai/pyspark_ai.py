@@ -260,14 +260,14 @@ class SparkAI:
         with contextlib.redirect_stdout(io.StringIO()) as f:
             df.explain(extended=True)
         explain = f.getvalue()
-        splitted = explain.split("\n")
+        splits = explain.split("\n")
         # The two index operations will fail if Spark changes the textual
         # plan representation.
-        begin = splitted.index("== Analyzed Logical Plan ==")
-        end = splitted.index("== Optimized Logical Plan ==")
+        begin = splits.index("== Analyzed Logical Plan ==")
+        end = splits.index("== Optimized Logical Plan ==")
         # The analyzed logical plan starts two lines after the section marker.
         # The first line is the output schema.
-        return "\n".join(splitted[begin + 2 : end])
+        return "\n".join(splits[begin + 2 : end])
 
     def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
         raw_analyzed_str = self._parse_explain_string(df)
