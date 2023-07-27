@@ -103,7 +103,8 @@ class JsonCache(FileCache):
                     if line.strip():  # Avoid empty lines
                         line_cache = json.loads(line)
                         self.cache[line_cache["key"]] = line_cache["value"]
-        # Create an empty staging cache for storing changes before they are committed.
+        # Create an empty staging cache for storing changes before they are
+        # committed.
         self.staging_cache = {}
 
     def update(self, key: str, value: str) -> None:

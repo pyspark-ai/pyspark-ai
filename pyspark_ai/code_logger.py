@@ -1,9 +1,10 @@
-import re
 import logging
+import re
 import sys
+
 from pygments import highlight
-from pygments.lexers import get_lexer_by_name, PythonLexer, SqlLexer
 from pygments.formatters import TerminalFormatter
+from pygments.lexers import PythonLexer, SqlLexer
 
 GREEN = "\033[92m"  # terminal code for green
 RESET = "\033[0m"  # reset terminal color
@@ -21,7 +22,9 @@ class CodeLogger:
         self.logger.setLevel(logging.INFO)
         if not self.logger.handlers:
             handler = logging.StreamHandler(sys.stdout)
-            handler.setFormatter(CustomFormatter("%(message)s"))  # output only the message
+            handler.setFormatter(
+                CustomFormatter("%(message)s")
+            )  # output only the message
             self.logger.addHandler(handler)
 
     @staticmethod

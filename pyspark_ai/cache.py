@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 from pyspark_ai.file_cache import JsonCache, SQLiteCacheWrapper
 
