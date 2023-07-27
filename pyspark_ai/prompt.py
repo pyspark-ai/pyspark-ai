@@ -153,7 +153,7 @@ In total, your output must follow the format below, exactly (no explanation word
 1. function definition f, in Python (Do NOT surround the function definition with quotes)
 2. 1 blank new line
 3. Call f on df and assign the result to a variable, result: result = name_of_f(df)
-Do not include any explanation in English. For example, do NOT include "Here is your output:"
+The answer MUST contain python code only. For example, do NOT include "Here is your output:"
 
 Include any necessary import statements INSIDE the function definition, like this:
 def gen_random():
