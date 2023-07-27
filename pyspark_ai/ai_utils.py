@@ -1,5 +1,6 @@
+from typing import Optional, Type
+
 from pyspark.sql import DataFrame
-from typing import Type, Optional
 
 
 class AIMethodWrapper:

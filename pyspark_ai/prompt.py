@@ -1,10 +1,11 @@
+# flake8: noqa
 from langchain import FewShotPromptTemplate
 from langchain.prompts.prompt import PromptTemplate
 
 SEARCH_TEMPLATE = """Given a Query and a list of Google Search Results, return the link
 from a reputable website which contains the data set to answer the question. {columns}
 Query:{query}
-Google Search Results: 
+Google Search Results:
 ```
 {search_results}
 ```
@@ -23,7 +24,7 @@ I got the following answer from a web page:
 ```
 {web_content}
 ```
-Now help me write a SQL query to store the answer into a temp view. 
+Now help me write a SQL query to store the answer into a temp view.
 Give each column a clearly descriptive name (no abbreviations).
 If a column can be either String or Numeric, ingest it as Numeric.
 Here is an example of how to store data into the temp view {view_name}:
@@ -35,7 +36,8 @@ The answer MUST contain query only and the temp view MUST be {view_name}.
 """
 
 SQL_PROMPT = PromptTemplate(
-    input_variables=["query", "web_content", "view_name", "columns"], template=SQL_TEMPLATE
+    input_variables=["query", "web_content", "view_name", "columns"],
+    template=SQL_TEMPLATE,
 )
 
 TRANSFORM_TEMPLATE = """
@@ -51,11 +53,11 @@ TRANSFORM_PROMPT = PromptTemplate(
     input_variables=["view_name", "columns", "desc"], template=TRANSFORM_TEMPLATE
 )
 
-EXPLAIN_PREFIX = """You are an Apache Spark SQL expert, who can summary what a dataframe retrieves. Given an analyzed 
-query plan of a dataframe, you will 
-1. convert the dataframe to SQL query. Note that an explain output contains plan 
-nodes separated by `\\n`. Each plan node has its own expressions and expression ids. 
-2. summary what the sql query retrieves. 
+EXPLAIN_PREFIX = """You are an Apache Spark SQL expert, who can summary what a dataframe retrieves. Given an analyzed
+query plan of a dataframe, you will
+1. convert the dataframe to SQL query. Note that an explain output contains plan
+nodes separated by `\\n`. Each plan node has its own expressions and expression ids.
+2. summary what the sql query retrieves.
 """
 
 EXPLAIN_SUFFIX = "analyzed_plan: {input}\nexplain:"
@@ -189,14 +191,14 @@ VERIFY_PROMPT = PromptTemplate(input_variables=["df", "desc"], template=VERIFY_T
 UDF_PREFIX = """
 This is the documentation for a PySpark user-defined function (udf): pyspark.sql.functions.udf
 
-A udf creates a deterministic, reusable function in Spark. It can take any data type as a parameter, 
-and by default returns a String (although it can return any data type). 
+A udf creates a deterministic, reusable function in Spark. It can take any data type as a parameter,
+and by default returns a String (although it can return any data type).
 The point is to reuse a function on several dataframes and SQL functions.
 
 Given 1) input arguments, 2) a description of the udf functionality,
-3) the udf return type, and 4) the udf function name, 
+3) the udf return type, and 4) the udf function name,
 generate and return a callable udf.
-        
+
 Return ONLY the callable resulting udf function (no explanation words).
 Include any necessary import statements INSIDE the function definition.
 For example:

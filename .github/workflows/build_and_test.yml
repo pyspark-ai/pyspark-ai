@@ -1,6 +1,6 @@
-name: build_and_test
+name: test
 
-on: 
+on:
   pull_request:
   push:
     branches: [master]
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Install Python ${{ matrix.python-version }}

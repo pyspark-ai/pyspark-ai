@@ -38,3 +38,7 @@ grpcio = ">=1.48.1"
 [tool.poetry.dev-dependencies]
 pyspark = "^3.4.0"
 
+[tool.poetry.group.lint.dependencies]
+flake8 = "^6.0.0"
+black = "^23.7.0"
+
