@@ -3,11 +3,11 @@ from unittest.mock import MagicMock
 
 from chispa.dataframe_comparer import assert_df_equality
 from langchain.base_language import BaseLanguageModel
+from pyspark.sql import SparkSession
 from tiktoken import Encoding
 
 from pyspark_ai import SparkAI
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
-from pyspark.sql import SparkSession
 
 
 class SparkAIInitializationTestCase(unittest.TestCase):
@@ -30,9 +30,7 @@ class SparkAIInitializationTestCase(unittest.TestCase):
         """Tests if the class initializes correctly with default values."""
         self.assertEqual(self.spark_ai._spark, self.spark_session_mock)
         self.assertEqual(self.spark_ai._llm, self.llm_mock)
-        self.assertEqual(
-            self.spark_ai._web_search_tool, self.web_search_tool_mock
-        )
+        self.assertEqual(self.spark_ai._web_search_tool, self.web_search_tool_mock)
         self.assertEqual(self.spark_ai._encoding, self.encoding_mock)
         self.assertEqual(self.spark_ai._max_tokens_of_web_content, 3000)
 
@@ -131,15 +129,14 @@ class URLTestCase(unittest.TestCase):
         result = SparkAI._is_http_or_https_url(url)
         self.assertFalse(result)
 
+
 class SparkTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.llm_mock = MagicMock(spec=BaseLanguageModel)
-        cls.spark = (SparkSession
-                     .builder
-                     .master("local[*]")
-                     .appName("Unit-tests")
-                     .getOrCreate())
+        cls.spark = (
+            SparkSession.builder.master("local[*]").appName("Unit-tests").getOrCreate()
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -151,20 +148,24 @@ class CacheRetrievalTestCase(SparkTestCase):
 
     def setUp(self):
         self.spark_ai = SparkAI(
-            llm=self.llm_mock,
-            cache_file_location="examples/spark_ai_cache.json"
+            llm=self.llm_mock, cache_file_location="examples/spark_ai_cache.json"
         )
-        self.df1 = self.spark_ai.create_df("2022 USA national auto sales by brand")
+        self.url = "https://en.wikipedia.org/wiki/List_of_presidents_of_the_United_States"
+        self.df1 = self.spark_ai.create_df(self.url, ["president", "vice_president"])
 
     def test_create_df(self):
-        df2 = self.spark_ai.create_df("2022 USA national auto sales by brand")
+        df2 = self.spark_ai.create_df(self.url, ["president", "vice_president"])
 
         assert_df_equality(self.df1, df2)
 
     def test_transform_df(self):
-        transform_df1 = self.spark_ai.transform_df(self.df1, "brand with the highest growth")
+        transform_df1 = self.spark_ai.transform_df(
+            self.df1, "presidents who were also vice presidents"
+        )
         self.spark_ai.commit()
-        transform_df2 = self.spark_ai.transform_df(self.df1, "brand with the highest growth")
+        transform_df2 = self.spark_ai.transform_df(
+            self.df1, "presidents who were also vice presidents"
+        )
 
         assert_df_equality(transform_df1, transform_df2)
 
@@ -189,13 +190,13 @@ class CacheRetrievalTestCase(SparkTestCase):
             ...
 
         import random
+
         grade = random.randint(1, 100)
 
         self.assertEqual(convert_grades1(grade), convert_grades2(grade))
 
 
 class SparkAnalysisTest(SparkTestCase):
-
     def test_analysis_handling(self):
         self.spark_ai = SparkAI(llm=self.llm_mock)
         df = self.spark.range(100).groupBy("id").count()

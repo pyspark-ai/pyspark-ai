@@ -1,6 +1,6 @@
-from typing import Optional, Dict
+from typing import Dict, Optional
 
-from pyspark_ai.file_cache import JsonCache, SQLiteCacheWrapper
+from pyspark_ai.file_cache import JsonCache, SQLiteCacheWrapper, FileCache
 
 
 class Cache:
@@ -28,7 +28,7 @@ class Cache:
         """
         self._staging_updates: Dict[str, str] = {}
         if file_format == "json":
-            self._file_cache = JsonCache(cache_file_location)
+            self._file_cache: FileCache = JsonCache(cache_file_location)
         else:
             self._file_cache = SQLiteCacheWrapper(cache_file_location)
 

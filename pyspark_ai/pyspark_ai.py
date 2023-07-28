@@ -2,58 +2,55 @@ import contextlib
 import io
 import os
 import re
-import uuid
-
-import pandas as pd  # noqa: F401
-
-from typing import Callable, Optional, List
+from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
+import pandas as pd  # noqa: F401
 import requests
 import tiktoken
 from bs4 import BeautifulSoup
-from langchain import LLMChain, GoogleSearchAPIWrapper, BasePromptTemplate
+from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
-from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import DataFrame, SparkSession
 from tiktoken import Encoding
 
+from pyspark_ai.ai_utils import AIUtils
 from pyspark_ai.cache import Cache
 from pyspark_ai.code_logger import CodeLogger
-from pyspark_ai.llm_chain_with_cache import LLMChainWithCache, SKIP_CACHE_TAGS
+from pyspark_ai.llm_chain_with_cache import SKIP_CACHE_TAGS, LLMChainWithCache
 from pyspark_ai.prompt import (
+    EXPLAIN_DF_PROMPT,
+    PLOT_PROMPT,
     SEARCH_PROMPT,
     SQL_PROMPT,
-    EXPLAIN_DF_PROMPT,
     TRANSFORM_PROMPT,
-    PLOT_PROMPT,
-    VERIFY_PROMPT,
     UDF_PROMPT,
+    VERIFY_PROMPT,
 )
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
-from pyspark_ai.ai_utils import AIUtils
 from pyspark_ai.temp_view_utils import random_view_name, replace_view_name
 
 
 class SparkAI:
     _HTTP_HEADER = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-                      " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
     }
 
     def __init__(
-            self,
-            llm: Optional[BaseLanguageModel] = None,
-            web_search_tool: Optional[Callable[[str], str]] = None,
-            spark_session: Optional[SparkSession] = None,
-            enable_cache: bool = True,
-            cache_file_format: str = "json",
-            cache_file_location: Optional[str] = None,
-            encoding: Optional[Encoding] = None,
-            max_tokens_of_web_content: int = 3000,
-            verbose: bool = True,
+        self,
+        llm: Optional[BaseLanguageModel] = None,
+        web_search_tool: Optional[Callable[[str], str]] = None,
+        spark_session: Optional[SparkSession] = None,
+        enable_cache: bool = True,
+        cache_file_format: str = "json",
+        cache_file_location: Optional[str] = None,
+        encoding: Optional[Encoding] = None,
+        max_tokens_of_web_content: int = 3000,
+        verbose: bool = True,
     ) -> None:
         """
         Initialize the SparkAI object with the provided parameters.
@@ -68,7 +65,7 @@ class SparkAI:
         """
         self._spark = spark_session or SparkSession.builder.getOrCreate()
         if llm is None:
-            llm = ChatOpenAI(model_name='gpt-4', temperature=0)
+            llm = ChatOpenAI(model_name="gpt-4", temperature=0)
         self._llm = llm
         self._web_search_tool = web_search_tool or self._default_web_search_tool
         if enable_cache:
@@ -76,15 +73,15 @@ class SparkAI:
             if cache_file_location is not None:
                 # if there is parameter setting for it, use the parameter
                 self._cache_file_location = cache_file_location
-            elif 'AI_CACHE_FILE_LOCATION' in os.environ:
+            elif "AI_CACHE_FILE_LOCATION" in os.environ:
                 # otherwise read from env variable AI_CACHE_FILE_LOCATION
-                self._cache_file_location = os.environ['AI_CACHE_FILE_LOCATION']
+                self._cache_file_location = os.environ["AI_CACHE_FILE_LOCATION"]
             else:
                 # use default value "spark_ai_cache.json"
                 self._cache_file_location = "spark_ai_cache.json"
             self._cache = Cache(
                 cache_file_location=self._cache_file_location,
-                file_format=cache_file_format
+                file_format=cache_file_format,
             )
             self._web_search_tool = SearchToolWithCache(
                 self._web_search_tool, self._cache
@@ -159,7 +156,8 @@ class SparkAI:
         code_block_pattern = re.compile(r"```(.*?)```", re.DOTALL)
         code_blocks = re.findall(code_block_pattern, text)
         if code_blocks:
-            # If there are code blocks, strip them and remove language specifiers.
+            # If there are code blocks, strip them and remove language
+            # specifiers.
             extracted_blocks = []
             for block in code_blocks:
                 block = block.strip()
@@ -170,7 +168,8 @@ class SparkAI:
                 extracted_blocks.append(block)
             return extracted_blocks
         else:
-            # If there are no code blocks, treat the whole text as a single block of code.
+            # If there are no code blocks, treat the whole text as a single
+            # block of code.
             return [text]
 
     def log(self, message: str) -> None:
@@ -191,7 +190,7 @@ class SparkAI:
         return self._encoding.decode(tokens)
 
     def _get_url_from_search_tool(
-            self, desc: str, columns: Optional[List[str]], cache: bool
+        self, desc: str, columns: Optional[List[str]], cache: bool
     ) -> str:
         search_result = self._web_search_tool(desc)
         search_columns_hint = self._generate_search_prompt(columns)
@@ -205,7 +204,7 @@ class SparkAI:
         )
 
     def _create_dataframe_with_llm(
-            self, text: str, desc: str, columns: Optional[List[str]], cache: bool
+        self, text: str, desc: str, columns: Optional[List[str]], cache: bool
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
@@ -218,10 +217,15 @@ class SparkAI:
         tags = self._get_tags(cache)
         temp_view_name = random_view_name()
         llm_result = self._sql_llm_chain.run(
-            tags=tags, query=desc, web_content=web_content, view_name=temp_view_name, columns=sql_columns_hint
+            tags=tags,
+            query=desc,
+            web_content=web_content,
+            view_name=temp_view_name,
+            columns=sql_columns_hint,
         )
         sql_query = self._extract_code_blocks(llm_result)[0]
-        # The actual view name used in the SQL query may be different from the temp view name because of caching.
+        # The actual view name used in the SQL query may be different from the
+        # temp view name because of caching.
         view_name = self._extract_view_name(sql_query)
         formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
         self.log(f"SQL query for the ingestion:\n{formatted_sql_query}")
@@ -256,15 +260,14 @@ class SparkAI:
         with contextlib.redirect_stdout(io.StringIO()) as f:
             df.explain(extended=True)
         explain = f.getvalue()
-        splitted = explain.split("\n")
+        splits = explain.split("\n")
         # The two index operations will fail if Spark changes the textual
         # plan representation.
-        begin = splitted.index("== Analyzed Logical Plan ==")
-        end = splitted.index("== Optimized Logical Plan ==")
+        begin = splits.index("== Analyzed Logical Plan ==")
+        end = splits.index("== Optimized Logical Plan ==")
         # The analyzed logical plan starts two lines after the section marker.
         # The first line is the output schema.
-        return "\n".join(splitted[begin + 2:end])
-
+        return "\n".join(splits[begin + 2 : end])
 
     def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
         raw_analyzed_str = self._parse_explain_string(df)
@@ -279,7 +282,7 @@ class SparkAI:
         return None
 
     def create_df(
-            self, desc: str, columns: Optional[List[str]] = None, cache: bool = True
+        self, desc: str, columns: Optional[List[str]] = None, cache: bool = True
     ) -> DataFrame:
         """
         Create a Spark DataFrame by querying an LLM from web search result.
@@ -320,27 +323,28 @@ class SparkAI:
         else:
             page_content = soup.get_text()
 
-        # If the input is a URL link, use the title of web page as the dataset's description.
+        # If the input is a URL link, use the title of web page as the
+        # dataset's description.
         if is_url:
             desc = soup.title.string
-        return self._create_dataframe_with_llm(
-            page_content, desc, columns, cache
-        )
+        return self._create_dataframe_with_llm(page_content, desc, columns, cache)
 
-    def transform_df(
-            self, df: DataFrame, desc: str, cache: bool = True
-    ) -> DataFrame:
+    def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
         """
-        This method applies a transformation to a provided Spark DataFrame, the specifics of which are determined by the 'desc' parameter.
+        This method applies a transformation to a provided Spark DataFrame,
+        the specifics of which are determined by the 'desc' parameter.
 
         :param df: The Spark DataFrame that is to be transformed.
         :param desc: A natural language string that outlines the specific transformation to be applied on the DataFrame.
         :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
 
-        :return: Returns a new Spark DataFrame that is the result of applying the specified transformation on the input DataFrame.
+        :return: Returns a new Spark DataFrame that is the result of applying the specified transformation
+                 on the input DataFrame.
         """
         temp_view_name = random_view_name()
-        create_temp_view_code = CodeLogger.colorize_code(f"df.createOrReplaceTempView(\"{temp_view_name}\")", "python")
+        create_temp_view_code = CodeLogger.colorize_code(
+            f'df.createOrReplaceTempView("{temp_view_name}")', "python"
+        )
         self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)
         schema_str = self._get_df_schema(df)
@@ -373,7 +377,7 @@ class SparkAI:
             return explain_result
 
     def plot_df(
-            self, df: DataFrame, desc: Optional[str] = None, cache: bool = True
+        self, df: DataFrame, desc: Optional[str] = None, cache: bool = True
     ) -> None:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
@@ -451,10 +455,13 @@ class SparkAI:
         # Patch the Spark Connect DataFrame as well.
         try:
             from pyspark.sql.connect.dataframe import DataFrame as CDataFrame
+
             CDataFrame.ai = AIUtils(self)
         except ImportError:
-            self.log("The pyspark.sql.connect.dataframe module could not be imported. "
-                     "This might be due to your PySpark version being below 3.4.")
+            self.log(
+                "The pyspark.sql.connect.dataframe module could not be imported. "
+                "This might be due to your PySpark version being below 3.4."
+            )
 
     def commit(self):
         """

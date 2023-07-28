@@ -2,7 +2,8 @@ import re
 import uuid
 
 prefix = "spark_ai_temp_view"
-pattern = f'{prefix}_[0-9a-zA-Z]{{6}}'
+pattern = f"{prefix}_[0-9a-zA-Z]{{6}}"
+
 
 def random_view_name() -> str:
     """
@@ -13,7 +14,8 @@ def random_view_name() -> str:
 
 def canonize_string(s: str) -> str:
     """
-    Replace all occurrences of 'spark_ai_temp_view' followed by 6 alphanumeric characters with 'spark_ai_temp_view' in a given string.
+    Replace all occurrences of 'spark_ai_temp_view' followed by 6 alphanumeric characters with 'spark_ai_temp_view'
+     in a given string.
 
     Args:
         s (str): The string in which to replace substrings.
@@ -26,6 +28,7 @@ def canonize_string(s: str) -> str:
 
 def replace_view_name(s: str, random_view: str) -> str:
     """
-    Replace all the 'spark_ai_temp_view' followed by 6 alphanumeric characters in a given string with a random view name.
+    Replace all the 'spark_ai_temp_view' followed by 6 alphanumeric characters in a given string with a random view
+     name.
     """
     return re.sub(pattern, random_view, s)
