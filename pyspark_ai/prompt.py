@@ -44,7 +44,9 @@ SQL_PROMPT = PromptTemplate(
 SPARK_SQL_EXAMPLES = [
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
 ```
-{columns}
+Product STRING
+Amount BIGINT
+Country STRING
 ```
 Write a Spark SQL query to retrieve: Pivot the fruit table by country and sum the amount for each fruit and country combination.
 Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
@@ -57,6 +59,28 @@ Action Input: SELECT * FROM fruit PIVOT (SUM(Amount) FOR Country IN ('USA', 'Can
 Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT * FROM fruit PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))"""
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
+```
+PassengerId INT
+Survived INT
+Pclass INT
+Name STRING
+Sex STRING
+Age DOUBLE
+SibSp INT
+Parch INT
+Ticket STRING
+Fare DOUBLE
+Cabin STRING
+Embarked STRING
+```
+Write a Spark SQL query to retrieve: What's the name of the oldest survived passenger?
+Thought: I will query the Name and Age columns, filtering by Survived and ordering by Age in descending order.
+Action: query_validation
+Action Input: SELECT Name, Age FROM titanic WHERE Survived = 1 ORDER BY Age DESC LIMIT 1
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT Name, Age FROM titanic WHERE Survived = 1 ORDER BY Age DESC LIMIT 1"""
 ]
 
 SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` with the following columns:
