@@ -51,7 +51,7 @@ Country STRING
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_93bcf0`: Pivot the fruit table by country and sum the amount for each fruit and country combination.
 Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
 Action: query_sql_db
-Action Input: "SELECT DISTINCT Country FROM fruit"
+Action Input: "SELECT DISTINCT Country FROM spark_ai_temp_view_93bcf0"
 Observation: USA, Canada, Mexico, China
 Thought: I can write a query to pivot the table by country and sum the amount for each fruit and country combination.
 Action: query_validation
