@@ -1,6 +1,9 @@
 from typing import Optional, Any
 
-from langchain.callbacks.manager import CallbackManagerForToolRun, AsyncCallbackManagerForToolRun
+from langchain.callbacks.manager import (
+    CallbackManagerForToolRun,
+    AsyncCallbackManagerForToolRun,
+)
 from langchain.tools import BaseTool
 from pydantic import Field
 from pyspark import Row
@@ -9,6 +12,7 @@ from pyspark.sql import SparkSession, DataFrame
 
 class QuerySparkSQLTool(BaseTool):
     """Tool for querying a Spark SQL."""
+
     spark: SparkSession = Field(exclude=True)
     name = "query_sql_db"
     description = """
@@ -18,17 +22,17 @@ class QuerySparkSQLTool(BaseTool):
         """
 
     def _run(
-            self,
-            query: str,
-            run_manager: Optional[CallbackManagerForToolRun] = None,
+        self,
+        query: str,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Execute the query, return the results or an error message."""
         return self._run_no_throw(query)
 
     async def _arun(
-            self,
-            query: str,
-            run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
+        self,
+        query: str,
+        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> str:
         raise NotImplementedError("QuerySqlDbTool does not support async")
 
@@ -41,7 +45,6 @@ class QuerySparkSQLTool(BaseTool):
     def _run(self, command: str) -> str:
         df = self.spark.sql(command)
         return str(self._get_dataframe_results(df))
-
 
     def _run_no_throw(self, command: str) -> str:
         """Execute a SQL command and return a string representing the results.
@@ -64,7 +67,6 @@ class QuerySparkSQLTool(BaseTool):
             return f"Error: {e}"
 
 
-
 class QueryValidationTool(BaseTool):
     """Tool for validating a Spark SQL query"""
 
@@ -76,9 +78,7 @@ class QueryValidationTool(BaseTool):
     """
 
     def _run(
-        self,
-        query: str,
-        run_manager: Optional[CallbackManagerForToolRun] = None
+        self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
         try:
             from pyspark.errors import PySparkException

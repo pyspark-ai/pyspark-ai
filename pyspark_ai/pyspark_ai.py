@@ -114,8 +114,12 @@ class SparkAI:
             QuerySparkSQLTool(spark=self._spark),
             QueryValidationTool(spark=self._spark),
         ]
-        agent=ReActSparkSQLAgent.from_llm_and_tools(llm=self._llm, tools=tools, verbose=True)
-        return AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+        agent = ReActSparkSQLAgent.from_llm_and_tools(
+            llm=self._llm, tools=tools, verbose=True
+        )
+        return AgentExecutor.from_agent_and_tools(
+            agent=agent, tools=tools, verbose=True
+        )
 
     @staticmethod
     def _extract_view_name(query: str) -> str:

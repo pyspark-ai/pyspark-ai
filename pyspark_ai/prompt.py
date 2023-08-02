@@ -92,7 +92,10 @@ Write a Spark SQL query to retrieve from view `{view_name}`: {desc}
 
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query."""
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
-    examples=SPARK_SQL_EXAMPLES, suffix=SPARK_SQL_SUFFIX, input_variables=["view_name", "columns", "desc","agent_scratchpad"], prefix=SPARK_SQL_PREFIX
+    examples=SPARK_SQL_EXAMPLES,
+    suffix=SPARK_SQL_SUFFIX,
+    input_variables=["view_name", "columns", "desc", "agent_scratchpad"],
+    prefix=SPARK_SQL_PREFIX,
 )
 
 
