@@ -42,7 +42,7 @@ class QuerySparkSQLTool(BaseTool):
     def _get_dataframe_results(self, df: DataFrame) -> list:
         return list(map(self._convert_row_as_tuple, df.collect()))
 
-    def _run(self, command: str) -> str:
+    def _run_command(self, command: str) -> str:
         df = self.spark.sql(command)
         return str(self._get_dataframe_results(df))
 
@@ -61,7 +61,7 @@ class QuerySparkSQLTool(BaseTool):
                 "pyspark is not installed. Please install it with `pip install pyspark`"
             )
         try:
-            return self._run(command)
+            return self._run_command(command)
         except PySparkException as e:
             """Format the error message"""
             return f"Error: {e}"
