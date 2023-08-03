@@ -40,18 +40,64 @@ SQL_PROMPT = PromptTemplate(
     template=SQL_TEMPLATE,
 )
 
-TRANSFORM_TEMPLATE = """
-Given a Spark temp view `{view_name}` with the following columns:
+
+SPARK_SQL_EXAMPLES = [
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
+```
+Product STRING
+Amount BIGINT
+Country STRING
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_93bcf0`: Pivot the fruit table by country and sum the amount for each fruit and country combination.
+Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
+Action: query_sql_db
+Action Input: "SELECT DISTINCT Country FROM spark_ai_temp_view_93bcf0"
+Observation: USA, Canada, Mexico, China
+Thought: I can write a query to pivot the table by country and sum the amount for each fruit and country combination.
+Action: query_validation
+Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))"""
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
+```
+PassengerId INT
+Survived INT
+Pclass INT
+Name STRING
+Sex STRING
+Age DOUBLE
+SibSp INT
+Parch INT
+Ticket STRING
+Fare DOUBLE
+Cabin STRING
+Embarked STRING
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_wl2sdf`: What's the name of the oldest survived passenger?
+Thought: I will query the Name and Age columns, filtering by Survived and ordering by Age in descending order.
+Action: query_validation
+Action Input: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1"""
+]
+
+SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` with the following columns:
 ```
 {columns}
 ```
-Write a Spark SQL query to retrieve: {desc}
-The answer MUST contain query only. Ensure your answer is correct.
-"""
+Write a Spark SQL query to retrieve from view `{view_name}`: {desc}
+{agent_scratchpad}"""
 
-TRANSFORM_PROMPT = PromptTemplate(
-    input_variables=["view_name", "columns", "desc"], template=TRANSFORM_TEMPLATE
+SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query."""
+SPARK_SQL_PROMPT = PromptTemplate.from_examples(
+    examples=SPARK_SQL_EXAMPLES,
+    suffix=SPARK_SQL_SUFFIX,
+    input_variables=["view_name", "columns", "desc", "agent_scratchpad"],
+    prefix=SPARK_SQL_PREFIX,
 )
+
 
 EXPLAIN_PREFIX = """You are an Apache Spark SQL expert, who can summary what a dataframe retrieves. Given an analyzed
 query plan of a dataframe, you will
