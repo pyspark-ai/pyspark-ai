@@ -41,3 +41,8 @@ class ReActSparkSQLAgent(Agent):
     def llm_prefix(self) -> str:
         """Prefix to append the LLM call with."""
         return "Thought:"
+
+    @staticmethod
+    def cache_key(desc: str, columns: str) -> str:
+        """Return key for cache."""
+        return f"sql transform desc:{desc}, columns:{columns}"

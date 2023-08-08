@@ -31,4 +31,4 @@ def replace_view_name(s: str, random_view: str) -> str:
     Replace all the 'spark_ai_temp_view' followed by 6 alphanumeric characters in a given string with a random view
      name.
     """
-    return re.sub(pattern, random_view, s)
+    return re.sub(prefix, random_view, s)
