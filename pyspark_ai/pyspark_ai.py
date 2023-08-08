@@ -30,7 +30,11 @@ from pyspark_ai.prompt import (
 )
 from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
-from pyspark_ai.temp_view_utils import random_view_name, replace_view_name, canonize_string
+from pyspark_ai.temp_view_utils import (
+    random_view_name,
+    replace_view_name,
+    canonize_string,
+)
 from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool
 
 
@@ -343,8 +347,12 @@ class SparkAI:
             desc = soup.title.string
         return self._create_dataframe_with_llm(page_content, desc, columns, cache)
 
-    def _get_transform_sql_query_from_agent(self, temp_view_name: str, schema: str, desc: str) -> str:
-        llm_result = self._sql_agent.run(view_name=temp_view_name, columns=schema, desc=desc)
+    def _get_transform_sql_query_from_agent(
+        self, temp_view_name: str, schema: str, desc: str
+    ) -> str:
+        llm_result = self._sql_agent.run(
+            view_name=temp_view_name, columns=schema, desc=desc
+        )
         sql_query_from_response = self._extract_code_blocks(llm_result)[0]
         return sql_query_from_response
 
@@ -364,11 +372,15 @@ class SparkAI:
                 self.log("Using cached result for the transform.")
                 return replace_view_name(cached_result, temp_view_name)
             else:
-                sql_query = self._get_transform_sql_query_from_agent(temp_view_name, schema_str, desc)
+                sql_query = self._get_transform_sql_query_from_agent(
+                    temp_view_name, schema_str, desc
+                )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
-            return self._get_transform_sql_query_from_agent(temp_view_name, schema_str, desc)
+            return self._get_transform_sql_query_from_agent(
+                temp_view_name, schema_str, desc
+            )
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
         """
