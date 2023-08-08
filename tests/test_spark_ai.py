@@ -158,7 +158,6 @@ class CacheRetrievalTestCase(SparkTestCase):
 
         assert_df_equality(self.df1, df2)
 
-    @unittest.skip("The cache is not yet implemented for transform_df")
     def test_transform_df(self):
         transform_df1 = self.spark_ai.transform_df(
             self.df1, "presidents who were also vice presidents"

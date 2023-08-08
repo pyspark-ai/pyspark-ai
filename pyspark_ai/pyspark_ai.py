@@ -30,7 +30,11 @@ from pyspark_ai.prompt import (
 )
 from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
-from pyspark_ai.temp_view_utils import random_view_name, replace_view_name
+from pyspark_ai.temp_view_utils import (
+    random_view_name,
+    replace_view_name,
+    canonize_string,
+)
 from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool
 
 
@@ -343,6 +347,41 @@ class SparkAI:
             desc = soup.title.string
         return self._create_dataframe_with_llm(page_content, desc, columns, cache)
 
+    def _get_transform_sql_query_from_agent(
+        self, temp_view_name: str, schema: str, desc: str
+    ) -> str:
+        llm_result = self._sql_agent.run(
+            view_name=temp_view_name, columns=schema, desc=desc
+        )
+        sql_query_from_response = self._extract_code_blocks(llm_result)[0]
+        return sql_query_from_response
+
+    def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
+        temp_view_name = random_view_name()
+        create_temp_view_code = CodeLogger.colorize_code(
+            f'df.createOrReplaceTempView("{temp_view_name}")', "python"
+        )
+        self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
+        df.createOrReplaceTempView(temp_view_name)
+        schema_str = self._get_df_schema(df)
+
+        if cache:
+            cache_key = ReActSparkSQLAgent.cache_key(desc, schema_str)
+            cached_result = self._cache.lookup(key=cache_key)
+            if cached_result is not None:
+                self.log("Using cached result for the transform.")
+                return replace_view_name(cached_result, temp_view_name)
+            else:
+                sql_query = self._get_transform_sql_query_from_agent(
+                    temp_view_name, schema_str, desc
+                )
+                self._cache.update(key=cache_key, val=canonize_string(sql_query))
+                return sql_query
+        else:
+            return self._get_transform_sql_query_from_agent(
+                temp_view_name, schema_str, desc
+            )
+
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
         """
         This method applies a transformation to a provided Spark DataFrame,
@@ -355,22 +394,9 @@ class SparkAI:
         :return: Returns a new Spark DataFrame that is the result of applying the specified transformation
                  on the input DataFrame.
         """
-        temp_view_name = random_view_name()
-        create_temp_view_code = CodeLogger.colorize_code(
-            f'df.createOrReplaceTempView("{temp_view_name}")', "python"
-        )
-        self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
-        df.createOrReplaceTempView(temp_view_name)
-        schema_str = self._get_df_schema(df)
-        tags = self._get_tags(cache)
-        llm_result = self._sql_agent.run(
-            tags=tags, view_name=temp_view_name, columns=schema_str, desc=desc
-        )
-        sql_query_from_response = self._extract_code_blocks(llm_result)[0]
-        # Replace the temp view name in case the view name is from the cache.
-        sql_query = replace_view_name(sql_query_from_response, temp_view_name)
+        sql_query = self._get_transform_sql_query(df, desc, cache)
         formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
-        self.log(f"SQL query for the transform:\n{formatted_sql_query}")
+        self.log(f"SQL query:\n{formatted_sql_query}")
         return self._spark.sql(sql_query)
 
     def explain_df(self, df: DataFrame, cache: bool = True) -> str:
