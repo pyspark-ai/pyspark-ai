@@ -1,4 +1,5 @@
-from typing import Optional, Type
+import re
+from typing import Optional, Type, List
 
 from pyspark.sql import DataFrame
 
@@ -106,3 +107,24 @@ class AIUtils:
             A new AIMethodWrapper instance.
         """
         return AIMethodWrapper(self.spark_ai, instance)
+
+    @staticmethod
+    def extract_code_blocks(text) -> List[str]:
+        code_block_pattern = re.compile(r"```(.*?)```", re.DOTALL)
+        code_blocks = re.findall(code_block_pattern, text)
+        if code_blocks:
+            # If there are code blocks, strip them and remove language
+            # specifiers.
+            extracted_blocks = []
+            for block in code_blocks:
+                block = block.strip()
+                if block.startswith("python"):
+                    block = block.replace("python\n", "", 1)
+                elif block.startswith("sql"):
+                    block = block.replace("sql\n", "", 1)
+                extracted_blocks.append(block)
+            return extracted_blocks
+        else:
+            # If there are no code blocks, treat the whole text as a single
+            # block of code.
+            return [text]

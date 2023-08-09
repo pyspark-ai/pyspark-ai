@@ -8,6 +8,7 @@ from langchain.tools import BaseTool
 from pydantic import Field
 from pyspark import Row
 from pyspark.sql import SparkSession, DataFrame
+from pyspark_ai.ai_utils import AIUtils
 
 try:
     from pyspark.sql.connect.session import SparkSession as ConnectSparkSession
@@ -74,7 +75,7 @@ class QuerySparkSQLTool(BaseTool):
 
 
 class QueryValidationTool(BaseTool):
-    """Tool for validating a Spark SQL query"""
+    """Tool for validating a Spark SQL query."""
 
     spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
     name = "query_validation"
@@ -93,7 +94,9 @@ class QueryValidationTool(BaseTool):
                 "pyspark is not installed. Please install it with `pip install pyspark`"
             )
         try:
-            self.spark.sql(query)
+            # The generated query from LLM can contain backticks, which are not supported by Spark SQL.
+            actual_query = AIUtils.extract_code_blocks(query)[0]
+            self.spark.sql(actual_query)
             return "OK"
         except PySparkException as e:
             """Format the error message"""
