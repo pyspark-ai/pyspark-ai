@@ -169,27 +169,6 @@ class SparkAI:
         # Check if the scheme is 'http' or 'https'
         return result.scheme in ["http", "https"]
 
-    @staticmethod
-    def _extract_code_blocks(text) -> List[str]:
-        code_block_pattern = re.compile(r"```(.*?)```", re.DOTALL)
-        code_blocks = re.findall(code_block_pattern, text)
-        if code_blocks:
-            # If there are code blocks, strip them and remove language
-            # specifiers.
-            extracted_blocks = []
-            for block in code_blocks:
-                block = block.strip()
-                if block.startswith("python"):
-                    block = block.replace("python\n", "", 1)
-                elif block.startswith("sql"):
-                    block = block.replace("sql\n", "", 1)
-                extracted_blocks.append(block)
-            return extracted_blocks
-        else:
-            # If there are no code blocks, treat the whole text as a single
-            # block of code.
-            return [text]
-
     def log(self, message: str) -> None:
         if self._verbose:
             self._logger.log(message)
@@ -241,7 +220,7 @@ class SparkAI:
             view_name=temp_view_name,
             columns=sql_columns_hint,
         )
-        sql_query = self._extract_code_blocks(llm_result)[0]
+        sql_query = AIUtils.extract_code_blocks(llm_result)[0]
         # The actual view name used in the SQL query may be different from the
         # temp view name because of caching.
         view_name = self._extract_view_name(sql_query)
@@ -353,7 +332,7 @@ class SparkAI:
         llm_result = self._sql_agent.run(
             view_name=temp_view_name, columns=schema, desc=desc
         )
-        sql_query_from_response = self._extract_code_blocks(llm_result)[0]
+        sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
         return sql_query_from_response
 
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
@@ -428,7 +407,7 @@ class SparkAI:
             instruction=instruction,
         )
         self.log(response)
-        codeblocks = self._extract_code_blocks(response)
+        codeblocks = AIUtils.extract_code_blocks(response)
         code = "\n".join(codeblocks)
         try:
             exec(compile(code, "plot_df-CodeGen", "exec"))
@@ -446,7 +425,7 @@ class SparkAI:
         tags = self._get_tags(cache)
         llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
 
-        codeblocks = self._extract_code_blocks(llm_output)
+        codeblocks = AIUtils.extract_code_blocks(llm_output)
         llm_output = "\n".join(codeblocks)
 
         self.log(f"LLM Output:\n{llm_output}")
