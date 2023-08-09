@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Optional, Any, Union
 
 from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
@@ -9,11 +9,17 @@ from pydantic import Field
 from pyspark import Row
 from pyspark.sql import SparkSession, DataFrame
 
+try:
+    from pyspark.sql.connect.session import SparkSession as ConnectSparkSession
+except ImportError:
+    # For Spark version < 3.4.0, the SparkSession class is in the pyspark.sql.session module
+    ConnectSparkSession = SparkSession
+
 
 class QuerySparkSQLTool(BaseTool):
     """Tool for querying a Spark SQL."""
 
-    spark: SparkSession = Field(exclude=True)
+    spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
     name = "query_sql_db"
     description = """
         Input to this tool is a detailed and correct SQL query, output is a result from the Spark SQL.
@@ -70,7 +76,7 @@ class QuerySparkSQLTool(BaseTool):
 class QueryValidationTool(BaseTool):
     """Tool for validating a Spark SQL query"""
 
-    spark: SparkSession = Field(exclude=True)
+    spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
     name = "query_validation"
     description = """
     Use this tool to double check if your query is correct before returning it.
