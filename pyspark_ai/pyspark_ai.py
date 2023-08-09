@@ -5,7 +5,13 @@ import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
-import pandas as pd  # noqa: F401
+# We only try to import pandas here to circumvent certain issues
+# when the generated code assumes that pandas needs to be imported
+# before actually evaluating the code.
+try:
+    import pandas as pd  # noqa: F401
+except ImportError:
+    pass
 import requests
 import tiktoken
 from bs4 import BeautifulSoup
