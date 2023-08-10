@@ -691,6 +691,22 @@ files = [
 protobuf = ["grpcio-tools (>=1.56.2)"]
 
 [[package]]
+name = "grpcio-status"
+version = "1.56.2"
+description = "Status proto mapping for gRPC"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "grpcio-status-1.56.2.tar.gz", hash = "sha256:a046b2c0118df4a5687f4585cca9d3c3bae5c498c4dff055dcb43fb06a1180c8"},
+    {file = "grpcio_status-1.56.2-py3-none-any.whl", hash = "sha256:63f3842867735f59f5d70e723abffd2e8501a6bcd915612a1119e52f10614782"},
+]
+
+[package.dependencies]
+googleapis-common-protos = ">=1.5.5"
+grpcio = ">=1.56.2"
+protobuf = ">=4.21.6"
+
+[[package]]
 name = "httplib2"
 version = "0.22.0"
 description = "A comprehensive HTTP client library."
@@ -1908,4 +1924,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "d2540ede16d4d7b8a21c2c3ce4ec05b171219459925bced2df7df4e879326c63"
+content-hash = "63e9bbe8a59b2698727c81944493935dd1efb9c8cd3c88129e59c5ba2c13ef91"
