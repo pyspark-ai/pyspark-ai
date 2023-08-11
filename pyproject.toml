@@ -35,6 +35,8 @@ google-api-python-client = "^2.90.0"
 chispa = "^0.9.2"
 grpcio = ">=1.56.0"
 plotly = "^5.15.0"
+pyarrow = ">=4.0.0"
+grpcio-status = ">=1.56.0"
 
 
 [tool.poetry.dev-dependencies]
