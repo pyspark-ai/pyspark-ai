@@ -37,6 +37,20 @@ spark_ai = SparkAI()
 spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
 
+You can also pass other LLMs to construct the SparkAI instance. For example, by following [this guide](https://python.langchain.com/docs/integrations/chat/azure_chat_openai):
+```python
+from langchain.chat_models import AzureChatOpenAI
+from pyspark_ai import SparkAI
+
+llm = AzureChatOpenAI(
+    deployment_name=...,
+    model_name=...
+)
+spark_ai = SparkAI(llm=llm)
+spark_ai.activate()  # active partial functions for Spark DataFrame
+```
+As per [Microsoft's Data Privacy page](https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy), using the Azure OpenAI service can provide better data privacy and security.
+
 ### Data Ingestion
 If you have [set up the Google Python client](https://developers.google.com/docs/api/quickstart/python), you can ingest data via search engine:
 ```python
