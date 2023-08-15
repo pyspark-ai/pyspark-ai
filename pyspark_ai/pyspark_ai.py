@@ -374,8 +374,6 @@ class SparkAI:
                  on the input DataFrame.
         """
         sql_query = self._get_transform_sql_query(df, desc, cache)
-        formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
-        self.log(f"SQL query:\n{formatted_sql_query}")
         return self._spark.sql(sql_query)
 
     def explain_df(self, df: DataFrame, cache: bool = True) -> str:

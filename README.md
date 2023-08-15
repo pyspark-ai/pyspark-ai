@@ -51,6 +51,46 @@ spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
 As per [Microsoft's Data Privacy page](https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy), using the Azure OpenAI service can provide better data privacy and security.
 
+### DataFrame Transformation
+Given the following DataFrame `df`:
+```python
+df = spark_ai._spark.createDataFrame(
+    [
+        ("Normal", "Cellphone", 6000),
+        ("Normal", "Tablet", 1500),
+        ("Mini", "Tablet", 5500),
+        ("Mini", "Cellphone", 5000),
+        ("Foldable", "Cellphone", 6500),
+        ("Foldable", "Tablet", 2500),
+        ("Pro", "Cellphone", 3000),
+        ("Pro", "Tablet", 4000),
+        ("Pro Max", "Cellphone", 4500)
+    ],
+    ["product", "category", "revenue"]
+)
+```
+
+You can write English to perform transformations. For example:
+```python
+df.ai.transform("What are the best-selling and the second best-selling products in every category?").show()
+```
+| product  |category| revenue |
+|----------|--------|---------|
+| Foldable |Cellphone| 6500    |
+| Nromal   |Cellphone| 6000    |
+| Mini      |Tablet| 5500    |
+| Pro |Tablet| 4000    |
+
+```python
+df.ai.transform("Pivot the data by product and the revenue for each product").show()
+```
+| Category  | Normal | Mini | Foldable |  Pro | Pro Max |
+|-----------|--------|------|----------|------|---------|
+| Cellphone |   6000 | 5000 |     6500 | 3000 |    4500 |
+| Tablet    |   1500 | 5500 |     2500 | 4000 |    null |
+
+For a detailed walkthrough of the transformations, please refer to our [dataframe_transformation.ipynb](https://github.com/databrickslabs/pyspark-ai/blob/master/examples/dataframe_transformation.ipynb) notebook.
+
 ### Data Ingestion
 If you have [set up the Google Python client](https://developers.google.com/docs/api/quickstart/python), you can ingest data via search engine:
 ```python
@@ -84,14 +124,6 @@ To plot with an instruction:
 auto_df.ai.plot("pie chart for US sales market shares, show the top 5 brands and the sum of others")
 ```
 ![2022 USA national auto sales_market_share by brand](docs/_static/auto_sales_pie_char.png)
-### DataFrame Transformation
-```python
-auto_top_growth_df=auto_df.ai.transform("brand with the highest growth")
-auto_top_growth_df.show()
-```
-| brand    | us_sales_2022 | sales_change_vs_2021 |
-|----------|---------------|----------------------|
-| Cadillac | 134726        | 14                   |
 
 ### DataFrame Explanation
 ```python
