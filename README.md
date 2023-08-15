@@ -89,6 +89,8 @@ df.ai.transform("Pivot the data by product and the revenue for each product").sh
 | Cellphone |   6000 | 5000 |     6500 | 3000 |    4500 |
 | Tablet    |   1500 | 5500 |     2500 | 4000 |    null |
 
+For a detailed walkthrough of the transformations, please refer to our [dataframe_transformation.ipynb](https://github.com/databrickslabs/pyspark-ai/blob/master/examples/dataframe_transformation.ipynb) notebook.
+
 ### Data Ingestion
 If you have [set up the Google Python client](https://developers.google.com/docs/api/quickstart/python), you can ingest data via search engine:
 ```python
