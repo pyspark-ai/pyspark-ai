@@ -175,7 +175,9 @@ Given a pyspark DataFrame `df`, with the output columns:
 
 And an explanation of `df`: {explain}
 
-Write Python code to visualize the result of `df` using plotly. Make sure to use the exact column names of `df`.
+Write Python code to visualize the result of `df` using plotly. Do any aggregation against `df` 
+first, before converting the `df` to a pandas DataFrame. Make sure to use the exact column names 
+of `df`.
 Your code may NOT contain "append" anywhere. Instead of append, use pd.concat.
 There is no need to install any package with pip. Do include any necessary import statements.
 Display the plot directly, instead of saving into an HTML.

@@ -1,4 +1,6 @@
 import unittest
+import logging
+from io import StringIO
 from unittest.mock import MagicMock
 
 from chispa.dataframe_comparer import assert_df_equality
@@ -227,7 +229,22 @@ class SparkConnectTests(SparkConnectTestCase):
     def test_spark_connect_autodf_e2e(self):
         try:
             df = self.spark_ai.create_df("https://www.carpro.com/blog/full-year-2022-national-auto-sales-by-brand")
+
+            # Test df aggregation happens before Pandas conversion
+            self.root_logger = logging.getLogger()
+            self.log_capture_string = StringIO()
+            self.ch = logging.StreamHandler(self.log_capture_string)
+            self.root_logger.addHandler(self.ch)
             df.ai.plot("pie chart for US sales market shares, show the top 5 brands and the sum of others")
+            log_contents = self.log_capture_string.getvalue()
+            self.root_logger.removeHandler(self.ch)
+            groupby_index = log_contents.find("groupBy")
+            toPandas_index = log_contents.find("toPandas")
+            self.assertTrue(
+                groupby_index != -1 and toPandas_index != -1 and groupby_index < toPandas_index,
+                "the aggregation 'groupby' should appear before 'toPandas'"
+            )
+
             df.ai.explain()
             df.ai.verify("expect all brands to be unique")
         except Exception:
