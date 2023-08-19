@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
 from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
-from langchain.chat_models import ChatOpenAI, ChatLiteLLM
+from langchain.chat_models import ChatLiteLLM
 from pyspark.sql import DataFrame, SparkSession
 from tiktoken import Encoding
 
