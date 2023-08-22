@@ -1,4 +1,5 @@
 import json
+import re
 from argparse import ArgumentParser
 
 from pyspark.sql import SparkSession
@@ -42,6 +43,48 @@ def get_tables_and_questions(source_file):
             tables.append(item['table_id'])
             questions.append(item['question'])
     return tables, questions
+
+
+def convert_to_wikisql_format(sql_query, table_schema):
+    # Predefined lists for lookup
+    agg_ops = ['', 'MAX', 'MIN', 'COUNT', 'SUM', 'AVG']
+    cond_ops = ['=', '>', '<', 'OP']
+
+    # Find the selected column and aggregation operation (if any)
+    select_pattern = re.compile(r"SELECT\s+(?:([A-Z]+)\s*\()?(?:`?([^`]+)`?)?\)?")
+    select_match = select_pattern.search(sql_query)
+    agg_operation, sel_col = select_match.groups()
+
+    # If there's an aggregation operation, get its index
+    agg_index = 0 if not agg_operation else agg_ops.index(agg_operation)
+
+    # Get the index of the selected column from the table schema
+    sel_col_index = table_schema.index(sel_col) + 1 if sel_col in table_schema else 0
+
+    # Extract the condition column, its operation, and value (if present)
+    where_pattern = re.compile(r"WHERE\s+`?([^`]+)`?\s+([=><])\s+'([^']+)'")
+    where_match = where_pattern.search(sql_query)
+
+    conds = []
+    if where_match:
+        cond_col, cond_op, cond_value = where_match.groups()
+        # Get the index of the condition column from the table schema
+        cond_col_index = table_schema.index(cond_col) + 1
+        cond_op_index = cond_ops.index(cond_op)
+
+        conds.append([cond_col_index, cond_op_index, cond_value])
+
+    # Compile into desired format
+    result = {
+        "query": {
+            "sel": sel_col_index,
+            "agg": agg_index,
+            "conds": conds
+        },
+        "error": ""
+    }
+
+    return result
 
 
 if __name__ == '__main__':
