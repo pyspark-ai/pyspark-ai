@@ -62,12 +62,20 @@ def convert_to_wikisql_format(sql_query, table_schema):
     sel_col_index = table_schema.index(sel_col) + 1 if sel_col in table_schema else 0
 
     # Extract the condition column, its operation, and value (if present)
-    where_pattern = re.compile(r"WHERE\s+`?([^`]+)`?\s+([=><])\s+'([^']+)'")
+    where_pattern = re.compile(r"WHERE\s+`?([^`]+)`?\s+([=><])\s+(?:'([^']+)'|(\d+\.?\d*))")
     where_match = where_pattern.search(sql_query)
 
     conds = []
     if where_match:
-        cond_col, cond_op, cond_value = where_match.groups()
+        cond_col, cond_op, string_val, num_val = where_match.groups()
+        # If string value is present, use it. If num_val is an integer, convert to int, else float.
+        if string_val:
+            cond_value = string_val
+        elif "." in num_val:
+            cond_value = float(num_val)
+        else:
+            cond_value = int(num_val)
+
         # Get the index of the condition column from the table schema
         cond_col_index = table_schema.index(cond_col) + 1
         cond_op_index = cond_ops.index(cond_op)
