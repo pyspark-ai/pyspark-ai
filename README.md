@@ -18,9 +18,10 @@ For a more comprehensive introduction and background to our project, we have the
 pip install pyspark-ai
 ```
 
-## Configuring OpenAI LLMs
+## Configuring LLMs
 As of July 2023, we have found that the GPT-4 works optimally with the English SDK. This superior AI model is readily accessible to all developers through the OpenAI API.
 
+We support 100+ LLMs using [liteLLM](https://github.com/BerriAI/litellm)
 To use OpenAI's Language Learning Models (LLMs), you can set your OpenAI secret key as the `OPENAI_API_KEY` environment variable. This key can be found in your [OpenAI account](https://platform.openai.com/account/api-keys). Example:
 ```bash
 export OPENAI_API_KEY='sk-...'
@@ -39,17 +40,33 @@ spark_ai.activate()  # active partial functions for Spark DataFrame
 
 You can also pass other LLMs to construct the SparkAI instance. For example, by following [this guide](https://python.langchain.com/docs/integrations/chat/azure_chat_openai):
 ```python
-from langchain.chat_models import AzureChatOpenAI
+from langchain.chat_models import ChatLiteLLM
 from pyspark_ai import SparkAI
 
-llm = AzureChatOpenAI(
-    deployment_name=...,
-    model_name=...
-)
+# using ChatLiteLLM with your selected models
+llm = ChatLiteLLM(model_name="gpt-4")
+llm = ChatLiteLLM(model_name="azure/gpt-4-deployment")
+llm = ChatLiteLLM(model_name="gpt-3.5-turbo")
+llm = ChatLiteLLM(model_name="claude-2", temperature=0.3)
+llm = ChatLiteLLM(model_name="command-nightly")
+llm = ChatLiteLLM(model_name="replicate/llama-2-70b-chat:2c1608e18606fad2812020dc541930f2d0495ce32eee50074220b87300bc16e1")
+
 spark_ai = SparkAI(llm=llm)
 spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
 As per [Microsoft's Data Privacy page](https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy), using the Azure OpenAI service can provide better data privacy and security.
+
+### Debugging LLM Calls 
+If you need to see if LLM calls were made successfully + the exact call logs, you can use the [LiteLLM Debugger tool](https://docs.litellm.ai/docs/debugging/hosted_debugging). 
+
+To use the debugger, you will need to:set the `LITELLM_EMAIL` environment variable to `your-email`
+
+```bash
+Your Logs will be viewable in real-time @  `admin.litellm.ai/<your_email>`. 
+
+See our live dashboard 👉 [admin.litellm.ai](https://admin.litellm.ai/)
+
+<img src="./img/dashboard.png" width="900"/>
 
 ### DataFrame Transformation
 Given the following DataFrame `df`:
