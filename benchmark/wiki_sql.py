@@ -46,53 +46,65 @@ def get_tables_and_questions(source_file):
 
 
 def convert_to_wikisql_format(sql_query, table_schema):
-    # Predefined lists for lookup
+    # Define aggregation and condition operations
     agg_ops = ['', 'MAX', 'MIN', 'COUNT', 'SUM', 'AVG']
     cond_ops = ['=', '>', '<', 'OP']
 
-    # Find the selected columns and aggregation operation (if any). Extract the first column if multiple are present.
-    select_pattern = re.compile(r"SELECT\s+(?:([A-Z]+)\s*\()?(?:DISTINCT\s*)?`?([^`]+)?`?")
-    select_match = select_pattern.search(sql_query)
-    agg_operation, sel_col = select_match.groups()
-
-    # If there's an aggregation operation, get its index
-    agg_index = 0 if not agg_operation else agg_ops.index(agg_operation)
-
-    # Get the index of the selected column from the table schema
-    sel_col_index = table_schema.index(sel_col) if sel_col in table_schema else 0
-
-    # Extract the condition column, its operation, and value (if present)
-    where_pattern = re.compile(r"WHERE\s+`?([^`]+)`?\s+([=><])\s+(?:'([^']+)'|(\d+\.?\d*))")
-    where_match = where_pattern.search(sql_query)
-
-    conds = []
-    if where_match:
-        cond_col, cond_op, string_val, num_val = where_match.groups()
-        # If string value is present, use it. If num_val is an integer, convert to int, else float.
-        if string_val:
-            cond_value = string_val
-        elif "." in num_val:
-            cond_value = float(num_val)
-        else:
-            cond_value = int(num_val)
-
-        # Get the index of the condition column from the table schema
-        cond_col_index = table_schema.index(cond_col)
-        cond_op_index = cond_ops.index(cond_op)
-
-        conds.append([cond_col_index, cond_op_index, cond_value])
-
-    # Compile into desired format
-    result = {
+    # Initialize the WikiSQL format dictionary
+    wikisql_format = {
         "query": {
-            "sel": sel_col_index,
-            "agg": agg_index,
-            "conds": conds
+            "sel": -1,
+            "conds": [],
+            "agg": 0
         },
         "error": ""
     }
 
-    return result
+    # Determine the selected column and aggregation
+    agg_found = False
+    for agg_op in agg_ops[1:]:
+        # Two patterns: one expecting backticks, the other not
+        pattern_with_backtick = f"{agg_op}\((DISTINCT\s*)?`([^`]+)`\)"
+        pattern_without_backtick = f"{agg_op}\((DISTINCT\s*)?([^)]+)\)"
+
+        match_with_backtick = re.search(pattern_with_backtick, sql_query)
+        match_without_backtick = re.search(pattern_without_backtick, sql_query)
+
+        if match_with_backtick:
+            col_name = match_with_backtick.group(2).strip()
+            wikisql_format["query"]["agg"] = agg_ops.index(agg_op)
+            agg_found = True
+            break
+        elif match_without_backtick:
+            col_name = match_without_backtick.group(2).strip()
+            wikisql_format["query"]["agg"] = agg_ops.index(agg_op)
+            agg_found = True
+            break
+
+    if not agg_found:
+        all_selected_cols = re.search("SELECT\s+(.+?)\s+FROM", sql_query).group(1).split(",")[0].strip()
+        col_name = all_selected_cols.split(" AS ")[0].replace("`", "").strip()
+        wikisql_format["query"]["sel"] = table_schema.index(col_name)
+
+    # Set the selected column index based on table schema
+    wikisql_format["query"]["sel"] = table_schema.index(col_name)
+
+    # Parse the WHERE clause for conditions
+    where_match = re.search(r"WHERE\s+(.+)$", sql_query)
+    if where_match:
+        conditions = where_match.group(1).split("AND")
+        for cond in conditions:
+            col_name, op, value = re.search(r"(.+?)\s*([=><])\s*(.+)$", cond.strip()).groups()
+            col_name = col_name.replace("`", "").strip()
+            if value.isdigit():
+                value = int(value)
+            elif value.replace(".", "", 1).isdigit():
+                value = float(value)
+            else:
+                value = value.strip("'")
+            wikisql_format["query"]["conds"].append([table_schema.index(col_name), cond_ops.index(op), value])
+
+    return wikisql_format
 
 
 if __name__ == '__main__':
