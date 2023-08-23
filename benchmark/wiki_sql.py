@@ -45,6 +45,23 @@ def get_tables_and_questions(source_file):
     return tables, questions
 
 
+def convert_like_to_equal(sql_clause):
+    # Remove surrounding whitespaces
+    sql_clause = sql_clause.strip()
+
+    # Check if the clause starts with WHERE and contains LIKE
+    if ' LIKE ' in sql_clause:
+        # Replace LIKE with =
+        sql_clause = sql_clause.replace(' LIKE ', ' = ')
+
+        # Replace % at the start and end of the value
+        sql_clause = sql_clause.replace("'%", "'").replace("%'", "'")
+
+        # Handle cases where % might be in the middle of the string, in which case it should be left as is
+        sql_clause = sql_clause.replace("%%", "%")
+
+    return sql_clause
+
 def convert_to_wikisql_format(sql_query, table_schema):
     # Define aggregation and condition operations
     agg_ops = ['', 'MAX', 'MIN', 'COUNT', 'SUM', 'AVG']
@@ -82,8 +99,18 @@ def convert_to_wikisql_format(sql_query, table_schema):
             break
 
     if not agg_found:
-        all_selected_cols = re.search("SELECT\s+(.+?)\s+FROM", sql_query).group(1).split(",")[0].strip()
-        col_name = all_selected_cols.split(" AS ")[0].replace("`", "").strip()
+        # Remove DISTINCT if it appears right after SELECT
+        refined_query = re.sub(r"SELECT\s+DISTINCT\s+", "SELECT ", sql_query)
+        select_part = re.search("SELECT\s+(.+?)\s+FROM", refined_query).group(1)
+
+        # if there is backtick in the first select part, get the column name from it
+        if select_part.startswith("`"):
+            col_name = select_part.split("`")[1]
+        else:
+            # if there is no backtick in the first select part,
+            # get the column name from the first column
+            col_name = select_part.split(",")[0].strip()
+
         wikisql_format["query"]["sel"] = table_schema.index(col_name)
 
     # Set the selected column index based on table schema
@@ -94,6 +121,7 @@ def convert_to_wikisql_format(sql_query, table_schema):
     if where_match:
         conditions = where_match.group(1).split("AND")
         for cond in conditions:
+            cond = convert_like_to_equal(cond)
             col_name, op, value = re.search(r"(.+?)\s*([=><])\s*(.+)$", cond.strip()).groups()
             col_name = col_name.replace("`", "").strip()
             if value.isdigit():
@@ -105,6 +133,11 @@ def convert_to_wikisql_format(sql_query, table_schema):
             wikisql_format["query"]["conds"].append([table_schema.index(col_name), cond_ops.index(op), value])
 
     return wikisql_format
+
+
+def split_columns_outside_backticks(s):
+    # Split by commas but not those enclosed within backticks
+    return re.split(r',(?=[^`]*((`[^`]*`)[^`]*`)*$)', s)
 
 
 if __name__ == '__main__':
@@ -126,8 +159,10 @@ if __name__ == '__main__':
     # Create sql query for each question and table
     with open("pyspark_ai.jsonl", "w") as file:
         for table, question in zip(tables, questions):
+            print(question)
             df = spark.table(f"`{table}`")
-            sql_query = spark_ai._get_transform_sql_query(df, question, cache=False)
+            sql_query = spark_ai._get_transform_sql_query(df, question, cache=True)
+            spark_ai.commit()
             print(sql_query)
             wiki_sql_output = convert_to_wikisql_format(sql_query, df.columns)
             print(wiki_sql_output)

@@ -5,7 +5,7 @@ import unittest
 class TestWikiSQLConversion(unittest.TestCase):
 
     def setUp(self):
-        self.table_schema = ["No. in set", "Country ( exonym )", "col3", "col4", "col5", "col6"]
+        self.table_schema = ["No. in set", "Country ( exonym )", "col3", "col4", "col5", "a, b", "c, %"]
 
     def test_simple_select(self):
         sql_query = "SELECT `Country ( exonym )` AS result FROM table_1_10015132_11 WHERE `No. in set` = '3'"
@@ -52,6 +52,15 @@ class TestWikiSQLConversion(unittest.TestCase):
         expected = {"query": {"sel": 1, "conds": [[0, 0, '5']], "agg": 5}, "error": ""}
         self.assertEqual(convert_to_wikisql_format(sql_query, self.table_schema), expected)
 
+    def test_distinct_without_aggregation(self):
+        sql_query =  "SELECT DISTINCT `Country ( exonym )` FROM table_1_10015132_11 WHERE `No. in set` = '5'"
+        expected = {"query": {"sel": 1, "conds": [[0, 0, '5']], "agg": 0}, "error": ""}
+        self.assertEqual(convert_to_wikisql_format(sql_query, self.table_schema), expected)
+
+    def test_column_with_comma(self):
+        sql_query = "SELECT `a, b` FROM table_1_10015132_11 WHERE `c, %` = '5'"
+        expected = {"query": {"sel": 5, "conds": [[6, 0, '5']], "agg": 0}, "error": ""}
+        self.assertEqual(convert_to_wikisql_format(sql_query, self.table_schema), expected)
 
 if __name__ == '__main__':
     unittest.main()
