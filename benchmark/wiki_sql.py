@@ -50,8 +50,8 @@ def convert_to_wikisql_format(sql_query, table_schema):
     agg_ops = ['', 'MAX', 'MIN', 'COUNT', 'SUM', 'AVG']
     cond_ops = ['=', '>', '<', 'OP']
 
-    # Find the selected column and aggregation operation (if any)
-    select_pattern = re.compile(r"SELECT\s+(?:([A-Z]+)\s*\()?(?:`?([^`]+)`?)?\)?")
+    # Find the selected columns and aggregation operation (if any). Extract the first column if multiple are present.
+    select_pattern = re.compile(r"SELECT\s+(?:([A-Z]+)\s*\()?(?:DISTINCT\s*)?`?([^`]+)?`?")
     select_match = select_pattern.search(sql_query)
     agg_operation, sel_col = select_match.groups()
 
@@ -59,7 +59,7 @@ def convert_to_wikisql_format(sql_query, table_schema):
     agg_index = 0 if not agg_operation else agg_ops.index(agg_operation)
 
     # Get the index of the selected column from the table schema
-    sel_col_index = table_schema.index(sel_col) + 1 if sel_col in table_schema else 0
+    sel_col_index = table_schema.index(sel_col) if sel_col in table_schema else 0
 
     # Extract the condition column, its operation, and value (if present)
     where_pattern = re.compile(r"WHERE\s+`?([^`]+)`?\s+([=><])\s+(?:'([^']+)'|(\d+\.?\d*))")
@@ -77,7 +77,7 @@ def convert_to_wikisql_format(sql_query, table_schema):
             cond_value = int(num_val)
 
         # Get the index of the condition column from the table schema
-        cond_col_index = table_schema.index(cond_col) + 1
+        cond_col_index = table_schema.index(cond_col)
         cond_op_index = cond_ops.index(cond_op)
 
         conds.append([cond_col_index, cond_op_index, cond_value])
@@ -112,8 +112,12 @@ if __name__ == '__main__':
     tables, questions = get_tables_and_questions(source_file)
     spark_ai = SparkAI(spark_session=spark)
     # Create sql query for each question and table
-    for table, question in zip(tables, questions):
-        df = spark.table(f"`{table}`")
-        sql_query = spark_ai._get_transform_sql_query(df, question, cache=False)
-        print(sql_query)
+    with open("pyspark_ai.jsonl", "w") as file:
+        for table, question in zip(tables, questions):
+            df = spark.table(f"`{table}`")
+            sql_query = spark_ai._get_transform_sql_query(df, question, cache=False)
+            print(sql_query)
+            wiki_sql_output = convert_to_wikisql_format(sql_query, df.columns)
+            print(wiki_sql_output)
+            file.write(json.dumps(wiki_sql_output) + "\n")
 
