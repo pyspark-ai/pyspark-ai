@@ -2,6 +2,7 @@ import json
 import re
 from argparse import ArgumentParser
 
+from babel.numbers import parse_decimal, NumberFormatError
 from pyspark.sql import SparkSession
 
 from pyspark_ai import SparkAI
@@ -9,7 +10,7 @@ from pyspark_ai import SparkAI
 
 def generate_sql_statements(table_file):
     sql_statements = []
-
+    num_re = re.compile(r'[-+]?\d*\.\d+|\d+')
     with open(table_file, 'r') as f:
         for line in f:
             item = json.loads(line.strip())
@@ -23,8 +24,16 @@ def generate_sql_statements(table_file):
             values_str_list = []
 
             for row in rows:
+                vals = []
+                for val in row:
+                    if isinstance(val, str):
+                        val = "'{}'".format(val.lower().replace("'", "''").replace("\\", "\\\\"))
+                    else:
+                        val = str(float(val))
+                    vals.append(val)
+
                 # Convert each value in the row to a string and escape single quotes
-                values_str_list.append("(" + ",".join(["'{}'".format(str(val).replace("'", "''").replace("\\", "\\\\")) for val in row]) + ")")
+                values_str_list.append("(" + ",".join(vals) + ")")
 
             values_str = ",".join(values_str_list)
             create_statement = f"CREATE TEMP VIEW `{table_name}` AS SELECT * FROM VALUES {values_str} as {header_str};"
@@ -57,27 +66,33 @@ if __name__ == '__main__':
     table_file = args.table_file
     statements = generate_sql_statements(table_file)
     spark = SparkSession.builder.getOrCreate()
-    spark.conf.set("spark.sql.caseSensitive", "true")
+    # spark.conf.set("spark.sql.caseSensitive", "true")
     for stmt in statements:
         spark.sql(stmt)
 
     source_file = args.source_file
     tables, questions, results = get_tables_and_questions(source_file)
     spark_ai = SparkAI(spark_session=spark)
-    spark_ai.activate()
     matched = 0
     # Create sql query for each question and table
     with open("pyspark_ai.jsonl", "w") as file:
         for table, question, result in zip(tables, questions, results):
             print(question)
             df = spark.table(f"`{table}`")
-            result_df = df.ai.transform(question)
+            try:
+                query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True)
+                result_df = spark.sql(query.lower())
+            except Exception as e:
+                print(e)
+                continue
             spark_ai.commit()
             for i in range(len(result_df.columns)):
                 answer = result_df.rdd.map(lambda row: row[i]).collect()
                 if answer == result:
                     matched += 1
                     break
+                else:
+                    print(f"Answer: {answer} does not match {result}")
 
     print(f"Matched {matched} out of {len(results)}")
 

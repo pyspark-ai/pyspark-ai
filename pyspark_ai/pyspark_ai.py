@@ -355,11 +355,11 @@ class SparkAI:
             sample_rows_str = ""
 
         return (
-            "/*"
+            "/*\n"
             f"{self._sample_rows_in_table_info} rows from {temp_view_name} table:\n"
             f"{columns_str}\n"
             f"{sample_rows_str}"
-            "*/"
+            "*/\n"
         )
 
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
@@ -387,7 +387,7 @@ class SparkAI:
                 return sql_query
         else:
             return self._get_transform_sql_query_from_agent(
-                temp_view_name, schema_str, desc
+                temp_view_name, schema_str, sample_rows_str, desc
             )
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:

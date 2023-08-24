@@ -109,22 +109,26 @@ class AIUtils:
         return AIMethodWrapper(self.spark_ai, instance)
 
     @staticmethod
-    def extract_code_blocks(text) -> List[str]:
+    def extract_code_blocks(text: str) -> List[str]:
+        # Pattern to match code blocks wrapped in triple backticks
         code_block_pattern = re.compile(r"```(.*?)```", re.DOTALL)
-        code_blocks = re.findall(code_block_pattern, text)
-        if code_blocks:
-            # If there are code blocks, strip them and remove language
-            # specifiers.
-            extracted_blocks = []
-            for block in code_blocks:
+        triple_backtick_blocks = re.findall(code_block_pattern, text)
+
+        extracted_blocks = []
+
+        # Handle triple backtick blocks
+        if triple_backtick_blocks:
+            for block in triple_backtick_blocks:
                 block = block.strip()
                 if block.startswith("python"):
                     block = block.replace("python\n", "", 1)
                 elif block.startswith("sql"):
                     block = block.replace("sql\n", "", 1)
                 extracted_blocks.append(block)
+
             return extracted_blocks
         else:
-            # If there are no code blocks, treat the whole text as a single
-            # block of code.
+            # Check for single backtick block
+            if text.startswith("`") and text.endswith("`"):
+                return [text.strip("`")]
             return [text]
