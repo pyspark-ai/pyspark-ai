@@ -32,12 +32,11 @@ Here is an example of how to store data into the temp view {view_name}:
 CREATE OR REPLACE TEMP VIEW {view_name} AS SELECT * FROM VALUES('Citizen Kane', 1941), ('Schindler\'s List', 1993) AS v1(title, year)
 ```
 {columns}
-{sample_rows}
 The answer MUST contain query only and the temp view MUST be {view_name}.
 """
 
 SQL_PROMPT = PromptTemplate(
-    input_variables=["query", "web_content", "view_name", "columns", "sample_rows"],
+    input_variables=["query", "web_content", "view_name", "columns"],
     template=SQL_TEMPLATE,
 )
 
