@@ -8,9 +8,9 @@ from pyspark.sql import SparkSession
 from pyspark_ai import SparkAI
 
 
-def generate_sql_statements(table_file):
+# Generate ingestion SQL statements from the table definition file, using `CREATE TEMP VIEW ... AS SELECT`.
+def create_temp_view_statements(table_file):
     sql_statements = []
-    num_re = re.compile(r'[-+]?\d*\.\d+|\d+')
     with open(table_file, 'r') as f:
         for line in f:
             item = json.loads(line.strip())
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     table_file = args.table_file
-    statements = generate_sql_statements(table_file)
+    statements = create_temp_view_statements(table_file)
     spark = SparkSession.builder.getOrCreate()
     for stmt in statements:
         spark.sql(stmt)

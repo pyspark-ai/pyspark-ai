@@ -353,12 +353,13 @@ class SparkAI:
     def _get_sample_spark_rows(self, df: DataFrame, temp_view_name: str) -> str:
         if self._sample_rows_in_table_info <= 0:
             return ""
-        columns_str = "\t".join(list(map(lambda f: f.name, df.schema.fields)))
+        columns_str = "\t".join([f.name for f in df.schema.fields])
         try:
             sample_rows = self._get_dataframe_results(df.limit(3))
             # save the sample rows in string format
             sample_rows_str = "\n".join(["\t".join(row) for row in sample_rows])
         except Exception:
+            # If fail to get sample rows, return empty string
             sample_rows_str = ""
 
         return (
