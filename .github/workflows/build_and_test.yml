@@ -14,6 +14,19 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
+    - name: Assign secret to env var
+      run: |
+        if [[ -z "${{ secrets.OPENAI_API_KEY }}" ]]; then
+          echo "SECRET_NOT_SET=true" >> $GITHUB_ENV
+        else
+          echo "SECRET_IS_SET=true" >> $GITHUB_ENV
+    - name: Check if secret is set
+      run: |
+        if [[ "$SECRET_NOT_SET" == "true" ]]; then
+          echo "The secret is not set!"
+        elif [[ "$SECRET_IS_SET" == "true" ]]; then
+          echo "The secret is set!"
+        fi
       - name: Install Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4 
         with:
@@ -46,9 +59,11 @@ jobs:
           cd spark
           ./sbin/start-connect-server.sh --packages org.apache.spark:spark-connect_2.12:3.4.1
 
+      - name: Use secret as environment variable
+        run: |
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+
       - name: Run tests
         run: |
           cd pyspark-ai
           poetry run python -m unittest 'tests.test_spark_ai.SparkConnectTests.test_spark_connect_autodf_e2e'
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
