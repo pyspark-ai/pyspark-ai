@@ -70,6 +70,9 @@ class SparkAI:
         :param spark_session: optional SparkSession, a new one will be created if not provided
         :param encoding: optional Encoding, cl100k_base will be used if not provided
         :param max_tokens_of_web_content: maximum tokens of web content after encoding
+        :param sample_rows_in_table_info: number of rows to be sampled and shown in the table info.
+                                        This is only used for SQL transform. To disable it, set it to 0.
+        :param verbose: whether to print out the log
         """
         self._spark = spark_session or SparkSession.builder.getOrCreate()
         if llm is None:
