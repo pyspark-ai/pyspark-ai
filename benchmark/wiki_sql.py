@@ -42,18 +42,46 @@ def generate_sql_statements(table_file):
     return sql_statements
 
 
+# Reconstruction of the original query from the table id and standard query format
+def get_sql_query(table_id, select_index, aggregation_index, conditions):
+    agg_ops = ['', 'MAX', 'MIN', 'COUNT', 'SUM', 'AVG']
+    cond_ops = ['=', '>', '<', 'OP']
+    num_re = re.compile(r'[-+]?\d*\.\d+|\d+')
+    df = spark.table(f"`{table_id}`")
+    select = df.columns[select_index]
+    agg = agg_ops[aggregation_index]
+    if agg != 0:
+        select = f"{agg}({select})"
+    where_clause = []
+    for col_index, op, val in conditions:
+        if isinstance(val, str):
+            val = f"'{val.lower()}'"
+        if df.dtypes[col_index][1] == 'double' and not isinstance(val, (int, float)):
+            try:
+                val = float(parse_decimal(val))
+            except NumberFormatError as e:
+                val = float(num_re.findall(val)[0])
+        where_clause.append(f"`{df.columns[col_index]}` {cond_ops[op]} {val}")
+    where_str = ''
+    if where_clause:
+        where_str = 'WHERE ' + ' AND '.join(where_clause)
+    return f"SELECT `{select}` FROM `{table_id}` {where_str}"
+
+
 # Parse questions and tables from the source file
 def get_tables_and_questions(source_file):
     tables = []
     questions = []
     results = []
+    sqls = []
     with open(source_file, 'r') as f:
         for line in f:
             item = json.loads(line.strip())
             tables.append(item['table_id'])
             questions.append(item['question'])
             results.append(item['result'])
-    return tables, questions, results
+            sqls.append(item['sql'])
+    return tables, questions, results, sqls
 
 
 if __name__ == '__main__':
@@ -62,37 +90,41 @@ if __name__ == '__main__':
     parser.add_argument('source_file', help='source file for the prediction')
     args = parser.parse_args()
 
-    # Example usage:
     table_file = args.table_file
     statements = generate_sql_statements(table_file)
     spark = SparkSession.builder.getOrCreate()
-    # spark.conf.set("spark.sql.caseSensitive", "true")
     for stmt in statements:
         spark.sql(stmt)
 
     source_file = args.source_file
-    tables, questions, results = get_tables_and_questions(source_file)
-    spark_ai = SparkAI(spark_session=spark)
+    tables, questions, results, sqls = get_tables_and_questions(source_file)
+    spark_ai = SparkAI(spark_session=spark, verbose=False)
     matched = 0
     # Create sql query for each question and table
     with open("pyspark_ai.jsonl", "w") as file:
-        for table, question, result in zip(tables, questions, results):
-            print(question)
+        for table, question, expected_result, sql in zip(tables, questions, results, sqls):
             df = spark.table(f"`{table}`")
             try:
-                query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True)
-                result_df = spark.sql(query.lower())
+                query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True).lower()
+                result_df = spark.sql(query)
             except Exception as e:
                 print(e)
                 continue
             spark_ai.commit()
+            found_match = False
             for i in range(len(result_df.columns)):
-                answer = result_df.rdd.map(lambda row: row[i]).collect()
-                if answer == result:
+                spark_ai_result = result_df.rdd.map(lambda row: row[i]).collect()
+                if spark_ai_result == expected_result:
                     matched += 1
+                    found_match = True
                     break
-                else:
-                    print(f"Answer: {answer} does not match {result}")
+            if not found_match:
+                print("Question: {}".format(question))
+                print("Expected query: {}".format(get_sql_query(table, sql["sel"], sql["agg"], sql["conds"])))
+                print("Actual query: {}".format(query))
+                print("Expected result: {}".format(expected_result))
+                print("Actual result: {}".format(spark_ai_result))
+                print("")
 
     print(f"Matched {matched} out of {len(results)}")
 
