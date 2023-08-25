@@ -50,3 +50,5 @@ jobs:
         run: |
           cd pyspark-ai
           poetry run python -m unittest 'tests.test_spark_ai.SparkConnectTests.test_spark_connect_autodf_e2e'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
