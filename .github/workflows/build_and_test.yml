@@ -49,4 +49,4 @@ jobs:
       - name: Run tests
         run: |
           cd pyspark-ai
-          python -m unittest 'tests.test_spark_ai.SparkConnectTests.test_spark_connect_autodf_e2e'
+          poetry run python -m unittest 'tests.test_spark_ai.SparkConnectTests.test_spark_connect_autodf_e2e'
