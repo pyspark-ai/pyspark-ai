@@ -20,6 +20,7 @@ jobs:
             echo "SECRET_NOT_SET=true" >> $GITHUB_ENV
           else
             echo "SECRET_IS_SET=true" >> $GITHUB_ENV
+          fi
       - name: Check if secret is set
         run: |
           if [[ "$SECRET_NOT_SET" == "true" ]]; then
