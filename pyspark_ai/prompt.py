@@ -87,6 +87,7 @@ SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` with the
 ```
 {columns}
 ```
+{sample_rows}
 Write a Spark SQL query to retrieve from view `{view_name}`: {desc}
 {agent_scratchpad}"""
 
@@ -94,7 +95,7 @@ SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL qu
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,
     suffix=SPARK_SQL_SUFFIX,
-    input_variables=["view_name", "columns", "desc", "agent_scratchpad"],
+    input_variables=["view_name", "columns", "sample_rows", "desc", "agent_scratchpad"],
     prefix=SPARK_SQL_PREFIX,
 )
 

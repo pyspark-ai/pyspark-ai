@@ -13,6 +13,7 @@ from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
 from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
+from pyspark import Row
 from pyspark.sql import DataFrame, SparkSession
 from tiktoken import Encoding
 
@@ -56,6 +57,7 @@ class SparkAI:
         cache_file_location: Optional[str] = None,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
+        sample_rows_in_table_info: int = 3,
         verbose: bool = True,
     ) -> None:
         """
@@ -68,6 +70,9 @@ class SparkAI:
         :param spark_session: optional SparkSession, a new one will be created if not provided
         :param encoding: optional Encoding, cl100k_base will be used if not provided
         :param max_tokens_of_web_content: maximum tokens of web content after encoding
+        :param sample_rows_in_table_info: number of rows to be sampled and shown in the table info.
+                                        This is only used for SQL transform. To disable it, set it to 0.
+        :param verbose: whether to print out the log
         """
         self._spark = spark_session or SparkSession.builder.getOrCreate()
         if llm is None:
@@ -103,6 +108,7 @@ class SparkAI:
         self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
+        self._sample_rows_in_table_info = sample_rows_in_table_info
         self._verbose = verbose
         if verbose:
             self._logger = CodeLogger("spark_ai")
@@ -327,13 +333,42 @@ class SparkAI:
         return self._create_dataframe_with_llm(page_content, desc, columns, cache)
 
     def _get_transform_sql_query_from_agent(
-        self, temp_view_name: str, schema: str, desc: str
+        self, temp_view_name: str, schema: str, sample_rows_str: str, desc: str
     ) -> str:
         llm_result = self._sql_agent.run(
-            view_name=temp_view_name, columns=schema, desc=desc
+            view_name=temp_view_name,
+            columns=schema,
+            sample_rows=sample_rows_str,
+            desc=desc,
         )
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
         return sql_query_from_response
+
+    def _convert_row_as_tuple(self, row: Row) -> tuple:
+        return tuple(map(str, row.asDict().values()))
+
+    def _get_dataframe_results(self, df: DataFrame) -> list:
+        return list(map(self._convert_row_as_tuple, df.collect()))
+
+    def _get_sample_spark_rows(self, df: DataFrame, temp_view_name: str) -> str:
+        if self._sample_rows_in_table_info <= 0:
+            return ""
+        columns_str = "\t".join([f.name for f in df.schema.fields])
+        try:
+            sample_rows = self._get_dataframe_results(df.limit(3))
+            # save the sample rows in string format
+            sample_rows_str = "\n".join(["\t".join(row) for row in sample_rows])
+        except Exception:
+            # If fail to get sample rows, return empty string
+            sample_rows_str = ""
+
+        return (
+            "/*\n"
+            f"{self._sample_rows_in_table_info} rows from {temp_view_name} table:\n"
+            f"{columns_str}\n"
+            f"{sample_rows_str}"
+            "*/\n"
+        )
 
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
         temp_view_name = random_view_name()
@@ -343,22 +378,24 @@ class SparkAI:
         self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)
         schema_str = self._get_df_schema(df)
+        sample_rows_str = self._get_sample_spark_rows(df, temp_view_name)
 
         if cache:
             cache_key = ReActSparkSQLAgent.cache_key(desc, schema_str)
             cached_result = self._cache.lookup(key=cache_key)
             if cached_result is not None:
-                self.log("Using cached result for the transform.")
+                self.log("Using cached result for the transform:")
+                self.log(CodeLogger.colorize_code(cached_result, "sql"))
                 return replace_view_name(cached_result, temp_view_name)
             else:
                 sql_query = self._get_transform_sql_query_from_agent(
-                    temp_view_name, schema_str, desc
+                    temp_view_name, schema_str, sample_rows_str, desc
                 )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
             return self._get_transform_sql_query_from_agent(
-                temp_view_name, schema_str, desc
+                temp_view_name, schema_str, sample_rows_str, desc
             )
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
