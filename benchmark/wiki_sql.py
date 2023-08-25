@@ -101,30 +101,30 @@ if __name__ == '__main__':
     spark_ai = SparkAI(spark_session=spark, verbose=False)
     matched = 0
     # Create sql query for each question and table
-    with open("pyspark_ai.jsonl", "w") as file:
-        for table, question, expected_result, sql in zip(tables, questions, results, sqls):
-            df = spark.table(f"`{table}`")
-            try:
-                query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True).lower()
-                result_df = spark.sql(query)
-            except Exception as e:
-                print(e)
-                continue
-            spark_ai.commit()
-            found_match = False
-            for i in range(len(result_df.columns)):
-                spark_ai_result = result_df.rdd.map(lambda row: row[i]).collect()
-                if spark_ai_result == expected_result:
-                    matched += 1
-                    found_match = True
-                    break
-            if not found_match:
-                print("Question: {}".format(question))
-                print("Expected query: {}".format(get_sql_query(table, sql["sel"], sql["agg"], sql["conds"])))
-                print("Actual query: {}".format(query))
-                print("Expected result: {}".format(expected_result))
-                print("Actual result: {}".format(spark_ai_result))
-                print("")
+    for table, question, expected_result, sql in zip(tables, questions, results, sqls):
+        df = spark.table(f"`{table}`")
+        try:
+            query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True).lower()
+            result_df = spark.sql(query)
+        except Exception as e:
+            print(e)
+            continue
+        spark_ai.commit()
+        found_match = False
+        spark_ai_result = []
+        for i in range(len(result_df.columns)):
+            spark_ai_result = result_df.rdd.map(lambda row: row[i]).collect()
+            if spark_ai_result == expected_result:
+                matched += 1
+                found_match = True
+                break
+        if not found_match:
+            print("Question: {}".format(question))
+            print("Expected query: {}".format(get_sql_query(table, sql["sel"], sql["agg"], sql["conds"])))
+            print("Actual query: {}".format(query))
+            print("Expected result: {}".format(expected_result))
+            print("Actual result: {}".format(spark_ai_result))
+            print("")
 
     print(f"Matched {matched} out of {len(results)}")
 
