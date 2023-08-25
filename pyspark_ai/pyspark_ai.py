@@ -333,13 +333,17 @@ class SparkAI:
         self, temp_view_name: str, schema: str, sample_rows_str: str, desc: str
     ) -> str:
         llm_result = self._sql_agent.run(
-            view_name=temp_view_name, columns=schema, sample_rows=sample_rows_str, desc=desc
+            view_name=temp_view_name,
+            columns=schema,
+            sample_rows=sample_rows_str,
+            desc=desc,
         )
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
         return sql_query_from_response
 
     def _convert_row_as_tuple(self, row: Row) -> tuple:
         return tuple(map(str, row.asDict().values()))
+
     def _get_dataframe_results(self, df: DataFrame) -> list:
         return list(map(self._convert_row_as_tuple, df.collect()))
 
