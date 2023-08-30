@@ -69,19 +69,19 @@ def get_sql_query(table_id, select_index, aggregation_index, conditions):
 
 
 # Parse questions and tables from the source file
-def get_tables_and_questions(source_file):
+def get_tables_and_instructions(source_file):
     tables = []
-    questions = []
+    instructions = []
     results = []
     sqls = []
     with open(source_file, 'r') as f:
         for line in f:
             item = json.loads(line.strip())
             tables.append(item['table_id'])
-            questions.append(item['question'])
+            instructions.append(item['instruction'])
             results.append(item['result'])
             sqls.append(item['sql'])
-    return tables, questions, results, sqls
+    return tables, instructions, results, sqls
 
 
 if __name__ == '__main__':
@@ -97,14 +97,14 @@ if __name__ == '__main__':
         spark.sql(stmt)
 
     source_file = args.source_file
-    tables, questions, results, sqls = get_tables_and_questions(source_file)
+    tables, instructions, results, sqls = get_tables_and_instructions(source_file)
     spark_ai = SparkAI(spark_session=spark, verbose=False)
     matched = 0
     # Create sql query for each question and table
-    for table, question, expected_result, sql in zip(tables, questions, results, sqls):
+    for table, instruction, expected_result, sql in zip(tables, instructions, results, sqls):
         df = spark.table(f"`{table}`")
         try:
-            query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True).lower()
+            query = spark_ai._get_transform_sql_query(df=df, desc=instruction, cache=True).lower()
             result_df = spark.sql(query)
         except Exception as e:
             print(e)
@@ -119,7 +119,7 @@ if __name__ == '__main__':
                 found_match = True
                 break
         if not found_match:
-            print("Question: {}".format(question))
+            print("Instruction: {}".format(instruction))
             print("Expected query: {}".format(get_sql_query(table, sql["sel"], sql["agg"], sql["conds"])))
             print("Actual query: {}".format(query))
             print("Expected result: {}".format(expected_result))
