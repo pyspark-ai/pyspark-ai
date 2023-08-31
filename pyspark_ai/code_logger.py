@@ -5,6 +5,7 @@ import sys
 from pygments import highlight
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer, SqlLexer
+from contextlib import contextmanager
 
 GREEN = "\033[92m"  # terminal code for green
 YELLOW = "\033[93m"  # terminal code for yellow
@@ -62,3 +63,10 @@ class CodeLogger:
 
     def warning(self, message):
         self.logger.warning(message)
+
+    @contextmanager
+    def disable_code_colorization(self):
+        original_colorize_code = self.colorize_code
+        self.colorize_code = lambda code, language=None: code
+        yield
+        self.colorize_code = original_colorize_code
