@@ -202,7 +202,7 @@ class SparkAnalysisTest(SparkTestCase):
     def test_analysis_handling(self):
         self.spark_ai = SparkAI(llm=self.llm_mock)
         df = self.spark.range(100).groupBy("id").count()
-        left = self.spark_ai._parse_explain_string(df)
+        left = self.spark_ai._get_analyzed_plan_from_explain(df)
         right = df._jdf.queryExecution().analyzed().toString()
         self.assertEqual(left, right)
 
