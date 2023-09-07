@@ -8,6 +8,10 @@ from pyspark.sql import SparkSession
 from pyspark_ai import SparkAI
 
 
+def replace_quotes_and_backslashes(s):
+    return s.replace("'", "''").replace("\\", "\\\\")
+
+
 # Generate ingestion SQL statements from the table definition file, using `CREATE TEMP VIEW ... AS SELECT`.
 def create_temp_view_statements(table_file):
     sql_statements = []
@@ -15,7 +19,7 @@ def create_temp_view_statements(table_file):
         for line in f:
             item = json.loads(line.strip())
 
-            table_name = item['id']
+            table_name = get_table_name(item['id'])
             # quote the headers with backticks
             headers = ["`{}`".format(h) for h in item['header']]
             header_str = "(" + ",".join(headers) + ")"
@@ -27,7 +31,7 @@ def create_temp_view_statements(table_file):
                 vals = []
                 for val in row:
                     if isinstance(val, str):
-                        val = "'{}'".format(val.lower().replace("'", "''").replace("\\", "\\\\"))
+                        val = "'{}'".format(replace_quotes_and_backslashes(val.lower()))
                     else:
                         val = str(float(val))
                     vals.append(val)
@@ -36,18 +40,33 @@ def create_temp_view_statements(table_file):
                 values_str_list.append("(" + ",".join(vals) + ")")
 
             values_str = ",".join(values_str_list)
-            create_statement = f"CREATE TEMP VIEW `{table_name}` AS SELECT * FROM VALUES {values_str} as {header_str};"
+            # if key section title exist, add it to the comment
+            if 'section_title' in item:
+                section_title = item['section_title'] + " of "
+            else:
+                section_title = ''
+
+            if 'page_title' in item:
+                page_title = item['page_title']
+            else:
+                page_title = ''
+            comment = section_title + page_title
+            create_statement = f"CREATE TABLE IF NOT EXISTS `{table_name}` USING ORC comment \"{comment}\" AS SELECT * FROM VALUES {values_str} as {header_str};"
             sql_statements.append(create_statement)
 
     return sql_statements
 
+
+def get_table_name(table_id: str) -> str:
+    # map table id like '1-1004033-1' to 'table_1_1004033_1'
+    return 'table_' + table_id.replace('-', '_')
 
 # Reconstruction of the original query from the table id and standard query format
 def get_sql_query(table_id, select_index, aggregation_index, conditions):
     agg_ops = ['', 'MAX', 'MIN', 'COUNT', 'SUM', 'AVG']
     cond_ops = ['=', '>', '<', 'OP']
     num_re = re.compile(r'[-+]?\d*\.\d+|\d+')
-    df = spark.table(f"`{table_id}`")
+    df = spark.table(f"`{get_table_name(table_id)}`")
     select = df.columns[select_index]
     agg = agg_ops[aggregation_index]
     if agg != 0:
@@ -102,7 +121,7 @@ if __name__ == '__main__':
     matched = 0
     # Create sql query for each question and table
     for table, question, expected_result, sql in zip(tables, questions, results, sqls):
-        df = spark.table(f"`{table}`")
+        df = spark.table(f"`{get_table_name(table)}`")
         try:
             query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True).lower()
             result_df = spark.sql(query)
