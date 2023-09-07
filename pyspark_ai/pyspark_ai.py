@@ -354,7 +354,12 @@ class SparkAI:
         return self._create_dataframe_with_llm(page_content, desc, columns, cache)
 
     def _get_transform_sql_query_from_agent(
-        self, temp_view_name: str, schema: str, sample_rows_str: str, comment: str, desc: str
+        self,
+        temp_view_name: str,
+        schema: str,
+        sample_rows_str: str,
+        comment: str,
+        desc: str,
     ) -> str:
         llm_result = self._sql_agent.run(
             view_name=temp_view_name,
