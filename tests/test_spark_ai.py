@@ -37,6 +37,45 @@ class SparkAIInitializationTestCase(unittest.TestCase):
         self.assertEqual(self.spark_ai._max_tokens_of_web_content, 3000)
 
 
+class TestGetTablesFromExplain(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.spark = SparkSession.builder.getOrCreate()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.spark.stop()
+
+    def create_and_read_table(self, table_name, data):
+        self.spark.createDataFrame(data, ["col1", "col2"]).write.saveAsTable(table_name)
+        return self.spark.sql(f"SELECT * FROM {table_name}")
+
+    def test_single_table(self):
+        table_name = "spark_catalog.default.test_table1"
+        try:
+            df = self.create_and_read_table(table_name, [(1, "foo"), (2, "bar")])
+            tables = SparkAI._get_tables_from_explain(df)
+            self.assertEqual(tables, [table_name])
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    def test_multiple_tables(self):
+        table_names = ["spark_catalog.default.test_table1", "spark_catalog.default.test_table2"]
+        try:
+            dfs = [self.create_and_read_table(name, [(1, "foo"), (2, "bar")]) for name in table_names]
+            df = dfs[0].join(dfs[1], "col1")
+            tables = SparkAI._get_tables_from_explain(df)
+            self.assertEqual(tables, table_names)
+        finally:
+            for name in table_names:
+                self.spark.sql(f"DROP TABLE IF EXISTS {name}")
+
+    def test_no_table(self):
+        df = self.spark.createDataFrame([(1, "foo"), (2, "bar")], ["col1", "col2"])
+        tables = SparkAI._get_tables_from_explain(df)
+        self.assertEqual(tables, [])
+
 class SparkAITrimTextTestCase(unittest.TestCase):
     """Test cases for the _trim_text_from_end method of the SparkAI."""
 

@@ -272,11 +272,12 @@ class SparkAI:
         # The first line is the output schema.
         return "\n".join(splits[begin + 2 : end])
 
-    def _get_tables_from_explain(self, df: DataFrame) -> List[str]:
+    @staticmethod
+    def _get_tables_from_explain(df: DataFrame) -> List[str]:
         """
         Helper function to parse the tables from the content of the explanation
         """
-        explain = self._get_analyzed_plan_from_explain(df)
+        explain = SparkAI._get_analyzed_plan_from_explain(df)
         splits = explain.split("\n")
         # For table relations, the table name is the 2nd element in the line
         # It can be one of the followings:
