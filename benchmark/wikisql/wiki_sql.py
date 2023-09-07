@@ -8,6 +8,10 @@ from pyspark.sql import SparkSession
 from pyspark_ai import SparkAI
 
 
+def replace_quotes_and_backslashes(s):
+    return s.replace("'", "''").replace("\\", "\\\\")
+
+
 # Generate ingestion SQL statements from the table definition file, using `CREATE TEMP VIEW ... AS SELECT`.
 def create_temp_view_statements(table_file):
     sql_statements = []
@@ -27,7 +31,7 @@ def create_temp_view_statements(table_file):
                 vals = []
                 for val in row:
                     if isinstance(val, str):
-                        val = "'{}'".format(val.lower().replace("'", "''").replace("\\", "\\\\"))
+                        val = "'{}'".format(replace_quotes_and_backslashes(val.lower()))
                     else:
                         val = str(float(val))
                     vals.append(val)
@@ -36,8 +40,18 @@ def create_temp_view_statements(table_file):
                 values_str_list.append("(" + ",".join(vals) + ")")
 
             values_str = ",".join(values_str_list)
-            comment = item['section_title'] + " of " + item['page_title']
-            create_statement = f"CREATE TABLE IF NOT EXISTS `{table_name}` USING ORC comment '{comment}' AS SELECT * FROM VALUES {values_str} as {header_str};"
+            # if key section title exist, add it to the comment
+            if 'section_title' in item:
+                section_title = item['section_title'] + " of "
+            else:
+                section_title = ''
+
+            if 'page_title' in item:
+                page_title = item['page_title']
+            else:
+                page_title = ''
+            comment = section_title + page_title
+            create_statement = f"CREATE TABLE IF NOT EXISTS `{table_name}` USING ORC comment \"{comment}\" AS SELECT * FROM VALUES {values_str} as {header_str};"
             sql_statements.append(create_statement)
 
     return sql_statements
@@ -109,7 +123,7 @@ if __name__ == '__main__':
     for table, question, expected_result, sql in zip(tables, questions, results, sqls):
         df = spark.table(f"`{get_table_name(table)}`")
         try:
-            query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=False).lower()
+            query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True).lower()
             result_df = spark.sql(query)
         except Exception as e:
             print(e)
