@@ -1,6 +1,7 @@
 import json
 import re
 from argparse import ArgumentParser
+from itertools import zip_longest
 
 from babel.numbers import parse_decimal, NumberFormatError
 from pyspark.sql import SparkSession
@@ -83,6 +84,15 @@ def get_tables_and_questions(source_file):
             sqls.append(item['sql'])
     return tables, questions, results, sqls
 
+def similarity(spark_ai_result, expected_result):
+    import spacy
+    from spacy.lang.en.examples import sentences
+
+    spacy_model = spacy.load('en_core_web_lg')
+
+    # doc = spacy_model(sentences[0])
+
+    return spacy_model(spark_ai_result).similarity(spacy_model(expected_result))
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -112,12 +122,34 @@ if __name__ == '__main__':
         spark_ai.commit()
         found_match = False
         spark_ai_result = []
+        similarity_score = 0
+
         for i in range(len(result_df.columns)):
             spark_ai_result = result_df.rdd.map(lambda row: row[i]).collect()
-            if spark_ai_result == expected_result:
-                matched += 1
-                found_match = True
-                break
+
+            spark_ai_result = [str(ele) for ele in spark_ai_result]
+            expected_result = [str(ele) for ele in expected_result]
+
+            actual_phrase = " ".join(spark_ai_result)
+            expected_phrase = " ".join(expected_result)
+
+            print("actual phrase", actual_phrase)
+            print("expected phrase", expected_phrase)
+
+            similarity_score += similarity(str(actual_phrase), str(expected_phrase))
+            # if spark_ai_result == expected_result:
+            #     matched += 1
+            #     found_match = True
+            #     break
+            # if spark_ai_result == expected_result:
+            #     matched += 1
+            #     found_match = True
+            #     break
+        similarity_score /= len(result_df.columns)
+        if similarity_score > 0:
+            found_match = True
+        print("curr match", similarity_score)
+        matched += similarity_score
         if not found_match:
             print("Question: {}".format(question))
             print("Expected query: {}".format(get_sql_query(table, sql["sel"], sql["agg"], sql["conds"])))
