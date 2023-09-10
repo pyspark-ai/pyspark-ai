@@ -250,7 +250,7 @@ class SparkAI:
         return trimmed_plan
 
     @staticmethod
-    def _parse_explain_string(df: DataFrame) -> str:
+    def _get_analyzed_plan_from_explain(df: DataFrame) -> str:
         """
         Helper function to parse the content of the extended explain
         string to extract the analyzed logical plan. As Spark does not provide
@@ -272,8 +272,30 @@ class SparkAI:
         # The first line is the output schema.
         return "\n".join(splits[begin + 2 : end])
 
+    @staticmethod
+    def _get_tables_from_explain(df: DataFrame) -> List[str]:
+        """
+        Helper function to parse the tables from the content of the explanation
+        """
+        explain = SparkAI._get_analyzed_plan_from_explain(df)
+        splits = explain.split("\n")
+        # For table relations, the table name is the 2nd element in the line
+        # It can be one of the followings:
+        # 1. "  +- Relation default.foo101"
+        # 2. ":        +- Relation default.foo100"
+        # 3. "Relation default.foo100"
+        tables = []
+        for line in splits:
+            # if line starts with "Relation" or contains "+- Relation", it is a table relation
+            if line.startswith("Relation ") or "+- Relation " in line:
+                table_name_with_output = line.split("Relation ", 1)[1].split(" ")[0]
+                table_name = table_name_with_output.split("[")[0]
+                tables.append(table_name)
+
+        return tables
+
     def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
-        raw_analyzed_str = self._parse_explain_string(df)
+        raw_analyzed_str = self._get_analyzed_plan_from_explain(df)
         tags = self._get_tags(cache)
         return self._explain_chain.run(
             tags=tags, input=self._trim_hash_id(raw_analyzed_str)
@@ -333,12 +355,18 @@ class SparkAI:
         return self._create_dataframe_with_llm(page_content, desc, columns, cache)
 
     def _get_transform_sql_query_from_agent(
-        self, temp_view_name: str, schema: str, sample_rows_str: str, desc: str
+        self,
+        temp_view_name: str,
+        schema: str,
+        sample_rows_str: str,
+        comment: str,
+        desc: str,
     ) -> str:
         llm_result = self._sql_agent.run(
             view_name=temp_view_name,
             columns=schema,
             sample_rows=sample_rows_str,
+            comment=comment,
             desc=desc,
         )
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
@@ -370,6 +398,25 @@ class SparkAI:
             "*/\n"
         )
 
+    def _get_table_comment_from_desc(self, table_name: str) -> str:
+        try:
+            # Get the output of describe table
+            outputs = self._spark.sql("DESC extended " + table_name).collect()
+            # Get the table comment from output if the first row is "Comment"
+            for row in outputs:
+                if row.col_name == "Comment":
+                    return row.data_type
+        except Exception:
+            # If fail to get table comment, return empty string
+            pass
+
+    def _get_table_comment(self, df: DataFrame) -> str:
+        tables = self._get_tables_from_explain(df)
+        # To be conservative, we return the table comment if there is only one table
+        if len(tables) == 1:
+            return "which represents " + self._get_table_comment_from_desc(tables[0])
+        return ""
+
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
         temp_view_name = random_view_name()
         create_temp_view_code = CodeLogger.colorize_code(
@@ -379,6 +426,7 @@ class SparkAI:
         df.createOrReplaceTempView(temp_view_name)
         schema_str = self._get_df_schema(df)
         sample_rows_str = self._get_sample_spark_rows(df, temp_view_name)
+        comment = self._get_table_comment(df)
 
         if cache:
             cache_key = ReActSparkSQLAgent.cache_key(desc, schema_str)
@@ -389,13 +437,13 @@ class SparkAI:
                 return replace_view_name(cached_result, temp_view_name)
             else:
                 sql_query = self._get_transform_sql_query_from_agent(
-                    temp_view_name, schema_str, sample_rows_str, desc
+                    temp_view_name, schema_str, sample_rows_str, comment, desc
                 )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
             return self._get_transform_sql_query_from_agent(
-                temp_view_name, schema_str, sample_rows_str, desc
+                temp_view_name, schema_str, sample_rows_str, comment, desc
             )
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:

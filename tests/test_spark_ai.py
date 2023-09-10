@@ -37,6 +37,54 @@ class SparkAIInitializationTestCase(unittest.TestCase):
         self.assertEqual(self.spark_ai._max_tokens_of_web_content, 3000)
 
 
+class TestGetTableCommentFromExplain(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.spark = SparkSession.builder.getOrCreate()
+        cls.llm_mock = MagicMock(spec=BaseLanguageModel)
+        cls.spark_ai = SparkAI(llm=cls.llm_mock, spark_session=cls.spark)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.spark.stop()
+
+    def create_and_read_table(self, table_name, data, comment=''):
+        self.spark.createDataFrame(data, ["col1", "col2"]).write.saveAsTable(table_name)
+        if comment != '':
+            self.spark.sql(f"ALTER TABLE {table_name} SET TBLPROPERTIES ('comment' = '{comment}')")
+        return self.spark.sql(f"SELECT * FROM {table_name}")
+
+    def test_single_table(self):
+        table_name = "spark_catalog.default.test_table1"
+        comment = "comment1"
+        try:
+            df = self.create_and_read_table(table_name, [(1, "foo"), (2, "bar")], comment)
+            tables = SparkAI._get_tables_from_explain(df)
+            self.assertEqual(tables, [table_name])
+            self.assertEqual(self.spark_ai._get_table_comment(df), "which represents comment1")
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    def test_multiple_tables(self):
+        table_names = ["spark_catalog.default.test_table1", "spark_catalog.default.test_table2"]
+        try:
+            dfs = [self.create_and_read_table(name, [(1, "foo"), (2, "bar")]) for name in table_names]
+            df = dfs[0].join(dfs[1], "col1")
+            tables = SparkAI._get_tables_from_explain(df)
+            self.assertEqual(tables, table_names)
+            # Currently we only set the comment when reading a single table
+            self.assertEqual(self.spark_ai._get_table_comment(df), "")
+        finally:
+            for name in table_names:
+                self.spark.sql(f"DROP TABLE IF EXISTS {name}")
+
+    def test_no_table(self):
+        df = self.spark.createDataFrame([(1, "foo"), (2, "bar")], ["col1", "col2"])
+        tables = SparkAI._get_tables_from_explain(df)
+        self.assertEqual(tables, [])
+        self.assertEqual(self.spark_ai._get_table_comment(df), "")
+
 class SparkAITrimTextTestCase(unittest.TestCase):
     """Test cases for the _trim_text_from_end method of the SparkAI."""
 
@@ -202,7 +250,7 @@ class SparkAnalysisTest(SparkTestCase):
     def test_analysis_handling(self):
         self.spark_ai = SparkAI(llm=self.llm_mock)
         df = self.spark.range(100).groupBy("id").count()
-        left = self.spark_ai._parse_explain_string(df)
+        left = self.spark_ai._get_analyzed_plan_from_explain(df)
         right = df._jdf.queryExecution().analyzed().toString()
         self.assertEqual(left, right)
 
