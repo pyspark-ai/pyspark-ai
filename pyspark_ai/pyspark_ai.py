@@ -130,12 +130,6 @@ class SparkAI:
         return AgentExecutor.from_agent_and_tools(
             agent=agent, tools=tools, verbose=True
         )
-        # agent = ReActSparkSQLAgent.from_llm_and_tools(
-        #     llm=self._llm, tools=tools, verbose=True
-        # )
-        # return AgentExecutor.from_agent_and_tools(
-        #     agent=agent, tools=tools, verbose=True
-        # )
 
     @staticmethod
     def _extract_view_name(query: str) -> str:
@@ -375,7 +369,6 @@ class SparkAI:
             comment=comment,
             desc=desc,
         )
-        print("*** schema ***", schema)
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
         return sql_query_from_response
 
@@ -413,7 +406,7 @@ class SparkAI:
             for row in outputs:
                 if row.col_name == "Comment":
                     return row.data_type
-        except Exception as e:
+        except Exception:
             # If fail to get table comment, return empty string
             pass
 

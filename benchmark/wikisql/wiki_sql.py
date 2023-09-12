@@ -53,7 +53,6 @@ def create_temp_view_statements(table_file):
                 page_title = ''
             comment = section_title + page_title
             create_statement = f"CREATE TABLE IF NOT EXISTS `{table_name}` USING ORC comment \"{comment}\" AS SELECT * FROM VALUES {values_str} as {header_str};"
-            # print("*** create statement ***", create_statement)
             sql_statements.append(create_statement)
 
     return sql_statements
