@@ -59,6 +59,20 @@ Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Cou
 Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))"""
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_19acs2` with the following columns:
+```
+Car STRING
+Color STRING
+Make STRING
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_19acs2`: If color is gold, what is the total number of cars?
+Thought: I will use the column 'Color' to filter the rows where its value is 'gold' and then select the COUNT(`Car`) 
+because COUNT gives me the total number of cars.
+Action: query_validation
+Action Input: SELECT COUNT(`Car`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'
+Observation: OK
+Thought: I now know the final answer.
+Final Answer: SELECT COUNT(`Car`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'"""
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
 ```
 PassengerId INT
@@ -84,15 +98,29 @@ Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1
 ]
 
 SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` {comment}.
-It contains the following columns:
+The dataframe contains the column names and types in this format:
+column_name: type.
+It's very important to ONLY use the verbatim column names in your resulting SQL query.
+For example, the verbatim column name from the line 'Fruit Color: string' is `Fruit Color`.
+So, a resulting SQL query would be: SELECT * FROM view WHERE `Fruit Color` = 'orange'.
+The verbatim column name from the line 'Number of years: int' is `Number of years`.
+So, a resulting SQL query would be: SELECT * FROM view WHERE `Number of years` = 3.
+
+Here are the column names and types for your dataframe:
 ```
 {columns}
 ```
+
+Here are some sample rows from your dataframe:
 {sample_rows}
-Write a Spark SQL query to retrieve from view `{view_name}`: {desc}
+
+Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc}
 {agent_scratchpad}"""
 
-SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query."""
+SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
+Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
+If the question contains 'total number', use the SQL function COUNT(column_name) on the relevant column(s)."""
+
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,
     suffix=SPARK_SQL_SUFFIX,

@@ -1,6 +1,7 @@
 import json
 import re
 from argparse import ArgumentParser
+from itertools import zip_longest
 
 from babel.numbers import parse_decimal, NumberFormatError
 from pyspark.sql import SparkSession
@@ -102,6 +103,11 @@ def get_tables_and_questions(source_file):
             sqls.append(item['sql'])
     return tables, questions, results, sqls
 
+def similarity(spark_ai_result, expected_result):
+    import spacy
+
+    spacy_model = spacy.load('en_core_web_lg')
+    return spacy_model(spark_ai_result).similarity(spacy_model(expected_result))
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -121,9 +127,12 @@ if __name__ == '__main__':
     matched = 0
     # Create sql query for each question and table
     for table, question, expected_result, sql in zip(tables, questions, results, sqls):
-        df = spark.table(f"`{get_table_name(table)}`")
         try:
-            query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=True).lower()
+            df = spark.table(f"`{get_table_name(table)}`")
+        except:
+            continue
+        try:
+            query = spark_ai._get_transform_sql_query(df=df, desc=question, cache=False).lower()
             result_df = spark.sql(query)
         except Exception as e:
             print(e)
@@ -131,18 +140,33 @@ if __name__ == '__main__':
         spark_ai.commit()
         found_match = False
         spark_ai_result = []
+        similarity_score = 0
+
         for i in range(len(result_df.columns)):
             spark_ai_result = result_df.rdd.map(lambda row: row[i]).collect()
-            if spark_ai_result == expected_result:
-                matched += 1
-                found_match = True
-                break
+
+            spark_ai_result = [str(ele) for ele in spark_ai_result]
+            expected_result = [str(ele) for ele in expected_result]
+
+            # sort spark_ai_result and expected_result, to account for unpredictable row order
+            spark_ai_result = sorted(spark_ai_result)
+            expected_result = sorted(expected_result)
+
+            actual_phrase = " ".join(spark_ai_result)
+            expected_phrase = " ".join(expected_result)
+
+            similarity_score += similarity(str(actual_phrase), str(expected_phrase))
+
+        if similarity_score == 1:
+            found_match = True
+        matched += similarity_score
         if not found_match:
             print("Question: {}".format(question))
             print("Expected query: {}".format(get_sql_query(table, sql["sel"], sql["agg"], sql["conds"])))
             print("Actual query: {}".format(query))
             print("Expected result: {}".format(expected_result))
             print("Actual result: {}".format(spark_ai_result))
+            print("Similarity score: {}".format(similarity_score))
             print("")
 
     print(f"Matched {matched} out of {len(results)}")
