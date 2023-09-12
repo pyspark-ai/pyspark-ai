@@ -67,7 +67,7 @@ Make STRING
 ```
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_19acs2`: If color is gold, what is the total number of cars?
 Thought: I will use the column 'Color' to filter the rows where its value is 'gold' and then select the COUNT(`Car`) 
-because COUNT gives me the total number of cars. I do not use SUM because SUM is not for counting total number.
+because COUNT gives me the total number of cars.
 Action: query_validation
 Action Input: SELECT COUNT(`Car`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'
 Observation: OK
@@ -101,10 +101,10 @@ SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` {comment
 The dataframe contains the column names and types in this format:
 column_name: type.
 It's very important to ONLY use the verbatim column names in your resulting SQL query.
-For example, the verbatim column name from the line 'Fruit Color: string' is 'Fruit Color'.
-So, a resulting SQL query would be: SELECT * FROM view WHERE 'Fruit Color' = 'orange'.
-The verbatim column name from the line 'Number of years: int' is 'Number of years'.
-So, a resulting SQL query would be: SELECT * FROM view WHERE 'Number of years' = 3.
+For example, the verbatim column name from the line 'Fruit Color: string' is `Fruit Color`.
+So, a resulting SQL query would be: SELECT * FROM view WHERE `Fruit Color` = 'orange'.
+The verbatim column name from the line 'Number of years: int' is `Number of years`.
+So, a resulting SQL query would be: SELECT * FROM view WHERE `Number of years` = 3.
 
 Here are the column names and types for your dataframe:
 ```
@@ -119,7 +119,7 @@ Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc
 
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
 Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
-If the question contains 'total number', use the SQL function COUNT(column_name) on the relevant column(s), NOT the SUM function."""
+If the question contains 'total number', use the SQL function COUNT(column_name) on the relevant column(s)."""
 
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,
