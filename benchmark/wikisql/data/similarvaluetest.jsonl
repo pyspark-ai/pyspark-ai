@@ -1,3 +1,0 @@
-{"phase": 1, "table_id": "1-10638523-1", "question": "For mid-hill zone  what is the altitude?", "sql": {"sel": 2, "conds": [[0, 0, "Altitude"]], "agg": 0}, "result": ["800m-1,600m"]}
-{"phase": 1, "table_id": "1-1015521-2", "question": "Give me a list of all spanish officer titles that could receive recognition as group captain in english", "sql": {"sel": 2, "conds": [[3, 0, "Group Captain"]], "agg": 0}, "result": ["colonel"]}
-{"phase": 1, "table_id": "1-10015132-21", "question": "Which school did the player that played 2004-05 attend?", "sql": {"sel": 5, "conds": [[4, 0, "2004-05"]], "agg": 0}, "result": ["xavier (ohio)"], "query": "SELECT col5 AS result FROM table_1_10015132_21 WHERE col4 = '2004-05'"}
