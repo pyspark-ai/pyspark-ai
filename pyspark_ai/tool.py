@@ -5,12 +5,11 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
     AsyncCallbackManagerForToolRun,
 )
-from langchain.tools import BaseTool, StructuredTool
+from langchain.tools import BaseTool
 from pydantic import Field
 from pyspark import Row
 from pyspark.sql import SparkSession, DataFrame
 from pyspark_ai.ai_utils import AIUtils
-from pydantic import BaseModel
 
 try:
     from pyspark.sql.connect.session import SparkSession as ConnectSparkSession
