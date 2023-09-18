@@ -1,5 +1,4 @@
-from typing import Optional, Any, Union, Type
-import spacy
+from typing import Optional, Any, Union
 
 from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
@@ -132,7 +131,11 @@ class ColumnQueryTool(BaseTool):
         col_lst = df.columns
 
         for col in col_lst:
-            result = self.spark.sql("select * from {} where `{}` like '%{}%'".format(temp_name, col, keyword))
+            result = self.spark.sql(
+                "select * from {} where `{}` like '%{}%'".format(
+                    temp_name, col, keyword
+                )
+            )
 
             if len(result.collect()) != 0:
                 return col

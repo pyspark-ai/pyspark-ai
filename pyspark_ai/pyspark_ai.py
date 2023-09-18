@@ -36,7 +36,12 @@ from pyspark_ai.temp_view_utils import (
     replace_view_name,
     canonize_string,
 )
-from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool, ColumnQueryTool, SimilarValueTool
+from pyspark_ai.tool import (
+    QuerySparkSQLTool,
+    QueryValidationTool,
+    ColumnQueryTool,
+    SimilarValueTool,
+)
 
 
 class SparkAI:
