@@ -113,7 +113,7 @@ class ColumnQueryTool(BaseTool):
     name = "get_column_name"
     description = """
     This tool determines which column contains a keyword from the question.
-    Input to this tool is a str with a keyword of interest and a temp view name, output is the column name from the df 
+    Input to this tool is a str with a keyword of interest and a temp view name, output is the column name from the df
     that contains the keyword.
     Input should be comma-separated, in the format: keyword,temp_view_name
     """
