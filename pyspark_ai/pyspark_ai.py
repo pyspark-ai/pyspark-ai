@@ -36,7 +36,7 @@ from pyspark_ai.temp_view_utils import (
     replace_view_name,
     canonize_string,
 )
-from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool
+from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool, ColumnQueryTool, SimilarValueTool
 
 
 class SparkAI:
@@ -123,6 +123,8 @@ class SparkAI:
         tools = [
             QuerySparkSQLTool(spark=self._spark),
             QueryValidationTool(spark=self._spark),
+            ColumnQueryTool(spark=self._spark),
+            SimilarValueTool(spark=self._spark),
         ]
         agent = ReActSparkSQLAgent.from_llm_and_tools(
             llm=self._llm, tools=tools, verbose=True
