@@ -51,7 +51,7 @@ Continent STRING
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Moorea.
 Thought: I do not know which column to query for Moorea, so I will use the get_column_name tool to help me know which column to query.
 Action: get_column_name
-Action Input: Moorea,spark_ai_temp_view_14kjd0
+Action Input: Moorea|spark_ai_temp_view_14kjd0
 Observation: `Country`
 Thought: The tool showed me that the column `Country` contains the keyword 'Moorea', so I should filter on the `Country` column to find the mountain located in Moorea.
 Action: query_validation
@@ -85,18 +85,14 @@ Make STRING
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_19acs2`: What is the total number of cars that are gold?
 Thought: I am not sure which column name to query for gold, so I will use the get_column_name tool to help.
 Action: get_column_name
-Action Input: gold,spark_ai_temp_view_19acs2
+Action Input: gold|spark_ai_temp_view_19acs2
 Observation: `Color`
 Thought: The tool showed me that the column `Color` contains the keyword 'gold', so I should filter on the `Color` column to find the gold cars.
 I will now use the tool similar_value to help me choose my filter value.
 Action: similar_value
-Action Input: SELECT DISTINCT `Color`, similarity(`Color`, 'gold') as Score FROM `spark_ai_temp_view_19acs2` ORDER BY score DESC LIMIT 3
-Observation: 
-Color        Score
-gold            1
-silver    0.87213
-red       0.42314
-Thought: The correct Color filter should be 'gold' because it has the highest similarity score. I will use this in my query.
+Action Input: gold|Color|spark_ai_temp_view_19acs2
+Observation: gold
+Thought: The correct Color filter should be 'gold' because it is semantically closest to the keyword. I will use this in my query.
 I will use the column 'Color' to filter the rows where its value is 'gold' and then select the COUNT(`Car`)
 because COUNT gives me the total number of cars.
 Action: query_validation
@@ -112,13 +108,9 @@ Birthday STRING
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: Who is the student with the birthday January 1, 2006?
 Thought: I need to filter by an exact birthday value from the df. I will use the tool similar_value to help me choose my filter value.
 Action: similar_value
-Action Input: SELECT DISTINCT `Birthday`, similarity(`Birthday`, 'January 1, 2006') as Score FROM `spark_ai_temp_view_12qcl3` ORDER BY score DESC LIMIT 3
-Observation: 
-Birthday     Score
-01-01-2006   0.98328
-01-02-2006   0.87213
-02-04-2006   0.62314
-Thought: The correct Birthday filter should be '01-01-2006' because it has the highest similarity score. I will use this in my query.
+Action Input: January 1, 2006|Birthday|spark_ai_temp_view_12qcl3
+Observation: 01-01-2006
+Thought: The correct Birthday filter should be '01-01-2006' because it is semantically closest to the keyword. I will use this in my query.
 Action: query_validation
 Action Input: SELECT `Student` FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'
 Observation: OK

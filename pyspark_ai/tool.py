@@ -115,13 +115,13 @@ class ColumnQueryTool(BaseTool):
     This tool determines which column contains a keyword from the question.
     Input to this tool is a str with a keyword of interest and a temp view name, output is the column name from the df
     that contains the keyword.
-    Input should be comma-separated, in the format: keyword,temp_view_name
+    Input should be pipe-separated, in the format: keyword|temp_view_name
     """
 
     def _run(
         self, input: str, run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
-        input_lst = input.split(",")
+        input_lst = input.split("|")
 
         keyword = input_lst[0].lower()
         temp_name = input_lst[1]
@@ -152,15 +152,53 @@ class SimilarValueTool(BaseTool):
     spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
     name = "similar_value"
     description = """
-    Input to this tool is a SQL query that applies a UDF, similarity(col, keyword), to get similarity scores for
-    all values in column col and rank the dataframe by similarity scores of the values.
+    This tool finds the semantically closest word to a keyword from a vector database, using the FAISS library.
+    Input to this tool is a pipe-separated string in this format: keyword|column_name|temp_view_name.
+    The temp_view_name will be queried in the column_name for the semantically closest word to the keyword.
     """
 
+    def vector_similarity_search(self, search_text: str, col: str, temp_name: str):
+        from sentence_transformers import SentenceTransformer
+        import faiss
+        import numpy as np
+
+        df = self.spark.sql("select * from {}".format(temp_name))
+
+        col_index = df.columns.index(col)
+
+        col_lst = [str(x) for x in df.rdd.map(lambda x: x[col_index]).collect()]
+        encoder = SentenceTransformer("paraphrase-mpnet-base-v2")
+        vectors = encoder.encode(col_lst)
+
+        # build faiss index from vectors
+        vector_dimension = vectors.shape[1]
+        index = faiss.IndexFlatL2(vector_dimension)
+        faiss.normalize_L2(vectors)
+        index.add(vectors)
+
+        # create search vector
+        search_vector = encoder.encode(str(search_text))
+        _vector = np.array([search_vector])
+        faiss.normalize_L2(_vector)
+
+        # search
+        k = index.ntotal
+        distances, ann = index.search(_vector, k=k)
+
+        # get result
+        result = df.toPandas()[col][ann[0][0]]
+        return result
+
     def _run(
-        self, command: str, run_manager: Optional[CallbackManagerForToolRun] = None
+        self, input: str, run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
-        df = self.spark.sql(command.lower())
-        return str(self._get_dataframe_results(df))
+        input_lst = input.split("|")
+
+        search_text = input_lst[0]
+        col = input_lst[1]
+        temp_name = input_lst[2]
+
+        return self.vector_similarity_search(search_text, col, temp_name)
 
     def _get_dataframe_results(self, df: DataFrame) -> list:
         return list(map(self._convert_row_as_tuple, df.collect()))
