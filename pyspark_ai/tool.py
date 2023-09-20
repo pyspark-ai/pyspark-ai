@@ -170,7 +170,6 @@ class SimilarValueTool(BaseTool):
 
         dict_object = None
 
-        # open dill file
         try:
             with open('data/indices.pkl', 'rb') as openfile:
                 # read from pkl file
