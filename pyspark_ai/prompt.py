@@ -119,7 +119,7 @@ Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc
 
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
 Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
-If the question contains 'total number', use the SQL function COUNT(column_name) on the relevant column(s)."""
+"""
 
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,
