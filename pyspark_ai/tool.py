@@ -177,29 +177,30 @@ class SimilarValueTool(BaseTool):
                 print("open file")
         except Exception as e:
             print(e)
+            pass
 
-        vectors_dict = dict_object if dict_object else defaultdict(dict)
+        indices_dict = dict_object if dict_object else defaultdict(dict)
 
         encoder = SentenceTransformer("paraphrase-mpnet-base-v2")
 
-        if temp_name in vectors_dict.keys() and col in vectors_dict[temp_name].keys():
-            vectors = vectors_dict[temp_name][col]
+        if temp_name in indices_dict.keys() and col in indices_dict[temp_name].keys():
+            index = indices_dict[temp_name][col]
         else:
             col_lst = [str(x) for x in df.rdd.map(lambda x: x[col_index]).collect()]
             vectors = encoder.encode(col_lst)
 
+            # build faiss index from vectors
+            vector_dimension = vectors.shape[1]
+            index = faiss.IndexFlatL2(vector_dimension)
+            faiss.normalize_L2(vectors)
+            index.add(vectors)
+
             # store in dict
-            vectors_dict[temp_name][col] = vectors
+            indices_dict[temp_name][col] = index
 
             # write to json
             with open("data/indices.pkl", "wb") as outfile:
-                dill.dump(vectors_dict, outfile)
-
-        # build faiss index from vectors
-        vector_dimension = vectors.shape[1]
-        index = faiss.IndexFlatL2(vector_dimension)
-        faiss.normalize_L2(vectors)
-        index.add(vectors)
+                dill.dump(indices_dict, outfile)
 
         # create search vector
         search_vector = encoder.encode(str(search_text))
