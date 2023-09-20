@@ -10,7 +10,7 @@ from pyspark_ai import SparkAI
 
 
 def replace_quotes_and_backslashes(s):
-    return s.replace("'", "''").replace("\\", "\\\\").replace("\"", "")
+    return s.replace("'", "''").replace("\\", "\\\\")
 
 
 # Generate ingestion SQL statements from the table definition file, using `CREATE TEMP VIEW ... AS SELECT`.
@@ -115,7 +115,7 @@ def get_tables_and_questions(source_file):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--table_file', help='table definition file', default='data/test_sample.tables.jsonl')
-    parser.add_argument('--source_file', help='source file for the prediction', default='data/old_test_sample.jsonl')
+    parser.add_argument('--source_file', help='source file for the prediction', default='data/test_sample.jsonl')
     args = parser.parse_args()
 
     table_file = args.table_file

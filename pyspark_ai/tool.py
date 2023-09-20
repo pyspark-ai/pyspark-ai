@@ -161,14 +161,40 @@ class SimilarValueTool(BaseTool):
         from sentence_transformers import SentenceTransformer
         import faiss
         import numpy as np
+        from collections import defaultdict
+        import dill
 
         df = self.spark.sql("select * from {}".format(temp_name))
 
         col_index = df.columns.index(col)
 
-        col_lst = [str(x) for x in df.rdd.map(lambda x: x[col_index]).collect()]
+        dict_object = None
+
+        # open dill file
+        try:
+            with open('data/indices.pkl', 'rb') as openfile:
+                # read from pkl file
+                dict_object = dill.load(openfile)
+                print("open file")
+        except Exception as e:
+            print(e)
+
+        vectors_dict = dict_object if dict_object else defaultdict(dict)
+
         encoder = SentenceTransformer("paraphrase-mpnet-base-v2")
-        vectors = encoder.encode(col_lst)
+
+        if temp_name in vectors_dict.keys() and col in vectors_dict[temp_name].keys():
+            vectors = vectors_dict[temp_name][col]
+        else:
+            col_lst = [str(x) for x in df.rdd.map(lambda x: x[col_index]).collect()]
+            vectors = encoder.encode(col_lst)
+
+            # store in dict
+            vectors_dict[temp_name][col] = vectors
+
+            # write to json
+            with open("data/indices.pkl", "wb") as outfile:
+                dill.dump(vectors_dict, outfile)
 
         # build faiss index from vectors
         vector_dimension = vectors.shape[1]
