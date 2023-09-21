@@ -1,4 +1,4 @@
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, List
 
 from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
@@ -157,68 +157,39 @@ class SimilarValueTool(BaseTool):
     The temp_view_name will be queried in the column_name for the semantically closest word to the keyword.
     """
 
+    vector_store: Any
+    stored_df_cols: set
+
     def vector_similarity_search(self, search_text: str, col: str, temp_name: str):
-        from sentence_transformers import SentenceTransformer
-        import faiss
-        import numpy as np
-        from collections import defaultdict
-        import dill
+        from langchain.docstore.document import Document
+        from langchain.vectorstores import FAISS
+        from langchain.embeddings.openai import OpenAIEmbeddings
 
-        df = self.spark.sql("select * from {}".format(temp_name))
+        new_df = self.spark.sql("select distinct {} from {}".format(col, temp_name))
+        new_df_lst = [str(row[col]) for row in new_df.collect()]
 
-        col_index = df.columns.index(col)
+        # Create documents from col data
+        if (temp_name, col) not in self.stored_df_cols:
+            documents = []
 
-        dict_object = None
+            for val in new_df_lst:
+                document = Document(page_content=str(val), metadata={"temp_name": temp_name, "col_name": col})
+                documents.append(document)
 
-        try:
-            with open('data/indices.pkl', 'rb') as openfile:
-                # read from pkl file
-                dict_object = dill.load(openfile)
-                print("open file")
-        except Exception as e:
-            print(e)
-            pass
+            if not self.vector_store:
+                self.vector_store = FAISS.from_documents(documents, OpenAIEmbeddings())
+            else:
+                self.vector_store.add_documents(documents)
 
-        indices_dict = dict_object if dict_object else defaultdict(dict)
+            self.stored_df_cols.add((temp_name, col))
 
-        encoder = SentenceTransformer("paraphrase-mpnet-base-v2")
-
-        if temp_name in indices_dict.keys() and col in indices_dict[temp_name].keys():
-            index = indices_dict[temp_name][col]
-        else:
-            col_lst = [str(x) for x in df.rdd.map(lambda x: x[col_index]).collect()]
-            vectors = encoder.encode(col_lst)
-
-            # build faiss index from vectors
-            vector_dimension = vectors.shape[1]
-            index = faiss.IndexFlatL2(vector_dimension)
-            faiss.normalize_L2(vectors)
-            index.add(vectors)
-
-            # store in dict
-            indices_dict[temp_name][col] = index
-
-            # write to json
-            with open("data/indices.pkl", "wb") as outfile:
-                dill.dump(indices_dict, outfile)
-
-        # create search vector
-        search_vector = encoder.encode(str(search_text))
-        _vector = np.array([search_vector])
-        faiss.normalize_L2(_vector)
-
-        # search
-        k = index.ntotal
-        distances, ann = index.search(_vector, k=k)
-
-        # get result
-        result = df.toPandas()[col][ann[0][0]]
-        return result
+        docs = self.vector_store.similarity_search(search_text)
+        return docs[0].page_content
 
     def _run(
-        self, input: str, run_manager: Optional[CallbackManagerForToolRun] = None
+        self, inputs: str, run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
-        input_lst = input.split("|")
+        input_lst = inputs.split("|")
 
         search_text = input_lst[0]
         col = input_lst[1]

@@ -1,7 +1,6 @@
 import json
 import re
 from argparse import ArgumentParser
-from itertools import zip_longest
 
 from babel.numbers import parse_decimal, NumberFormatError
 from pyspark.sql import SparkSession
@@ -103,15 +102,6 @@ def get_tables_and_questions(source_file):
             sqls.append(item['sql'])
     return tables, questions, results, sqls
 
-# def similarity_udf(col, keyword):
-#     import spacy
-#
-#     nlp = spacy.load('en_core_web_lg')
-#
-#     similarity_score = nlp(str(keyword)).similarity(nlp(str(col)))
-#
-#     return similarity_score
-
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--table_file', help='table definition file', default='data/test_sample.tables.jsonl')
@@ -121,8 +111,6 @@ if __name__ == '__main__':
     table_file = args.table_file
     statements = create_temp_view_statements(table_file)
     spark = SparkSession.builder.getOrCreate()
-
-    # spark.udf.register("similarity", similarity_udf)
 
     for stmt in statements:
         spark.sql(stmt)

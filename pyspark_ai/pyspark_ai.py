@@ -129,7 +129,7 @@ class SparkAI:
             QuerySparkSQLTool(spark=self._spark),
             QueryValidationTool(spark=self._spark),
             ColumnQueryTool(spark=self._spark),
-            SimilarValueTool(spark=self._spark),
+            SimilarValueTool(spark=self._spark, vector_store=None, stored_df_cols=set()),
         ]
         agent = ReActSparkSQLAgent.from_llm_and_tools(
             llm=self._llm, tools=tools, verbose=True
