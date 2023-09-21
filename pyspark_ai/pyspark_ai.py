@@ -218,7 +218,7 @@ class SparkAI:
 
         # Run the LLM chain to get an ingestion SQL query
         tags = self._get_tags(cache)
-        temp_view_name = random_view_name()
+        temp_view_name = random_view_name(web_content)
         llm_result = self._sql_llm_chain.run(
             tags=tags,
             query=desc,
@@ -418,7 +418,7 @@ class SparkAI:
         return ""
 
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
-        temp_view_name = random_view_name()
+        temp_view_name = random_view_name(df)
         create_temp_view_code = CodeLogger.colorize_code(
             f'df.createOrReplaceTempView("{temp_view_name}")', "python"
         )
