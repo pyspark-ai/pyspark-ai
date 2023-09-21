@@ -1,15 +1,21 @@
 import re
-import uuid
+
+from pyspark.sql import DataFrame
 
 prefix = "spark_ai_temp_view"
-pattern = f"{prefix}_[0-9a-zA-Z]{{6}}"
+pattern = f"{prefix}__?[0-9]*"
 
 
-def random_view_name() -> str:
+def random_view_name(obj) -> str:
     """
     Generate a random temp view name.
     """
-    return f"{prefix}_{uuid.uuid4().hex[:6]}"
+    if isinstance(obj, DataFrame):
+        hashcode = hash(obj.semanticHash())
+    else:
+        hashcode = hash(obj) % 1000000
+    hash_code_str = str(hashcode).replace("-", "_")
+    return f"{prefix}_{hash_code_str}"
 
 
 def canonize_string(s: str) -> str:
