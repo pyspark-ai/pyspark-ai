@@ -406,15 +406,18 @@ class SparkAI:
             for row in outputs:
                 if row.col_name == "Comment":
                     return row.data_type
+            return ""
         except Exception:
             # If fail to get table comment, return empty string
-            pass
+            return ""
 
     def _get_table_comment(self, df: DataFrame) -> str:
         tables = self._get_tables_from_explain(df)
         # To be conservative, we return the table comment if there is only one table
         if len(tables) == 1:
-            return "which represents " + self._get_table_comment_from_desc(tables[0])
+            comment = self._get_table_comment_from_desc(tables[0])
+            if len(comment) > 0:
+                return "which represents " + comment
         return ""
 
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
