@@ -49,11 +49,7 @@ Country STRING
 Continent STRING
 ```
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Moorea.
-Thought: I do not know which column to query for Moorea, so I will use the get_column_name tool to help me know which column to query.
-Action: get_column_name
-Action Input: Moorea|spark_ai_temp_view_14kjd0
-Observation: `Country`
-Thought: The tool showed me that the column `Country` contains the keyword 'Moorea', so I should filter on the `Country` column to find the mountain located in Moorea.
+Thought: I should filter on the `Country` column to find the mountain located in Moorea.
 Action: query_validation
 Action Input: SELECT `MountainName` FROM `spark_ai_temp_view_14kjd0` WHERE `Country` = 'Moorea'
 Observation: OK
@@ -83,11 +79,7 @@ Color STRING
 Make STRING
 ```
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_19acs2`: What is the total number of cars that are gold?
-Thought: I am not sure which column name to query for gold, so I will use the get_column_name tool to help.
-Action: get_column_name
-Action Input: gold|spark_ai_temp_view_19acs2
-Observation: `Color`
-Thought: The tool showed me that the column `Color` contains the keyword 'gold', so I should filter on the `Color` column to find the gold cars.
+Thought: I should filter on the `Color` column to find the gold cars.
 I will now use the tool similar_value to help me choose my filter value.
 Action: similar_value
 Action Input: gold|Color|spark_ai_temp_view_19acs2
@@ -144,7 +136,6 @@ SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` {comment
 The dataframe contains the column names and types in this format:
 column_name: type.
 It's very important to ONLY use the verbatim column names in your resulting SQL query.
-Use the tool get_column_name to help you find which column to query for keywords in the question.
 
 Here are the column names and types for your dataframe:
 ```
@@ -159,8 +150,7 @@ Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc
 
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
 Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
-If the question contains 'total number', use the SQL function COUNT(column_name) on the relevant column(s).
-Always use the get_column_name tool to help find which column to query, unless column name is explicitly stated."""
+ALWAYS use the tool similar_value to find the correct filter value format."""
 
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,

@@ -106,48 +106,8 @@ class QueryValidationTool(BaseTool):
         raise NotImplementedError("ListTablesSqlDbTool does not support async")
 
 
-class ColumnQueryTool(BaseTool):
-    """Tool for finding the correct column name given keywords from a question."""
-
-    spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
-    name = "get_column_name"
-    description = """
-    This tool determines which column contains a keyword from the question.
-    Input to this tool is a str with a keyword of interest and a temp view name, output is the column name from the df
-    that contains the keyword.
-    Input should be pipe-separated, in the format: keyword|temp_view_name
-    """
-
-    def _run(
-        self, input: str, run_manager: Optional[CallbackManagerForToolRun] = None
-    ) -> str:
-        input_lst = input.split("|")
-
-        keyword = input_lst[0].lower()
-        temp_name = input_lst[1]
-
-        # get columns
-        df = self.spark.sql("select * from {}".format(temp_name))
-        col_lst = df.columns
-
-        for col in col_lst:
-            result = self.spark.sql(
-                "select * from {} where `{}` like '%{}%'".format(
-                    temp_name, col, keyword
-                )
-            )
-
-            if len(result.collect()) != 0:
-                return col
-
-        return ""
-
-    async def _arun(self, *args: Any, **kwargs: Any) -> Any:
-        raise NotImplementedError("ColumnQueryTool does not support async")
-
-
 class SimilarValueTool(BaseTool):
-    """Tool for running a Spark SQL query to rank the values in a column by similarity score to a keyword."""
+    """Tool for finding the semantically closest word to a keyword from a vector database."""
 
     spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
     name = "similar_value"
@@ -159,32 +119,80 @@ class SimilarValueTool(BaseTool):
 
     vector_store: Any
     stored_df_cols: set
+    vector_store_dir: Optional[str]
 
     def vector_similarity_search(self, search_text: str, col: str, temp_name: str):
         from langchain.docstore.document import Document
         from langchain.vectorstores import FAISS
         from langchain.embeddings.openai import OpenAIEmbeddings
+        import os
 
-        new_df = self.spark.sql("select distinct {} from {}".format(col, temp_name))
-        new_df_lst = [str(row[col]) for row in new_df.collect()]
+        # make vector store location name using vector_store_dir/temp_name_col
+        vector_store_location = self.vector_store_dir + temp_name + "_" + col
 
-        # Create documents from col data
-        if (temp_name, col) not in self.stored_df_cols:
-            documents = []
-
-            for val in new_df_lst:
-                document = Document(page_content=str(val), metadata={"temp_name": temp_name, "col_name": col})
-                documents.append(document)
-
-            if not self.vector_store:
-                self.vector_store = FAISS.from_documents(documents, OpenAIEmbeddings())
+        # check if local storage enabled for vector_store
+        if self.vector_store_dir:
+            if os.path.exists(vector_store_location):
+                print("enter if optimization")
+                vector_db = FAISS.load_local(vector_store_location, OpenAIEmbeddings())
             else:
-                self.vector_store.add_documents(documents)
+                new_df = self.spark.sql("select distinct {} from {}".format(col, temp_name))
+                new_df_lst = [str(row[col]) for row in new_df.collect()]
+                documents = []
 
-            self.stored_df_cols.add((temp_name, col))
+                for val in new_df_lst:
+                    document = Document(page_content=str(val), metadata={"temp_name": temp_name, "col_name": col})
+                    documents.append(document)
+                vector_db = FAISS.from_documents(documents, OpenAIEmbeddings())
+                vector_db.save_local(folder_path=vector_store_location)
+            docs = vector_db.similarity_search(search_text)
+            return docs[0].page_content
+        else:
+            # persist within same session
+            if (temp_name, col) not in self.stored_df_cols:
+                new_df = self.spark.sql("select distinct {} from {}".format(col, temp_name))
+                new_df_lst = [str(row[col]) for row in new_df.collect()]
+                documents = []
 
-        docs = self.vector_store.similarity_search(search_text)
-        return docs[0].page_content
+                for val in new_df_lst:
+                    document = Document(page_content=str(val), metadata={"temp_name": temp_name, "col_name": col})
+                    documents.append(document)
+
+                if not self.vector_store:
+                    self.vector_store = FAISS.from_documents(documents, OpenAIEmbeddings())
+                else:
+                    self.vector_store.add_documents(documents)
+
+                self.stored_df_cols.add((temp_name, col))
+
+            docs = self.vector_store.similarity_search(search_text)
+            return docs[0].page_content
+
+    # def vector_similarity_search(self, search_text: str, col: str, temp_name: str):
+    #     from langchain.docstore.document import Document
+    #     from langchain.vectorstores import FAISS
+    #     from langchain.embeddings.openai import OpenAIEmbeddings
+    #
+    #     new_df = self.spark.sql("select distinct {} from {}".format(col, temp_name))
+    #     new_df_lst = [str(row[col]) for row in new_df.collect()]
+    #
+    #     # Create documents from col data
+    #     if (temp_name, col) not in self.stored_df_cols:
+    #         documents = []
+    #
+    #         for val in new_df_lst:
+    #             document = Document(page_content=str(val), metadata={"temp_name": temp_name, "col_name": col})
+    #             documents.append(document)
+    #
+    #         if not self.vector_store:
+    #             self.vector_store = FAISS.from_documents(documents, OpenAIEmbeddings())
+    #         else:
+    #             self.vector_store.add_documents(documents)
+    #
+    #         self.stored_df_cols.add((temp_name, col))
+    #
+    #     docs = self.vector_store.similarity_search(search_text)
+    #     return docs[0].page_content
 
     def _run(
         self, inputs: str, run_manager: Optional[CallbackManagerForToolRun] = None
