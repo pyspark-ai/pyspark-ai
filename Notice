@@ -8,3 +8,18 @@ The pyspark-ai Project licenses this file to you under the Apache License, Versi
   https://www.apache.org/licenses/LICENSE-2.0
 
 Unless mandated by applicable law or agreed to in writing, software distributed under the License is provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the License for the specific language governing permissions and limitations under the License.
+
+OSS Dependencies Notice 
+-------------------------
+This project depends on the following; please refer to pyproject.toml for the versions
+- tiktoken
+- beautifulsoup4
+- langchain
+- pandas
+- pygments
+- google-api-python-client
+- chispa
+- grpcio
+- plotly
+- pyarrow
+- grpcio-status
