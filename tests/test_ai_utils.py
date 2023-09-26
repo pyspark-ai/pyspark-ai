@@ -62,5 +62,25 @@ SELECT c FROM d;
         self.assertEqual(AIUtils.extract_code_blocks(text), ["SELECT a FROM b;", "SELECT c FROM d;"])
 
 
+class TestRetryExecution(unittest.TestCase):
+
+    def test_retry_execution(self):
+        counter = [0]
+
+        def failing_function():
+            counter[0] += 1
+            if counter[0] < 3:
+                raise ValueError("This function is supposed to fail!")
+            return "Success"
+
+        try:
+            result = AIUtils.retry_execution(failing_function)
+        except Exception as e:
+            self.fail(f"Caught exception: {e}")
+
+        self.assertEqual(result, "Success", "Function did not succeed after retries")
+        self.assertEqual(counter[0], 3, "Function was not retried the expected number of times")
+
+
 if __name__ == '__main__':
     unittest.main()
