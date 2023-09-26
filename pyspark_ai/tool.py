@@ -117,52 +117,28 @@ class SimilarValueTool(BaseTool):
     The temp_view_name will be queried in the column_name for the semantically closest word to the keyword.
     """
 
-    vector_store_path: Optional[str]
-
+    vector_store_dir: Optional[str]
 
     def vector_similarity_search(self, search_text: str, col: str, temp_name: str):
-        from sentence_transformers import SentenceTransformer
-        from sentence_transformers.util import semantic_search
-        from collections import defaultdict
-        import dill
+        from langchain.vectorstores import FAISS
+        from langchain.embeddings import HuggingFaceBgeEmbeddings
+        import os
 
         new_df = self.spark.sql("select distinct `{}` from {}".format(col, temp_name))
         new_df_lst = [str(row[col]) for row in new_df.collect()]
 
-        dict_object = None
+        vector_store_location = self.vector_store_dir + temp_name + "_" + col
 
-        if self.vector_store_path:
-            try:
-                with open(self.vector_store_path, 'rb') as openfile:
-                    # read from pkl file
-                    dict_object = dill.load(openfile)
-                    print("open file")
-            except Exception as e:
-                print(e)
-                pass
-
-        indices_dict = dict_object if dict_object else defaultdict(dict)
-
-        encoder = SentenceTransformer("BAAI/bge-small-en-v1.5")
-
-        if temp_name in indices_dict.keys() and col in indices_dict[temp_name].keys():
-            embeddings_1 = indices_dict[temp_name][col]
+        if self.vector_store_dir and os.path.exists(vector_store_location):
+            vector_db = FAISS.load_local(vector_store_location, HuggingFaceBgeEmbeddings())
         else:
-            embeddings_1 = encoder.encode(new_df_lst)
+            vector_db = FAISS.from_texts(new_df_lst, HuggingFaceBgeEmbeddings())
 
-            # store in dict
-            indices_dict[temp_name][col] = embeddings_1
+            if self.vector_store_dir:
+                vector_db.save_local(vector_store_location)
 
-            # write to json
-            with open(self.vector_store_path, "wb") as outfile:
-                dill.dump(indices_dict, outfile)
-
-        search_lst = [search_text]
-        embeddings_2 = encoder.encode(search_lst, normalize_embeddings=True)
-        hits = semantic_search(embeddings_2, embeddings_1, top_k=5)
-        top_5_lst = [new_df_lst[hits[0][i]['corpus_id']] for i in range(len(hits[0]))]
-        return top_5_lst[0]
-
+        docs = vector_db.similarity_search(search_text)
+        return docs[0].page_content
 
     def _run(
         self, inputs: str, run_manager: Optional[CallbackManagerForToolRun] = None
