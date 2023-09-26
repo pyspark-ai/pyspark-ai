@@ -12,14 +12,48 @@ Unless mandated by applicable law or agreed to in writing, software distributed 
 OSS Dependencies Notice 
 -------------------------
 This project depends on the following; please refer to pyproject.toml for the versions
-- tiktoken
-- beautifulsoup4
-- langchain
-- pandas
-- pygments
-- google-api-python-client
-- chispa
-- grpcio
-- plotly
-- pyarrow
-- grpcio-status
+
+1. tiktoken
+   License: MIT License
+
+2. beautifulsoup4
+   License: MIT License
+
+3. openai
+   License: MIT License
+
+4. langchain
+   License: MIT License
+   Copyright: Harrison Chase
+
+5. pandas
+   License: BSD 3-Clause License
+   Copyright: AQR Capital Management, LLC, Lambda Foundry, Inc. and PyData Development Team
+
+6. pygments
+   License: BSD 2-Clause "Simplified" License
+   Copyright: The Pygments team
+
+7. google-api-python-client ^2.90.0
+   License: Apache License 2.0
+   Copyright: Google LLC
+
+8. chispa
+   License: MIT License
+   Copyright: Matthew Powers
+
+9. grpcio
+   License: Apache License 2.0
+   Copyright: The gRPC authors
+
+10. plotly
+    License: MIT License
+    Copyright: Plotly, Inc.
+
+11. pyarrow
+    License: Apache License 2.0
+    Copyright: The Apache Software Foundation
+
+12. grpcio-status
+    License: Apache License 2.0
+    Copyright: The gRPC authors
