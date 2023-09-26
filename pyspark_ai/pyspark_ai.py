@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
 from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatLiteLLM
 from pyspark import Row
 from pyspark.sql import DataFrame, SparkSession
 from tiktoken import Encoding
@@ -76,7 +76,7 @@ class SparkAI:
         """
         self._spark = spark_session or SparkSession.builder.getOrCreate()
         if llm is None:
-            llm = ChatOpenAI(model_name="gpt-4", temperature=0)
+            llm = ChatLiteLLM(model_name="gpt-4", temperature=0)
         self._llm = llm
         self._web_search_tool = web_search_tool or self._default_web_search_tool
         if enable_cache:
