@@ -2,6 +2,7 @@ import contextlib
 import io
 import os
 import re
+from contextlib import contextmanager
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
@@ -37,6 +38,21 @@ from pyspark_ai.temp_view_utils import (
     canonize_string,
 )
 from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool
+
+
+@contextmanager
+def retry_execution(max_attempts: int = 3):
+    last_exception = None
+    for _ in range(max_attempts):
+        try:
+            yield
+            return  # If successful, exit the context manager
+        except Exception as e:
+            last_exception = e
+            continue
+    raise Exception(
+        "Could not evaluate Python code after multiple attempts"
+    ) from last_exception
 
 
 class SparkAI:
@@ -486,19 +502,17 @@ class SparkAI:
     ) -> None:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
-        response = self._plot_chain.run(
-            tags=tags,
-            columns=self._get_df_schema(df),
-            explain=self._get_df_explain(df, cache),
-            instruction=instruction,
-        )
-        self.log(response)
-        codeblocks = AIUtils.extract_code_blocks(response)
-        code = "\n".join(codeblocks)
-        try:
+        with retry_execution():
+            response = self._plot_chain.run(
+                tags=tags,
+                columns=self._get_df_schema(df),
+                explain=self._get_df_explain(df, cache),
+                instruction=instruction,
+            )
+            self.log(response)
+            codeblocks = AIUtils.extract_code_blocks(response)
+            code = "\n".join(codeblocks)
             exec(compile(code, "plot_df-CodeGen", "exec"))
-        except Exception as e:
-            raise Exception("Could not evaluate Python code", e)
 
     def verify_df(self, df: DataFrame, desc: str, cache: bool = True) -> None:
         """
@@ -509,22 +523,20 @@ class SparkAI:
         :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
         """
         tags = self._get_tags(cache)
-        llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
+        with retry_execution():
+            llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
 
-        codeblocks = AIUtils.extract_code_blocks(llm_output)
-        llm_output = "\n".join(codeblocks)
+            codeblocks = AIUtils.extract_code_blocks(llm_output)
+            llm_output = "\n".join(codeblocks)
 
-        self.log(f"LLM Output:\n{llm_output}")
+            self.log(f"LLM Output:\n{llm_output}")
 
-        formatted_code = CodeLogger.colorize_code(llm_output, "python")
-        self.log(f"Generated code:\n{formatted_code}")
+            formatted_code = CodeLogger.colorize_code(llm_output, "python")
+            self.log(f"Generated code:\n{formatted_code}")
 
-        locals_ = {}
-        try:
+            locals_ = {}
             exec(compile(llm_output, "verify_df-CodeGen", "exec"), {"df": df}, locals_)
-        except Exception as e:
-            raise Exception("Could not evaluate Python code", e)
-        self.log(f"\nResult: {locals_['result']}")
+            self.log(f"\nResult: {locals_['result']}")
 
     def udf(self, func: Callable) -> Callable:
         from inspect import signature
