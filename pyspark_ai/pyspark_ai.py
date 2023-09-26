@@ -59,7 +59,7 @@ class SparkAI:
         enable_cache: bool = True,
         cache_file_format: str = "json",
         cache_file_location: Optional[str] = None,
-        vector_store_dir: Optional[str] = None,
+        vector_store_path: Optional[str] = None,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         sample_rows_in_table_info: int = 3,
@@ -104,7 +104,7 @@ class SparkAI:
             ).search
         else:
             self._cache = None
-        self._vector_store_dir = vector_store_dir
+        self._vector_store_path = vector_store_path
         self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
         self._max_tokens_of_web_content = max_tokens_of_web_content
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
@@ -129,7 +129,7 @@ class SparkAI:
         tools = [
             QuerySparkSQLTool(spark=self._spark),
             QueryValidationTool(spark=self._spark),
-            SimilarValueTool(spark=self._spark, vector_store=None, stored_df_cols=set(), vector_store_dir=self._vector_store_dir),
+            SimilarValueTool(spark=self._spark, vector_store_path=self._vector_store_path),
         ]
         agent = ReActSparkSQLAgent.from_llm_and_tools(
             llm=self._llm, tools=tools, verbose=True

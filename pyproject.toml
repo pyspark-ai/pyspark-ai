@@ -41,6 +41,7 @@ lib = "^4.0.0"
 faiss-cpu = "^1.7.4"
 sentence-transformers = "^2.2.2"
 dill = "^0.3.7"
+flagembedding = "^1.1.1"
 
 
 [tool.poetry.dev-dependencies]

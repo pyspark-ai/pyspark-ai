@@ -64,17 +64,17 @@ Country STRING
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_93bcf0`: Pivot the fruit table by country and sum the amount for each fruit and country combination.
 Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
 Action: query_sql_db
-Action Input: "SELECT DISTINCT Country FROM spark_ai_temp_view_93bcf0"
+Action Input: "SELECT DISTINCT `Country` FROM spark_ai_temp_view_93bcf0"
 Observation: USA, Canada, Mexico, China
 Thought: I can write a query to pivot the table by country and sum the amount for each fruit and country combination.
 Action: query_validation
-Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))
+Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))
 Observation: OK
 Thought:I now know the final answer.
-Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))"""
+Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))"""
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_19acs2` with the following columns:
 ```
-Car STRING
+Car Name STRING
 Color STRING
 Make STRING
 ```
@@ -85,13 +85,12 @@ Action: similar_value
 Action Input: gold|Color|spark_ai_temp_view_19acs2
 Observation: gold
 Thought: The correct Color filter should be 'gold' because it is semantically closest to the keyword. I will use this in my query.
-I will use the column 'Color' to filter the rows where its value is 'gold' and then select the COUNT(`Car`)
-because COUNT gives me the total number of cars.
+I will use the column 'Color' to filter the rows where its value is 'gold' and then select the COUNT(`Car Name`) because COUNT gives me the total number of cars.
 Action: query_validation
-Action Input: SELECT COUNT(`Car`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'
+Action Input: SELECT COUNT(`Car Name`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'
 Observation: OK
 Thought: I now know the final answer.
-Final Answer: SELECT COUNT(`Car`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'"""
+Final Answer: SELECT COUNT(`Car Name`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'"""
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_19acs2` with the following columns:
 ```
 Student STRING
@@ -150,7 +149,8 @@ Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc
 
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
 Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
-ALWAYS use the tool similar_value to find the correct filter value format."""
+ALWAYS use the tool similar_value to find the correct filter value format.
+Use the COUNT SQL function when the query asks for total number of some non-countable column."""
 
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,

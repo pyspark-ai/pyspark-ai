@@ -105,7 +105,7 @@ def get_tables_and_questions(source_file):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--table_file', help='table definition file', default='data/test_sample.tables.jsonl')
-    parser.add_argument('--source_file', help='source file for the prediction', default='data/old_test_sample.jsonl')
+    parser.add_argument('--source_file', help='source file for the prediction', default='data/test_sample.jsonl')
     args = parser.parse_args()
 
     table_file = args.table_file
@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
     source_file = args.source_file
     tables, questions, results, sqls = get_tables_and_questions(source_file)
-    spark_ai = SparkAI(spark_session=spark, vector_store_dir="data/", verbose=False)
+    spark_ai = SparkAI(spark_session=spark, vector_store_path="data/indices.pkl", verbose=False)
     matched = 0
     not_matched = 0
     errors = 0

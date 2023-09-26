@@ -117,82 +117,52 @@ class SimilarValueTool(BaseTool):
     The temp_view_name will be queried in the column_name for the semantically closest word to the keyword.
     """
 
-    vector_store: Any
-    stored_df_cols: set
-    vector_store_dir: Optional[str]
+    vector_store_path: Optional[str]
+
 
     def vector_similarity_search(self, search_text: str, col: str, temp_name: str):
-        from langchain.docstore.document import Document
-        from langchain.vectorstores import FAISS
-        from langchain.embeddings.openai import OpenAIEmbeddings
-        import os
+        from sentence_transformers import SentenceTransformer
+        from sentence_transformers.util import semantic_search
+        from collections import defaultdict
+        import dill
 
-        # make vector store location name using vector_store_dir/temp_name_col
-        vector_store_location = self.vector_store_dir + temp_name + "_" + col
+        new_df = self.spark.sql("select distinct `{}` from {}".format(col, temp_name))
+        new_df_lst = [str(row[col]) for row in new_df.collect()]
 
-        # check if local storage enabled for vector_store
-        if self.vector_store_dir:
-            if os.path.exists(vector_store_location):
-                print("enter if optimization")
-                vector_db = FAISS.load_local(vector_store_location, OpenAIEmbeddings())
-            else:
-                new_df = self.spark.sql("select distinct {} from {}".format(col, temp_name))
-                new_df_lst = [str(row[col]) for row in new_df.collect()]
-                documents = []
+        dict_object = None
 
-                for val in new_df_lst:
-                    document = Document(page_content=str(val), metadata={"temp_name": temp_name, "col_name": col})
-                    documents.append(document)
-                vector_db = FAISS.from_documents(documents, OpenAIEmbeddings())
-                vector_db.save_local(folder_path=vector_store_location)
-            docs = vector_db.similarity_search(search_text)
-            return docs[0].page_content
+        if self.vector_store_path:
+            try:
+                with open(self.vector_store_path, 'rb') as openfile:
+                    # read from pkl file
+                    dict_object = dill.load(openfile)
+                    print("open file")
+            except Exception as e:
+                print(e)
+                pass
+
+        indices_dict = dict_object if dict_object else defaultdict(dict)
+
+        encoder = SentenceTransformer("BAAI/bge-small-en-v1.5")
+
+        if temp_name in indices_dict.keys() and col in indices_dict[temp_name].keys():
+            embeddings_1 = indices_dict[temp_name][col]
         else:
-            # persist within same session
-            if (temp_name, col) not in self.stored_df_cols:
-                new_df = self.spark.sql("select distinct {} from {}".format(col, temp_name))
-                new_df_lst = [str(row[col]) for row in new_df.collect()]
-                documents = []
+            embeddings_1 = encoder.encode(new_df_lst)
 
-                for val in new_df_lst:
-                    document = Document(page_content=str(val), metadata={"temp_name": temp_name, "col_name": col})
-                    documents.append(document)
+            # store in dict
+            indices_dict[temp_name][col] = embeddings_1
 
-                if not self.vector_store:
-                    self.vector_store = FAISS.from_documents(documents, OpenAIEmbeddings())
-                else:
-                    self.vector_store.add_documents(documents)
+            # write to json
+            with open(self.vector_store_path, "wb") as outfile:
+                dill.dump(indices_dict, outfile)
 
-                self.stored_df_cols.add((temp_name, col))
+        search_lst = [search_text]
+        embeddings_2 = encoder.encode(search_lst, normalize_embeddings=True)
+        hits = semantic_search(embeddings_2, embeddings_1, top_k=5)
+        top_5_lst = [new_df_lst[hits[0][i]['corpus_id']] for i in range(len(hits[0]))]
+        return top_5_lst[0]
 
-            docs = self.vector_store.similarity_search(search_text)
-            return docs[0].page_content
-
-    # def vector_similarity_search(self, search_text: str, col: str, temp_name: str):
-    #     from langchain.docstore.document import Document
-    #     from langchain.vectorstores import FAISS
-    #     from langchain.embeddings.openai import OpenAIEmbeddings
-    #
-    #     new_df = self.spark.sql("select distinct {} from {}".format(col, temp_name))
-    #     new_df_lst = [str(row[col]) for row in new_df.collect()]
-    #
-    #     # Create documents from col data
-    #     if (temp_name, col) not in self.stored_df_cols:
-    #         documents = []
-    #
-    #         for val in new_df_lst:
-    #             document = Document(page_content=str(val), metadata={"temp_name": temp_name, "col_name": col})
-    #             documents.append(document)
-    #
-    #         if not self.vector_store:
-    #             self.vector_store = FAISS.from_documents(documents, OpenAIEmbeddings())
-    #         else:
-    #             self.vector_store.add_documents(documents)
-    #
-    #         self.stored_df_cols.add((temp_name, col))
-    #
-    #     docs = self.vector_store.similarity_search(search_text)
-    #     return docs[0].page_content
 
     def _run(
         self, inputs: str, run_manager: Optional[CallbackManagerForToolRun] = None
