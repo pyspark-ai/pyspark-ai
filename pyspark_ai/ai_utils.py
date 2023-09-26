@@ -132,3 +132,17 @@ class AIUtils:
             if text.startswith("`") and text.endswith("`"):
                 return [text.strip("`")]
             return [text]
+
+    @staticmethod
+    def retry_execution(callback, max_tries=3):
+        tries = 0
+        last_exception = None
+        while max_tries > tries:
+            try:
+                return callback()
+            except Exception as e:
+                last_exception = e
+                tries += 1
+        raise Exception(
+            "Could not evaluate Python code after multiple attempts"
+        ) from last_exception

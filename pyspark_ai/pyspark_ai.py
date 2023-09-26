@@ -2,7 +2,6 @@ import contextlib
 import io
 import os
 import re
-from contextlib import contextmanager
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
@@ -38,21 +37,6 @@ from pyspark_ai.temp_view_utils import (
     canonize_string,
 )
 from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool
-
-
-@contextmanager
-def retry_execution(max_attempts: int = 3):
-    last_exception = None
-    for _ in range(max_attempts):
-        try:
-            yield
-            return  # If successful, exit the context manager
-        except Exception as e:
-            last_exception = e
-            continue
-    raise Exception(
-        "Could not evaluate Python code after multiple attempts"
-    ) from last_exception
 
 
 class SparkAI:
@@ -502,7 +486,8 @@ class SparkAI:
     ) -> None:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
-        with retry_execution():
+
+        def callback():
             response = self._plot_chain.run(
                 tags=tags,
                 columns=self._get_df_schema(df),
@@ -514,6 +499,8 @@ class SparkAI:
             code = "\n".join(codeblocks)
             exec(compile(code, "plot_df-CodeGen", "exec"))
 
+        AIUtils.retry_execution(callback)
+
     def verify_df(self, df: DataFrame, desc: str, cache: bool = True) -> None:
         """
         This method creates and runs test cases for the provided PySpark dataframe transformation function.
@@ -523,7 +510,8 @@ class SparkAI:
         :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
         """
         tags = self._get_tags(cache)
-        with retry_execution():
+
+        def callback():
             llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
 
             codeblocks = AIUtils.extract_code_blocks(llm_output)
@@ -537,6 +525,8 @@ class SparkAI:
             locals_ = {}
             exec(compile(llm_output, "verify_df-CodeGen", "exec"), {"df": df}, locals_)
             self.log(f"\nResult: {locals_['result']}")
+
+        AIUtils.retry_execution(callback)
 
     def udf(self, func: Callable) -> Callable:
         from inspect import signature
