@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 
 from pyspark_ai.ai_utils import AIUtils
 
@@ -67,7 +68,7 @@ class TestRetryExecution(unittest.TestCase):
     def test_retry_execution(self):
         counter = [0]
 
-        def failing_function():
+        def failing_function(error_messages: List[str]):
             counter[0] += 1
             if counter[0] < 3:
                 raise ValueError("This function is supposed to fail!")
