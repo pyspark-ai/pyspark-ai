@@ -72,41 +72,24 @@ Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Co
 Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_19acs2` with the following columns:
-```
-Car Name STRING
-Color STRING
-Make STRING
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_19acs2`: What is the total number of cars that are gold?
-Thought: I should filter on the `Color` column to find the gold cars.
-I will now use the tool similar_value to help me choose my filter value.
-Action: similar_value
-Action Input: gold|Color|spark_ai_temp_view_19acs2
-Observation: gold
-Thought: The correct Color filter should be 'gold' because it is semantically closest to the keyword. I will use this in my query.
-I will use the column 'Color' to filter the rows where its value is 'gold' and then select the COUNT(`Car Name`) because COUNT gives me the total number of cars.
-Action: query_validation
-Action Input: SELECT COUNT(`Car Name`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'
-Observation: OK
-Thought: I now know the final answer.
-Final Answer: SELECT COUNT(`Car Name`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_19acs2` with the following columns:
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
 ```
 Student STRING
 Birthday STRING
 ```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: Who is the student with the birthday January 1, 2006?
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
 Thought: I need to filter by an exact birthday value from the df. I will use the tool similar_value to help me choose my filter value.
 Action: similar_value
 Action Input: January 1, 2006|Birthday|spark_ai_temp_view_12qcl3
 Observation: 01-01-2006
-Thought: The correct Birthday filter should be '01-01-2006' because it is semantically closest to the keyword. I will use this in my query.
+Thought: The correct Birthday filter should be '01-01-2006' because it is semantically closest to the keyword.
+I will use the column 'Birthday' to filter the rows where its value is '01-01-2006' and then select the COUNT(`Student`) 
+because COUNT gives me the total number of students.
 Action: query_validation
-Action Input: SELECT `Student` FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'
+Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'
 Observation: OK
 Thought: I now know the final answer.
-Final Answer: SELECT `Student` FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'"""
+Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'"""
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
 ```
 PassengerId INT
@@ -149,7 +132,7 @@ Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc
 
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
 Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
-ALWAYS use the tool similar_value to find the correct filter value format.
+Always use the tool similar_value to find the correct filter value format, unless it's obvious.
 Use the COUNT SQL function when the query asks for total number of some non-countable column."""
 
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
