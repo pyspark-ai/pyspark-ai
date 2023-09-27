@@ -6,8 +6,7 @@ from langchain.callbacks.manager import (
 )
 from langchain.tools import BaseTool
 from pydantic import Field
-from pyspark import Row
-from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import SparkSession
 from pyspark_ai.ai_utils import AIUtils
 from pyspark_ai.spark_utils import SparkUtils
 
@@ -130,7 +129,7 @@ class SimilarValueTool(BaseTool):
     spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
     name = "similar_value"
     description = """
-    This tool takes a string keyword and searches for the most similar value from a vector store with all 
+    This tool takes a string keyword and searches for the most similar value from a vector store with all
     possible values from the desired column.
     Input to this tool is a pipe-separated string in this format: keyword|column_name|temp_view_name.
     The temp_view_name will be queried in the column_name using the most similar value to the keyword.
