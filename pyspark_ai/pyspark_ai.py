@@ -41,6 +41,7 @@ from pyspark_ai.tool import (
     QueryValidationTool,
     SimilarValueTool,
 )
+from pyspark_ai.spark_utils import SparkUtils
 
 
 class SparkAI:
@@ -381,18 +382,12 @@ class SparkAI:
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
         return sql_query_from_response
 
-    def _convert_row_as_tuple(self, row: Row) -> tuple:
-        return tuple(map(str, row.asDict().values()))
-
-    def _get_dataframe_results(self, df: DataFrame) -> list:
-        return list(map(self._convert_row_as_tuple, df.collect()))
-
     def _get_sample_spark_rows(self, df: DataFrame, temp_view_name: str) -> str:
         if self._sample_rows_in_table_info <= 0:
             return ""
         columns_str = "\t".join([f.name for f in df.schema.fields])
         try:
-            sample_rows = self._get_dataframe_results(df.limit(3))
+            sample_rows = SparkUtils.get_dataframe_results(df.limit(3))
             # save the sample rows in string format
             sample_rows_str = "\n".join(["\t".join(row) for row in sample_rows])
         except Exception:

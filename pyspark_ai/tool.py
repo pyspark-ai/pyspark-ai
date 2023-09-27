@@ -9,6 +9,7 @@ from pydantic import Field
 from pyspark import Row
 from pyspark.sql import SparkSession, DataFrame
 from pyspark_ai.ai_utils import AIUtils
+from pyspark_ai.spark_utils import SparkUtils
 
 try:
     from pyspark.sql.connect.session import SparkSession as ConnectSparkSession
@@ -43,15 +44,9 @@ class QuerySparkSQLTool(BaseTool):
     ) -> str:
         raise NotImplementedError("QuerySqlDbTool does not support async")
 
-    def _convert_row_as_tuple(self, row: Row) -> tuple:
-        return tuple(map(str, row.asDict().values()))
-
-    def _get_dataframe_results(self, df: DataFrame) -> list:
-        return list(map(self._convert_row_as_tuple, df.collect()))
-
     def _run_command(self, command: str) -> str:
         df = self.spark.sql(command)
-        return str(self._get_dataframe_results(df))
+        return str(SparkUtils.get_dataframe_results(df))
 
     def _run_no_throw(self, command: str) -> str:
         """Execute a SQL command and return a string representing the results.
@@ -107,6 +102,8 @@ class QueryValidationTool(BaseTool):
 
 
 class VectorSearchUtil:
+    """This class contains helper methods for similarity search performed by SimilarValueTool."""
+
     @staticmethod
     def vector_similarity_search(
         col_lst: Optional[list], vector_store_path: Optional[str], search_text: str
@@ -164,12 +161,6 @@ class SimilarValueTool(BaseTool):
         return VectorSearchUtil.vector_similarity_search(
             col_lst, vector_store_path, search_text
         )
-
-    def _get_dataframe_results(self, df: DataFrame) -> list:
-        return list(map(self._convert_row_as_tuple, df.collect()))
-
-    def _convert_row_as_tuple(self, row: Row) -> tuple:
-        return tuple(map(str, row.asDict().values()))
 
     async def _arun(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError("SimilarityTool does not support async")
