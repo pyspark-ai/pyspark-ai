@@ -137,11 +137,13 @@ class AIUtils:
     def retry_execution(callback, max_tries=3):
         tries = 0
         last_exception = None
+        error_messages = []
         while max_tries > tries:
             try:
-                return callback()
+                return callback(error_messages)
             except Exception as e:
                 last_exception = e
+                error_messages.append(str(e))
                 tries += 1
         raise Exception(
             "Could not evaluate Python code after multiple attempts"

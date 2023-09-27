@@ -484,10 +484,18 @@ class SparkAI:
     def plot_df(
         self, df: DataFrame, desc: Optional[str] = None, cache: bool = True
     ) -> None:
-        instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
 
-        def callback():
+        def callback(error_messages: List[str]):
+            accumulated_errors = "\n".join(error_messages)
+            instruction_base = (
+                f"The purpose of the plot: {desc}." if desc is not None else ""
+            )
+            instruction = (
+                f"{instruction_base}\nPlease avoid errors:\n{accumulated_errors}"
+                if error_messages
+                else instruction_base
+            )
             response = self._plot_chain.run(
                 tags=tags,
                 columns=self._get_df_schema(df),
@@ -511,8 +519,14 @@ class SparkAI:
         """
         tags = self._get_tags(cache)
 
-        def callback():
-            llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
+        def callback(error_messages: List[str]):
+            accumulated_errors = "\n".join(error_messages)
+            desc_with_error = (
+                f"{desc}\nPlease avoid errors:\n{accumulated_errors}"
+                if error_messages
+                else desc
+            )
+            llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc_with_error)
 
             codeblocks = AIUtils.extract_code_blocks(llm_output)
             llm_output = "\n".join(codeblocks)
