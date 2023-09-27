@@ -106,6 +106,31 @@ class QueryValidationTool(BaseTool):
         raise NotImplementedError("ListTablesSqlDbTool does not support async")
 
 
+class VectorSearchUtil:
+    @staticmethod
+    def vector_similarity_search(
+        col_lst: list,
+        vector_store_path: Optional[str],
+        search_text: str,
+        col: str,
+        temp_name: str,
+    ):
+        from langchain.vectorstores import FAISS
+        from langchain.embeddings import HuggingFaceBgeEmbeddings
+        import os
+
+        if vector_store_path and os.path.exists(vector_store_path):
+            vector_db = FAISS.load_local(vector_store_path, HuggingFaceBgeEmbeddings())
+        else:
+            vector_db = FAISS.from_texts(col_lst, HuggingFaceBgeEmbeddings())
+
+            if vector_store_path:
+                vector_db.save_local(vector_store_path)
+
+        docs = vector_db.similarity_search(search_text)
+        return docs[0].page_content
+
+
 class SimilarValueTool(BaseTool):
     """Tool for finding the semantically closest word to a keyword from a vector database."""
 
@@ -119,27 +144,6 @@ class SimilarValueTool(BaseTool):
 
     vector_store_dir: Optional[str]
 
-    def vector_similarity_search(self, search_text: str, col: str, temp_name: str):
-        from langchain.vectorstores import FAISS
-        from langchain.embeddings import HuggingFaceBgeEmbeddings
-        import os
-
-        new_df = self.spark.sql("select distinct `{}` from {}".format(col, temp_name))
-        new_df_lst = [str(row[col]) for row in new_df.collect()]
-
-        vector_store_location = self.vector_store_dir + temp_name + "_" + col
-
-        if self.vector_store_dir and os.path.exists(vector_store_location):
-            vector_db = FAISS.load_local(vector_store_location, HuggingFaceBgeEmbeddings())
-        else:
-            vector_db = FAISS.from_texts(new_df_lst, HuggingFaceBgeEmbeddings())
-
-            if self.vector_store_dir:
-                vector_db.save_local(vector_store_location)
-
-        docs = vector_db.similarity_search(search_text)
-        return docs[0].page_content
-
     def _run(
         self, inputs: str, run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
@@ -149,7 +153,18 @@ class SimilarValueTool(BaseTool):
         col = input_lst[1]
         temp_name = input_lst[2]
 
-        return self.vector_similarity_search(search_text, col, temp_name)
+        new_df = self.spark.sql("select distinct `{}` from {}".format(col, temp_name))
+        col_lst = [str(row[col]) for row in new_df.collect()]
+
+        vector_store_path = (
+            (self.vector_store_dir + temp_name + "_" + col)
+            if self.vector_store_dir
+            else None
+        )
+
+        return VectorSearchUtil.vector_similarity_search(
+            col_lst, vector_store_path, search_text, col, temp_name
+        )
 
     def _get_dataframe_results(self, df: DataFrame) -> list:
         return list(map(self._convert_row_as_tuple, df.collect()))

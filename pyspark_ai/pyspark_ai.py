@@ -129,7 +129,9 @@ class SparkAI:
         tools = [
             QuerySparkSQLTool(spark=self._spark),
             QueryValidationTool(spark=self._spark),
-            SimilarValueTool(spark=self._spark, vector_store_dir=self._vector_store_dir),
+            SimilarValueTool(
+                spark=self._spark, vector_store_dir=self._vector_store_dir
+            ),
         ]
         agent = ReActSparkSQLAgent.from_llm_and_tools(
             llm=self._llm, tools=tools, verbose=True
