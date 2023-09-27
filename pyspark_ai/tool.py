@@ -6,9 +6,9 @@ from langchain.callbacks.manager import (
 )
 from langchain.tools import BaseTool
 from pydantic import Field
-from pyspark import Row
-from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import SparkSession
 from pyspark_ai.ai_utils import AIUtils
+from pyspark_ai.spark_utils import SparkUtils
 
 try:
     from pyspark.sql.connect.session import SparkSession as ConnectSparkSession
@@ -43,15 +43,9 @@ class QuerySparkSQLTool(BaseTool):
     ) -> str:
         raise NotImplementedError("QuerySqlDbTool does not support async")
 
-    def _convert_row_as_tuple(self, row: Row) -> tuple:
-        return tuple(map(str, row.asDict().values()))
-
-    def _get_dataframe_results(self, df: DataFrame) -> list:
-        return list(map(self._convert_row_as_tuple, df.collect()))
-
     def _run_command(self, command: str) -> str:
         df = self.spark.sql(command)
-        return str(self._get_dataframe_results(df))
+        return str(SparkUtils.get_dataframe_results(df))
 
     def _run_no_throw(self, command: str) -> str:
         """Execute a SQL command and return a string representing the results.
@@ -104,3 +98,68 @@ class QueryValidationTool(BaseTool):
 
     async def _arun(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError("ListTablesSqlDbTool does not support async")
+
+
+class VectorSearchUtil:
+    """This class contains helper methods for similarity search performed by SimilarValueTool."""
+
+    @staticmethod
+    def vector_similarity_search(
+        col_lst: Optional[list], vector_store_path: Optional[str], search_text: str
+    ):
+        from langchain.vectorstores import FAISS
+        from langchain.embeddings import HuggingFaceBgeEmbeddings
+        import os
+
+        if vector_store_path and os.path.exists(vector_store_path):
+            vector_db = FAISS.load_local(vector_store_path, HuggingFaceBgeEmbeddings())
+        else:
+            vector_db = FAISS.from_texts(col_lst, HuggingFaceBgeEmbeddings())
+
+            if vector_store_path:
+                vector_db.save_local(vector_store_path)
+
+        docs = vector_db.similarity_search(search_text)
+        return docs[0].page_content
+
+
+class SimilarValueTool(BaseTool):
+    """Tool for finding the column value which is closest to the input text."""
+
+    spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
+    name = "similar_value"
+    description = """
+    This tool takes a string keyword and searches for the most similar value from a vector store with all
+    possible values from the desired column.
+    Input to this tool is a pipe-separated string in this format: keyword|column_name|temp_view_name.
+    The temp_view_name will be queried in the column_name using the most similar value to the keyword.
+    """
+
+    vector_store_dir: Optional[str]
+
+    def _run(
+        self, inputs: str, run_manager: Optional[CallbackManagerForToolRun] = None
+    ) -> str:
+        input_lst = inputs.split("|")
+
+        # parse input
+        search_text = input_lst[0]
+        col = input_lst[1]
+        temp_name = input_lst[2]
+
+        if not self.vector_store_dir:
+            new_df = self.spark.sql(
+                "select distinct `{}` from {}".format(col, temp_name)
+            )
+            col_lst = [str(row[col]) for row in new_df.collect()]
+            vector_store_path = self.vector_store_dir + temp_name + "_" + col
+        else:
+            vector_store_path = None
+            col_lst = None
+
+        return VectorSearchUtil.vector_similarity_search(
+            col_lst, vector_store_path, search_text
+        )
+
+    async def _arun(self, *args: Any, **kwargs: Any) -> Any:
+        raise NotImplementedError("SimilarityTool does not support async")

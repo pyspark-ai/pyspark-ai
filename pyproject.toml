@@ -37,6 +37,9 @@ grpcio = ">=1.56.0"
 plotly = "^5.15.0"
 pyarrow = ">=4.0.0"
 grpcio-status = ">=1.56.0"
+faiss-cpu = "^1.7.4"
+sentence-transformers = "^2.2.2"
+flagembedding = "^1.1.1"
 
 
 [tool.poetry.dev-dependencies]

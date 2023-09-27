@@ -13,7 +13,6 @@ from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
 from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
-from pyspark import Row
 from pyspark.sql import DataFrame, SparkSession
 from tiktoken import Encoding
 
@@ -36,7 +35,12 @@ from pyspark_ai.temp_view_utils import (
     replace_view_name,
     canonize_string,
 )
-from pyspark_ai.tool import QuerySparkSQLTool, QueryValidationTool
+from pyspark_ai.tool import (
+    QuerySparkSQLTool,
+    QueryValidationTool,
+    SimilarValueTool,
+)
+from pyspark_ai.spark_utils import SparkUtils
 
 
 class SparkAI:
@@ -55,6 +59,7 @@ class SparkAI:
         enable_cache: bool = True,
         cache_file_format: str = "json",
         cache_file_location: Optional[str] = None,
+        vector_store_dir: Optional[str] = None,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         sample_rows_in_table_info: int = 3,
@@ -99,6 +104,7 @@ class SparkAI:
             ).search
         else:
             self._cache = None
+        self._vector_store_dir = vector_store_dir
         self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
         self._max_tokens_of_web_content = max_tokens_of_web_content
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
@@ -123,6 +129,9 @@ class SparkAI:
         tools = [
             QuerySparkSQLTool(spark=self._spark),
             QueryValidationTool(spark=self._spark),
+            SimilarValueTool(
+                spark=self._spark, vector_store_dir=self._vector_store_dir
+            ),
         ]
         agent = ReActSparkSQLAgent.from_llm_and_tools(
             llm=self._llm, tools=tools, verbose=True
@@ -372,18 +381,12 @@ class SparkAI:
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
         return sql_query_from_response
 
-    def _convert_row_as_tuple(self, row: Row) -> tuple:
-        return tuple(map(str, row.asDict().values()))
-
-    def _get_dataframe_results(self, df: DataFrame) -> list:
-        return list(map(self._convert_row_as_tuple, df.collect()))
-
     def _get_sample_spark_rows(self, df: DataFrame, temp_view_name: str) -> str:
         if self._sample_rows_in_table_info <= 0:
             return ""
         columns_str = "\t".join([f.name for f in df.schema.fields])
         try:
-            sample_rows = self._get_dataframe_results(df.limit(3))
+            sample_rows = SparkUtils.get_dataframe_results(df.limit(3))
             # save the sample rows in string format
             sample_rows_str = "\n".join(["\t".join(row) for row in sample_rows])
         except Exception:

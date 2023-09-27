@@ -40,8 +40,21 @@ SQL_PROMPT = PromptTemplate(
     template=SQL_TEMPLATE,
 )
 
-
 SPARK_SQL_EXAMPLES = [
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following columns:
+```
+MountainName STRING
+Height INT
+Country STRING
+Continent STRING
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Moorea.
+Thought: I should filter on the `Country` column to find the mountain located in Moorea.
+Action: query_validation
+Action Input: SELECT `MountainName` FROM `spark_ai_temp_view_14kjd0` WHERE `Country` = 'Moorea'
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT `MountainName` FROM `spark_ai_temp_view_14kjd0` WHERE `Country` = 'Moorea'"""
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
 ```
 Product STRING
@@ -51,28 +64,32 @@ Country STRING
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_93bcf0`: Pivot the fruit table by country and sum the amount for each fruit and country combination.
 Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
 Action: query_sql_db
-Action Input: "SELECT DISTINCT Country FROM spark_ai_temp_view_93bcf0"
+Action Input: "SELECT DISTINCT `Country` FROM spark_ai_temp_view_93bcf0"
 Observation: USA, Canada, Mexico, China
 Thought: I can write a query to pivot the table by country and sum the amount for each fruit and country combination.
 Action: query_validation
-Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))
+Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))
 Observation: OK
 Thought:I now know the final answer.
-Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR Country IN ('USA', 'Canada', 'Mexico', 'China'))"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_19acs2` with the following columns:
+Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))"""
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
 ```
-Car STRING
-Color STRING
-Make STRING
+Student STRING
+Birthday STRING
 ```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_19acs2`: If color is gold, what is the total number of cars?
-Thought: I will use the column 'Color' to filter the rows where its value is 'gold' and then select the COUNT(`Car`) 
-because COUNT gives me the total number of cars.
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
+Thought: I need to filter by an exact birthday value from the df. I will use the tool similar_value to help me choose my filter value.
+Action: similar_value
+Action Input: January 1, 2006|Birthday|spark_ai_temp_view_12qcl3
+Observation: 01-01-2006
+Thought: The correct Birthday filter should be '01-01-2006' because it is semantically closest to the keyword.
+I will use the column 'Birthday' to filter the rows where its value is '01-01-2006' and then select the COUNT(`Student`) 
+because COUNT gives me the total number of students.
 Action: query_validation
-Action Input: SELECT COUNT(`Car`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'
+Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'
 Observation: OK
 Thought: I now know the final answer.
-Final Answer: SELECT COUNT(`Car`) FROM spark_ai_temp_view_19acs2 WHERE `Color` = 'gold'"""
+Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'"""
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
 ```
 PassengerId INT
@@ -101,10 +118,6 @@ SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` {comment
 The dataframe contains the column names and types in this format:
 column_name: type.
 It's very important to ONLY use the verbatim column names in your resulting SQL query.
-For example, the verbatim column name from the line 'Fruit Color: string' is `Fruit Color`.
-So, a resulting SQL query would be: SELECT * FROM view WHERE `Fruit Color` = 'orange'.
-The verbatim column name from the line 'Number of years: int' is `Number of years`.
-So, a resulting SQL query would be: SELECT * FROM view WHERE `Number of years` = 3.
 
 Here are the column names and types for your dataframe:
 ```
@@ -119,7 +132,8 @@ Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc
 
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
 Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
-"""
+Always use the tool similar_value to find the correct filter value format, unless it's obvious.
+Use the COUNT SQL function when the query asks for total number of some non-countable column."""
 
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,
