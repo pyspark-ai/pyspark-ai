@@ -128,14 +128,15 @@ class VectorSearchUtil:
 
 
 class SimilarValueTool(BaseTool):
-    """Tool for finding the semantically closest word to a keyword from a vector database."""
+    """Tool for finding the column value which is closest to the input text."""
 
     spark: Union[SparkSession, ConnectSparkSession] = Field(exclude=True)
     name = "similar_value"
     description = """
-    This tool finds the semantically closest word to a keyword from a vector database, using the FAISS library.
+    This tool takes a string keyword and searches for the most similar value from a vector store with all 
+    possible values from the desired column.
     Input to this tool is a pipe-separated string in this format: keyword|column_name|temp_view_name.
-    The temp_view_name will be queried in the column_name for the semantically closest word to the keyword.
+    The temp_view_name will be queried in the column_name using the most similar value to the keyword.
     """
 
     vector_store_dir: Optional[str]
