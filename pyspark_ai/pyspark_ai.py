@@ -126,13 +126,21 @@ class SparkAI:
         return LLMChainWithCache(llm=self._llm, prompt=prompt, cache=self._cache)
 
     def _create_sql_agent(self):
-        tools = [
-            QuerySparkSQLTool(spark=self._spark),
-            QueryValidationTool(spark=self._spark),
-            SimilarValueTool(
-                spark=self._spark, vector_store_dir=self._vector_store_dir
-            ),
-        ]
+        # exclude SimilarValueTool if vector_store_dir not configured
+        tools = (
+            [
+                QuerySparkSQLTool(spark=self._spark),
+                QueryValidationTool(spark=self._spark),
+                SimilarValueTool(
+                    spark=self._spark, vector_store_dir=self._vector_store_dir
+                ),
+            ]
+            if self._vector_store_dir
+            else [
+                QuerySparkSQLTool(spark=self._spark),
+                QueryValidationTool(spark=self._spark),
+            ]
+        )
         agent = ReActSparkSQLAgent.from_llm_and_tools(
             llm=self._llm, tools=tools, verbose=True
         )
