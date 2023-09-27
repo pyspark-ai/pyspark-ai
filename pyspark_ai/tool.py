@@ -1,4 +1,4 @@
-from typing import Optional, Any, Union, List
+from typing import Optional, Any, Union
 
 from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
@@ -109,11 +109,7 @@ class QueryValidationTool(BaseTool):
 class VectorSearchUtil:
     @staticmethod
     def vector_similarity_search(
-        col_lst: list,
-        vector_store_path: Optional[str],
-        search_text: str,
-        col: str,
-        temp_name: str,
+        col_lst: Optional[list], vector_store_path: Optional[str], search_text: str
     ):
         from langchain.vectorstores import FAISS
         from langchain.embeddings import HuggingFaceBgeEmbeddings
@@ -149,21 +145,23 @@ class SimilarValueTool(BaseTool):
     ) -> str:
         input_lst = inputs.split("|")
 
+        # parse input
         search_text = input_lst[0]
         col = input_lst[1]
         temp_name = input_lst[2]
 
-        new_df = self.spark.sql("select distinct `{}` from {}".format(col, temp_name))
-        col_lst = [str(row[col]) for row in new_df.collect()]
-
-        vector_store_path = (
-            (self.vector_store_dir + temp_name + "_" + col)
-            if self.vector_store_dir
-            else None
-        )
+        if not self.vector_store_dir:
+            new_df = self.spark.sql(
+                "select distinct `{}` from {}".format(col, temp_name)
+            )
+            col_lst = [str(row[col]) for row in new_df.collect()]
+            vector_store_path = self.vector_store_dir + temp_name + "_" + col
+        else:
+            vector_store_path = None
+            col_lst = None
 
         return VectorSearchUtil.vector_similarity_search(
-            col_lst, vector_store_path, search_text, col, temp_name
+            col_lst, vector_store_path, search_text
         )
 
     def _get_dataframe_results(self, df: DataFrame) -> list:

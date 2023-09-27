@@ -105,13 +105,12 @@ def get_tables_and_questions(source_file):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--table_file', help='table definition file', default='data/test_sample.tables.jsonl')
-    parser.add_argument('--source_file', help='source file for the prediction', default='data/one_example.jsonl')
+    parser.add_argument('--source_file', help='source file for the prediction', default='data/test_sample.jsonl')
     args = parser.parse_args()
 
     table_file = args.table_file
     statements = create_temp_view_statements(table_file)
     spark = SparkSession.builder.getOrCreate()
-
     for stmt in statements:
         spark.sql(stmt)
 

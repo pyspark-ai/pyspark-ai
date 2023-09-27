@@ -1092,17 +1092,6 @@ pydantic = ">=1,<3"
 requests = ">=2,<3"
 
 [[package]]
-name = "lib"
-version = "4.0.0"
-description = "Autocode standard library Python bindings"
-optional = false
-python-versions = "*"
-files = [
-    {file = "lib-4.0.0-py3-none-any.whl", hash = "sha256:d0a9e03b27d2b94c403f43c1af39366500032d587dcd45ffdf707131cbdf58c6"},
-    {file = "lib-4.0.0.tar.gz", hash = "sha256:da861f02e9ee8748a8f168584de94f0ed85aad65e70f62760f1962ae515c94e1"},
-]
-
-[[package]]
 name = "markupsafe"
 version = "2.1.3"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -3034,4 +3023,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "c9ef9c04487834202514cd024e2d5a6cd276938de63cf91b91fa9ba753e24166"
+content-hash = "53515970d92ba88f3ec0af2220168ebea6a661631827913be0cce13f7dc84489"
