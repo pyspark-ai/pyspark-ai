@@ -1,0 +1,31 @@
+site_name: English SDK for Apache Spark
+theme:
+  name: material
+  logo: _static/english-sdk-spark.svg
+  features:
+    - content.code.copy
+
+repo_url: https://github.com/pyspark-ai/pyspark-ai/
+
+# Page tree
+nav:
+  - index.md
+  - installation_and_setup.md
+  - dataframe_transformation.md
+  - data_ingestion.md
+  - plot.md
+  - dataframe_explanation.md
+  - dataframe_verification.md
+  - udf_generation.md
+  - contributing.md
+  - resources.md
+
+# Extensions
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
