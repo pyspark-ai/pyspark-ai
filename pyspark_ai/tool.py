@@ -1,4 +1,5 @@
 from typing import Optional, Any, Union
+import os
 
 from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
@@ -109,7 +110,6 @@ class VectorSearchUtil:
     ):
         from langchain.vectorstores import FAISS
         from langchain.embeddings import HuggingFaceBgeEmbeddings
-        import os
 
         if vector_store_path and os.path.exists(vector_store_path):
             vector_db = FAISS.load_local(vector_store_path, HuggingFaceBgeEmbeddings())
@@ -147,14 +147,18 @@ class SimilarValueTool(BaseTool):
         col = input_lst[1]
         temp_name = input_lst[2]
 
-        if not self.vector_store_dir:
+        vector_store_path = (
+            self.vector_store_dir + temp_name + "_" + col
+            if self.vector_store_dir
+            else None
+        )
+
+        if not self.vector_store_dir or not os.path.exists(vector_store_path):
             new_df = self.spark.sql(
                 "select distinct `{}` from {}".format(col, temp_name)
             )
             col_lst = [str(row[col]) for row in new_df.collect()]
-            vector_store_path = self.vector_store_dir + temp_name + "_" + col
         else:
-            vector_store_path = None
             col_lst = None
 
         return VectorSearchUtil.vector_similarity_search(
