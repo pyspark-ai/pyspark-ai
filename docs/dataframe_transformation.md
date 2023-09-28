@@ -1,5 +1,18 @@
 # DataFrame Transformation
 
+## API
+```python
+DataFrame.ai.transform(desc: str, cache: bool = True) -> DataFrame
+```
+
+This method applies a transformation to a provided Spark DataFrame, the specifics of which are determined by the `desc` parameter:
+
+- param desc: A natural language string that outlines the specific transformation to be applied on the DataFrame.
+- param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
+- return: Returns a new Spark DataFrame that is the result of applying the specified transformation
+                 on the input DataFrame.
+
+## Example
 Given the following DataFrame `df`:
 ```python
 df = spark_ai._spark.createDataFrame(

@@ -39,12 +39,3 @@ spark_ai.activate()  # active partial functions for Spark DataFrame
 
 As per [Microsoft's Data Privacy page](https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy), using the Azure OpenAI service can provide better data privacy and security.
 
-
-
-
-
-
-
-
-## License
-Licensed under the Apache License 2.0.

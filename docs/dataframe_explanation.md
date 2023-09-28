@@ -1,5 +1,11 @@
 # DataFrame Explanation
 
+## API
+```python
+DataFrame.ai.explain(cache: bool = True) -> str:
+```
+
+## Example
 Given a DataFrame `auto_df` from [Data Ingestion](data_ingestion.md), you can explain a DataFrame with the following code:
 ```python
 auto_top_growth_df=auto_df.ai.transform("brand with the highest growth")
