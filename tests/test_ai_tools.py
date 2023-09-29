@@ -117,7 +117,7 @@ class TestSimilarValueTool(unittest.TestCase):
         spark_ai = SparkAI(
             llm=self.llm_mock,
             spark_session=self.spark,
-            vector_store_dir="test/",
+            vector_store_dir="tests/test/",
         )
         agent = spark_ai._create_sql_agent()
         similar_value_tool = agent.lookup_tool("similar_value")
