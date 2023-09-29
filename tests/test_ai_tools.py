@@ -145,9 +145,7 @@ class TestSimilarValueTool(unittest.TestCase):
             try:
                 df = self.spark.table(f"`{table_name}`")
                 df.createOrReplaceTempView("sample_df")
-                observation = similar_value_tool.run(
-                    f"{tool_input}{table_name}"
-                )
+                observation = similar_value_tool.run(f"{tool_input}{table_name}")
 
                 self.assertEqual(observation, expected_result)
             finally:
