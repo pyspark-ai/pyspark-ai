@@ -38,7 +38,7 @@ class TestToolsInit(unittest.TestCase):
 
     def test_include_similar_value_tool(self):
         """Test that SimilarValueTool is included when vector_store_dir is specified"""
-        vector_store_dir = "test/"
+        vector_store_dir = "data/"
         spark_ai = SparkAI(
             llm=self.llm_mock,
             spark_session=self.spark,
@@ -95,7 +95,8 @@ class TestSimilarValueTool(unittest.TestCase):
             )
             self.assertEqual(similar_value, "2023-03-25")
 
-    def get_tool_lists(self, inputs_file):
+    @staticmethod
+    def get_expected_results(inputs_file):
         """Helper util to get inputs for testing SimilarValueTool"""
         import json
 
@@ -117,13 +118,13 @@ class TestSimilarValueTool(unittest.TestCase):
         spark_ai = SparkAI(
             llm=self.llm_mock,
             spark_session=self.spark,
-            vector_store_dir="tests/test/",
+            vector_store_dir="tests/data/",
         )
         agent = spark_ai._create_sql_agent()
         similar_value_tool = agent.lookup_tool("similar_value")
 
-        table_file = "tests/test/test_similar_value_tool_e2e.tables.jsonl"
-        source_file = "tests/test/test_similar_value_tool_e2e.jsonl"
+        table_file = "tests/data/test_similar_value_tool_e2e.tables.jsonl"
+        source_file = "tests/data/test_similar_value_tool_e2e.jsonl"
 
         # prepare tables
         statements = create_temp_view_statements(table_file)
@@ -131,16 +132,26 @@ class TestSimilarValueTool(unittest.TestCase):
         for stmt in statements:
             spark.sql(stmt)
 
-        tables, tool_inputs, expected_results = self.get_tool_lists(source_file)
+        (
+            tables,
+            tool_inputs,
+            expected_results,
+        ) = TestSimilarValueTool.get_expected_results(source_file)
 
         for table, tool_input, expected_result in zip(
             tables, tool_inputs, expected_results
         ):
-            df = self.spark.table(f"`{get_table_name(table)}`")
-            df.createOrReplaceTempView("sample_df")
-            observation = similar_value_tool.run(f"{tool_input}{get_table_name(table)}")
+            table_name = get_table_name(table)
+            try:
+                df = self.spark.table(f"`{table_name}`")
+                df.createOrReplaceTempView("sample_df")
+                observation = similar_value_tool.run(
+                    f"{tool_input}{table_name}"
+                )
 
-            self.assertEqual(observation, expected_result)
+                self.assertEqual(observation, expected_result)
+            finally:
+                self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
 
 if __name__ == "__main__":
