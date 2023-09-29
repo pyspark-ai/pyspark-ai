@@ -122,8 +122,8 @@ class TestSimilarValueTool(unittest.TestCase):
         agent = spark_ai._create_sql_agent()
         similar_value_tool = agent.lookup_tool("similar_value")
 
-        table_file = "test/test_similar_value_tool_e2e.tables.jsonl"
-        source_file = "test/test_similar_value_tool_e2e.jsonl"
+        table_file = "tests/test/test_similar_value_tool_e2e.tables.jsonl"
+        source_file = "tests/test/test_similar_value_tool_e2e.jsonl"
 
         # prepare tables
         statements = create_temp_view_statements(table_file)
