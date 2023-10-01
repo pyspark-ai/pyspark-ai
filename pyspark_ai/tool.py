@@ -111,10 +111,28 @@ class VectorSearchUtil:
         from langchain.vectorstores import FAISS
         from langchain.embeddings import HuggingFaceBgeEmbeddings
 
+        model_name = "BAAI/bge-base-en-v1.5"
+        model_kwargs = {"device": "cpu"}
+        encode_kwargs = {"normalize_embeddings": False}
+
         if vector_store_path and os.path.exists(vector_store_path):
-            vector_db = FAISS.load_local(vector_store_path, HuggingFaceBgeEmbeddings())
+            vector_db = FAISS.load_local(
+                vector_store_path,
+                HuggingFaceBgeEmbeddings(
+                    model_name=model_name,
+                    model_kwargs=model_kwargs,
+                    encode_kwargs=encode_kwargs,
+                ),
+            )
         else:
-            vector_db = FAISS.from_texts(col_lst, HuggingFaceBgeEmbeddings())
+            vector_db = FAISS.from_texts(
+                col_lst,
+                HuggingFaceBgeEmbeddings(
+                    model_name=model_name,
+                    model_kwargs=model_kwargs,
+                    encode_kwargs=encode_kwargs,
+                ),
+            )
 
             if vector_store_path:
                 vector_db.save_local(vector_store_path)
