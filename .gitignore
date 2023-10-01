@@ -58,3 +58,6 @@ coverage.xml
 .pytest_cache/
 
 .ipynb_checkpoints/
+
+# Emacs things
+.dir-locals.el

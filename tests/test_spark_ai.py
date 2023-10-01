@@ -1,15 +1,15 @@
-import unittest
 import logging
+import unittest
 from io import StringIO
 from unittest.mock import MagicMock
 
+import numpy as np
 from chispa.dataframe_comparer import assert_df_equality
 from langchain.base_language import BaseLanguageModel
-from pyspark.sql import SparkSession, Row
-from tiktoken import Encoding
-
+from pyspark.sql import Row, SparkSession
 from pyspark_ai import SparkAI
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
+from tiktoken import Encoding
 
 
 class SparkAIInitializationTestCase(unittest.TestCase):
@@ -38,7 +38,6 @@ class SparkAIInitializationTestCase(unittest.TestCase):
 
 
 class TestGetTableCommentFromExplain(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.spark = SparkSession.builder.getOrCreate()
@@ -49,27 +48,39 @@ class TestGetTableCommentFromExplain(unittest.TestCase):
     def tearDownClass(cls):
         cls.spark.stop()
 
-    def create_and_read_table(self, table_name, data, comment=''):
+    def create_and_read_table(self, table_name, data, comment=""):
         self.spark.createDataFrame(data, ["col1", "col2"]).write.saveAsTable(table_name)
-        if comment != '':
-            self.spark.sql(f"ALTER TABLE {table_name} SET TBLPROPERTIES ('comment' = '{comment}')")
+        if comment != "":
+            self.spark.sql(
+                f"ALTER TABLE {table_name} SET TBLPROPERTIES ('comment' = '{comment}')"
+            )
         return self.spark.sql(f"SELECT * FROM {table_name}")
 
     def test_single_table(self):
         table_name = "spark_catalog.default.test_table1"
         comment = "comment1"
         try:
-            df = self.create_and_read_table(table_name, [(1, "foo"), (2, "bar")], comment)
+            df = self.create_and_read_table(
+                table_name, [(1, "foo"), (2, "bar")], comment
+            )
             tables = SparkAI._get_tables_from_explain(df)
             self.assertEqual(tables, [table_name])
-            self.assertEqual(self.spark_ai._get_table_comment(df), "which represents comment1")
+            self.assertEqual(
+                self.spark_ai._get_table_comment(df), "which represents comment1"
+            )
         finally:
             self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
     def test_multiple_tables(self):
-        table_names = ["spark_catalog.default.test_table1", "spark_catalog.default.test_table2"]
+        table_names = [
+            "spark_catalog.default.test_table1",
+            "spark_catalog.default.test_table2",
+        ]
         try:
-            dfs = [self.create_and_read_table(name, [(1, "foo"), (2, "bar")]) for name in table_names]
+            dfs = [
+                self.create_and_read_table(name, [(1, "foo"), (2, "bar")])
+                for name in table_names
+            ]
             df = dfs[0].join(dfs[1], "col1")
             tables = SparkAI._get_tables_from_explain(df)
             self.assertEqual(tables, table_names)
@@ -84,6 +95,7 @@ class TestGetTableCommentFromExplain(unittest.TestCase):
         tables = SparkAI._get_tables_from_explain(df)
         self.assertEqual(tables, [])
         self.assertEqual(self.spark_ai._get_table_comment(df), "")
+
 
 class SparkAITrimTextTestCase(unittest.TestCase):
     """Test cases for the _trim_text_from_end method of the SparkAI."""
@@ -200,7 +212,9 @@ class CacheRetrievalTestCase(SparkTestCase):
         self.spark_ai = SparkAI(
             llm=self.llm_mock, cache_file_location="examples/spark_ai_cache.json"
         )
-        self.url = "https://en.wikipedia.org/wiki/List_of_presidents_of_the_United_States"
+        self.url = (
+            "https://en.wikipedia.org/wiki/List_of_presidents_of_the_United_States"
+        )
         self.df1 = self.spark_ai.create_df(self.url, ["president", "vice_president"])
 
     def test_create_df(self):
@@ -256,7 +270,6 @@ class SparkAnalysisTest(SparkTestCase):
 
 
 class SparkConnectTestCase(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.spark = SparkSession.builder.remote("sc://localhost").getOrCreate()
@@ -265,32 +278,38 @@ class SparkConnectTestCase(unittest.TestCase):
     def tearDownClass(cls):
         cls.spark.stop()
 
+
 @unittest.skip("skip until GHA secret key enabled")
 class SparkConnectTests(SparkConnectTestCase):
     def setUp(self):
         self.spark_ai = SparkAI(
-            cache_file_location="examples/spark_ai_cache.json",
-            verbose=True
+            cache_file_location="examples/spark_ai_cache.json", verbose=True
         )
         self.spark_ai.activate()
 
     def test_spark_connect_autodf_e2e(self):
         try:
-            df = self.spark_ai.create_df("https://www.carpro.com/blog/full-year-2022-national-auto-sales-by-brand")
+            df = self.spark_ai.create_df(
+                "https://www.carpro.com/blog/full-year-2022-national-auto-sales-by-brand"
+            )
 
             # Test df aggregation happens before Pandas conversion
             self.root_logger = logging.getLogger()
             self.log_capture_string = StringIO()
             self.ch = logging.StreamHandler(self.log_capture_string)
             self.root_logger.addHandler(self.ch)
-            df.ai.plot("pie chart for US sales market shares, show the top 5 brands and the sum of others")
+            df.ai.plot(
+                "pie chart for US sales market shares, show the top 5 brands and the sum of others"
+            )
             log_contents = self.log_capture_string.getvalue()
             self.root_logger.removeHandler(self.ch)
             groupby_index = log_contents.find("groupBy")
             toPandas_index = log_contents.find("toPandas")
             self.assertTrue(
-                groupby_index != -1 and toPandas_index != -1 and groupby_index < toPandas_index,
-                "the aggregation 'groupby' should appear before 'toPandas'"
+                groupby_index != -1
+                and toPandas_index != -1
+                and groupby_index < toPandas_index,
+                "the aggregation 'groupby' should appear before 'toPandas'",
             )
 
             df.ai.explain()
@@ -308,15 +327,17 @@ class SparkConnectTests(SparkConnectTestCase):
                     ("mountain bike", 10),
                     ("electric bike", 5),
                     ("road bike", 3),
-                    ("cruisers bike", 8)
+                    ("cruisers bike", 8),
                 ],
-                ["product_category", "product_count"]
+                ["product_category", "product_count"],
             )
             result = df.ai.transform("list top 3 products by count")
 
-            expected_lst = [Row(product_category='children bike', product_count=20),
-                            Row(product_category='comfort bike', product_count=15),
-                            Row(product_category='mountain bike', product_count=10)]
+            expected_lst = [
+                Row(product_category="children bike", product_count=20),
+                Row(product_category="comfort bike", product_count=15),
+                Row(product_category="mountain bike", product_count=10),
+            ]
 
             self.assertEqual(result.collect(), expected_lst)
         except Exception:
@@ -334,13 +355,15 @@ class SparkConnectTests(SparkConnectTestCase):
                     ("C", "English", 90),
                     ("C", "Science", 100),
                 ],
-                ["Student", "Subject", "Marks"]
+                ["Student", "Subject", "Marks"],
             )
             result = df.ai.transform("pivot using Subject for Marks")
 
-            expected_lst = [Row(Student='B', English=75, Maths=80, Science=None),
-                            Row(Student='C', English=90, Maths=None, Science=100),
-                            Row(Student='A', English=45, Maths=50, Science=None)]
+            expected_lst = [
+                Row(Student="B", English=75, Maths=80, Science=None),
+                Row(Student="C", English=90, Maths=None, Science=100),
+                Row(Student="A", English=45, Maths=50, Science=None),
+            ]
 
             self.assertEqual(result.collect(), expected_lst)
         except Exception:
