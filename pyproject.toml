@@ -37,6 +37,7 @@ grpcio = ">=1.56.0"
 plotly = "^5.15.0"
 pyarrow = ">=4.0.0"
 grpcio-status = ">=1.56.0"
+babel = "^2.12.1"
 
 
 [tool.poetry.dev-dependencies]
