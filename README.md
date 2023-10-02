@@ -178,9 +178,8 @@ def parse_heterogeneous_json(json_str: str, schema: List[str]) -> List[str]:
 `df.show()`
 
 
-+--------------------+
 |          json_field|
-+--------------------+
+|--------------------|
 |{"address": "123 ...|
 |{"last_name": "Do...|
 |{"email": "john_d...|
@@ -201,9 +200,8 @@ def parse_heterogeneous_json(json_str: str, schema: List[str]) -> List[str]:
     .show()
 ```
 
-+--------------------+
 |              parsed|
-+--------------------+
+|--------------------|
 |[NULL, John, Doe,...|
 |[NULL, NULL, Doe,...|
 |[NULL, John, NULL...|
@@ -238,15 +236,13 @@ def extract_email(text: str) -> str:
 df.select(expr("extract_email(value)")).show()
 ```
 
-+--------------------+
 |extract_email(value)|
-+--------------------+
+|--------------------|
 |helpdesk@example.com|
 |   hr@ourcompany.com|
 |prof.mike@example...|
 |jane.doe@example.com|
 |   admin@oursite.net|
-+--------------------+
 
 #### Example 4: Generate random numbers from Laplace distribution
 
@@ -273,9 +269,8 @@ spark.udf.register("laplace_random_number", laplace_random_number, returnType=Do
 )
 ```
 
-+-------------------+
 |     laplace_random|
-+-------------------+
+|-------------------|
 |0.39071216071827797|
 | 0.4670818035437042|
 | 0.7586462538760413|
