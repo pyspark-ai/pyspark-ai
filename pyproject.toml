@@ -39,15 +39,12 @@ pyarrow = ">=4.0.0"
 grpcio-status = ">=1.56.0"
 faiss-cpu = "^1.7.4"
 sentence-transformers = "^2.2.2"
-flagembedding = "^1.1.1"
-babel = "^2.12.1"
 torch = ">=2.0.0, !=2.0.1"
-
 
 [tool.poetry.dev-dependencies]
 pyspark = "^3.4.0"
+babel = "^2.12.1"
 
 [tool.poetry.group.lint.dependencies]
 flake8 = "^6.0.0"
 black = "^23.7.0"
-
