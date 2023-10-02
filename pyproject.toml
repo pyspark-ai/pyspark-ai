@@ -37,10 +37,10 @@ grpcio = ">=1.56.0"
 plotly = "^5.15.0"
 pyarrow = ">=4.0.0"
 grpcio-status = ">=1.56.0"
-babel = "^2.12.1"
-sentence-transformers = "^2.2.2"
-torch = ">=2.0.0, !=2.0.1"
 faiss-cpu = "^1.7.4"
+sentence-transformers = "^2.2.2"
+babel = "^2.12.1"
+torch = ">=2.0.0, !=2.0.1"
 
 
 [tool.poetry.dev-dependencies]
