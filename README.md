@@ -140,6 +140,7 @@ auto_top_growth_df.ai.verify("expect sales change percentage to be between -100 
 > result: True
 
 ### UDF Generation
+
 ```python
 @spark_ai.udf
 def previous_years_sales(brand: str, current_year_sale: int, sales_change_percentage: float) -> int:
@@ -159,6 +160,7 @@ spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_ch
 | Chevrolet     |   1417348|
 | Honda         |   1315225|
 | Hyundai       |    739045|
+
 
 ### Cache
 The SparkAI supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache, which gets updated for LLM and web search results. The staging cache can be persisted through the commit() method. Cache lookup is always performed on both in-memory staging cache and persistent cache.
