@@ -1,10 +1,15 @@
 # UDF Generation
+## API
+```python
+@spark_ai.udf
+def udf_name(arg1: arg1_type, arg2: arg2_type, ...) -> return_type:
+    """UDF description"""
+    ...
+```
+Given a SparkAI instance `spark_ai`, you can use the `@spark_ai.udf` decorator to generate UDFs from Python functions. There is no need to implement the body of the method.
 
 ## Example 1: Compute expression from columns
-
-You can use the `@spark_ai.udf` decorator to generate UDFs from Python functions. There is no need to implement the body of the method.
-
-For example, given a DataFrame `auto_df` from [Data Ingestion](data_ingestion.md):
+Given a DataFrame `auto_df` from [Data Ingestion](data_ingestion.md):
 ```python
 @spark_ai.udf
 def previous_years_sales(brand: str, current_year_sale: int, sales_change_percentage: float) -> int:
