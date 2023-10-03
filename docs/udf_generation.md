@@ -177,8 +177,10 @@ def extract_email(text: str) -> str:
     """Extract first email from raw text"""
     ...
 
+from pyspark.sql.functions import col
+
 spark.udf.register("extract_email", extract_email)
-df.select(lit("value").alias("raw"), expr("extract_email(value)").alias("email")).show()
+df.select(col("value").alias("raw"), expr("extract_email(value)").alias("email")).show()
 ```
 
 <table border="1" class="dataframe">
@@ -190,23 +192,23 @@ df.select(lit("value").alias("raw"), expr("extract_email(value)").alias("email")
   </thead>
   <tbody>
     <tr>
-      <td>value</td>
+      <td>For any queries regarding the product, contact helpdesk@example.com.</td>
       <td>helpdesk@example.com</td>
     </tr>
     <tr>
-      <td>value</td>
+      <td>Send your applications to hr@ourcompany.com.</td>
       <td>hr@ourcompany.com</td>
     </tr>
     <tr>
-      <td>value</td>
+      <td>You can reach out to the teacher at prof.mike@example.edu.</td>
       <td>prof.mike@example.edu</td>
     </tr>
     <tr>
-      <td>value</td>
+      <td>My personal email is jane.doe@example.com.</td>
       <td>jane.doe@example.com</td>
     </tr>
     <tr>
-      <td>value</td>
+      <td>You can forward the documents to admin@oursite.net.</td>
       <td>admin@oursite.net</td>
     </tr>
   </tbody>
