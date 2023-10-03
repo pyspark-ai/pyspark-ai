@@ -4,6 +4,9 @@ theme:
   logo: _static/english-sdk-spark-reverse.svg
   features:
     - content.code.copy
+  palette:
+    primary: custom
+    accent: custom
 
 repo_url: https://github.com/pyspark-ai/pyspark-ai/
 
@@ -29,3 +32,6 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+
+extra_css:
+  - stylesheets/extra_css.css
