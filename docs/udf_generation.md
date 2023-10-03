@@ -66,34 +66,28 @@ bad_json_dataframe = (
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
-      <th></th>
       <th>json_field</th>
       <th>schema</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
       <td>{"first_name": "John", "email": "john_doe@example.com", "last_name": "Doe", "phone_number": "+1 234 567 8900", "age": 32, "last_login": "2022-03-21T07:25:34Z", "address": "123 Main St, Springfield, OH, 45503, USA"}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
     </tr>
     <tr>
-      <th>1</th>
       <td>{"address": "123 Main St, Springfield, OH, 45503, USA", "phone_number": "+1 234 567 8900", "email": "john_doe@example.com", "registration_date": "2020-01-20T12:12:12Z", "username": "johndoe", "last_login": "2022-03-21T07:25:34Z"}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
     </tr>
     <tr>
-      <th>2</th>
       <td>{"age": 32, "last_name": "Doe", "email": "john_doe@example.com", "last_login": "2022-03-21T07:25:34Z", "address": "123 Main St, Springfield, OH, 45503, USA", "username": "johndoe"}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
     </tr>
     <tr>
-      <th>3</th>
       <td>{"first_name": "John", "address": "123 Main St, Springfield, OH, 45503, USA", "phone_number": "+1 234 567 8900", "last_name": "Doe", "id": 1279}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
     </tr>
     <tr>
-      <th>4</th>
       <td>{"phone_number": "+1 234 567 8900", "registration_date": "2020-01-20T12:12:12Z", "email": "john_doe@example.com", "address": "123 Main St, Springfield, OH, 45503, USA", "age": 32, "username": "johndoe"}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
     </tr>
@@ -128,7 +122,6 @@ from pyspark.sql.functions import expr
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
-      <th></th>
       <th>json_field</th>
       <th>schema</th>
       <th>parsed</th>
@@ -136,34 +129,29 @@ from pyspark.sql.functions import expr
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
       <td>{"first_name": "John", "email": "john_doe@example.com", "last_name": "Doe", "phone_number": "+1 234 567 8900", "age": 32, "last_login": "2022-03-21T07:25:34Z", "address": "123 Main St, Springfield, OH, 45503, USA"}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
       <td>[None, John, Doe, None, john_doe@example.com, +1 234 567 8900, 123 Main St, Springfield, OH, 45503, USA, 32, None, 2022-03-21T07:25:34Z]</td>
     </tr>
     <tr>
-      <th>1</th>
       <td>{"address": "123 Main St, Springfield, OH, 45503, USA", "phone_number": "+1 234 567 8900", "email": "john_doe@example.com", "registration_date": "2020-01-20T12:12:12Z", "username": "johndoe", "last_login": "2022-03-21T07:25:34Z"}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
       <td>[None, None, None, johndoe, john_doe@example.com, +1 234 567 8900, 123 Main St, Springfield, OH, 45503, USA, None, 2020-01-20T12:12:12Z, 2022-03-21T07:25:34Z]</td>
     </tr>
     <tr>
-      <th>2</th>
       <td>{"age": 32, "last_name": "Doe", "email": "john_doe@example.com", "last_login": "2022-03-21T07:25:34Z", "address": "123 Main St, Springfield, OH, 45503, USA", "username": "johndoe"}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
       <td>[None, None, Doe, johndoe, john_doe@example.com, None, 123 Main St, Springfield, OH, 45503, USA, 32, None, 2022-03-21T07:25:34Z]</td>
     </tr>
     <tr>
-      <th>3</th>
       <td>{"first_name": "John", "address": "123 Main St, Springfield, OH, 45503, USA", "phone_number": "+1 234 567 8900", "last_name": "Doe", "id": 1279}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
       <td>[1279, John, Doe, None, None, +1 234 567 8900, 123 Main St, Springfield, OH, 45503, USA, None, None, None]</td>
     </tr>
     <tr>
-      <th>4</th>
-      <td>{"age": 32, "id": 1279, "last_login": "2022-03-21T07:25:34Z", "phone_number": "+1 234 567 8900", "first_name": "John", "email": "john_doe@example.com", "registration_date": "2020-01-20T12:12:12Z"}</td>
+      <td>{"phone_number": "+1 234 567 8900", "registration_date": "2020-01-20T12:12:12Z", "email": "john_doe@example.com", "address": "123 Main St, Springfield, OH, 45503, USA", "age": 32, "username": "johndoe"}</td>
       <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
-      <td>[1279, John, None, None, john_doe@example.com, +1 234 567 8900, None, 32, 2020-01-20T12:12:12Z, 2022-03-21T07:25:34Z]</td>
+      <td>[None, None, None, johndoe, john_doe@example.com, +1 234 567 8900, 123 Main St, Springfield, OH, 45503, USA, 32, 2020-01-20T12:12:12Z, None]</td>
     </tr>
   </tbody>
 </table>
@@ -196,40 +184,33 @@ df.select(lit("value").alias("raw"), expr("extract_email(value)").alias("email")
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
-      <th></th>
       <th>raw</th>
       <th>email</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
       <td>value</td>
       <td>helpdesk@example.com</td>
     </tr>
     <tr>
-      <th>1</th>
       <td>value</td>
       <td>hr@ourcompany.com</td>
     </tr>
     <tr>
-      <th>2</th>
       <td>value</td>
       <td>prof.mike@example.edu</td>
     </tr>
     <tr>
-      <th>3</th>
       <td>value</td>
       <td>jane.doe@example.com</td>
     </tr>
     <tr>
-      <th>4</th>
       <td>value</td>
       <td>admin@oursite.net</td>
     </tr>
   </tbody>
 </table>
-
 
 ## Example 4: Generate random numbers from Laplace distribution
 
@@ -256,12 +237,75 @@ spark.udf.register("laplace_random_number", laplace_random_number, returnType=Do
 )
 ```
 
-|     laplace_random|
-|-------------------|
-|0.39071216071827797|
-| 0.4670818035437042|
-| 0.7586462538760413|
-|0.41987361759910846|
-| 1.1906543111637395|
-| 0.5811271918788534|
-| 0.8442334249218986|
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>value</th>
+      <th>loc</th>
+      <th>scale</th>
+      <th>laplace_random</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>0.799962</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>0.995381</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>0.602727</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>1.235575</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>1.864565</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>1.220493</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>0.992431</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>1.630307</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>0.894683</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>1.0</td>
+      <td>0.3</td>
+      <td>0.632602</td>
+    </tr>
+  </tbody>
+</table>
