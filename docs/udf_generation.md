@@ -27,6 +27,79 @@ spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_ch
 
 ## Example 2: Parse heterogeneous JSON text
 
+Let's imagine we have heterogeneous JSON texts: each of them may contain or not keys and also order of keys is random. We can generate sucha a DataFrame by mutating single JSON.
+
+```python
+random_dict = {
+    "id": 1279,
+    "first_name": "John",
+    "last_name": "Doe",
+    "username": "johndoe",
+    "email": "john_doe@example.com",
+    "phone_number": "+1 234 567 8900",
+    "address": "123 Main St, Springfield, OH, 45503, USA",
+    "age": 32,
+    "registration_date": "2020-01-20T12:12:12Z",
+    "last_login": "2022-03-21T07:25:34Z",
+}
+original_keys = list(random_dict.keys())
+
+from random import random, shuffle
+
+mutaded_rows = []
+for _ in range(20):
+    keys = [k for k in original_keys]
+    shuffle(keys)
+    # With 0.4 chance drop each field and also shuffle an order
+    mutaded_rows.append({k: random_dict[k] for k in keys if random() <= 0.6})
+
+import json
+
+bad_json_dataframe = (
+    spark.createDataFrame(
+        [(json.dumps(val), original_keys) for val in mutaded_rows],
+        ["json_field", "schema"],
+    )
+)
+```
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>json_field</th>
+      <th>schema</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>{"first_name": "John", "email": "john_doe@example.com", "last_name": "Doe", "phone_number": "+1 234 567 8900", "age": 32, "last_login": "2022-03-21T07:25:34Z", "address": "123 Main St, Springfield, OH, 45503, USA"}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>{"address": "123 Main St, Springfield, OH, 45503, USA", "phone_number": "+1 234 567 8900", "email": "john_doe@example.com", "registration_date": "2020-01-20T12:12:12Z", "username": "johndoe", "last_login": "2022-03-21T07:25:34Z"}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>{"age": 32, "last_name": "Doe", "email": "john_doe@example.com", "last_login": "2022-03-21T07:25:34Z", "address": "123 Main St, Springfield, OH, 45503, USA", "username": "johndoe"}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>{"first_name": "John", "address": "123 Main St, Springfield, OH, 45503, USA", "phone_number": "+1 234 567 8900", "last_name": "Doe", "id": 1279}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>{"phone_number": "+1 234 567 8900", "registration_date": "2020-01-20T12:12:12Z", "email": "john_doe@example.com", "address": "123 Main St, Springfield, OH, 45503, USA", "age": 32, "username": "johndoe"}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+    </tr>
+  </tbody>
+</table>
+
 ```python
 from typing import List
 
@@ -37,20 +110,11 @@ def parse_heterogeneous_json(json_str: str, schema: List[str]) -> List[str]:
     ...
 ```
 
-`df.show()`
-
-|          json_field|
-|--------------------|
-|{"address": "123 ...|
-|{"last_name": "Do...|
-|{"email": "john_d...|
-|{"email": "john_d...|
-|{"phone_number": ...|
-|{"age": 32, "firs...|
-|{"last_name": "Do...|
-|{"last_name": "Do...|
+Now we can test processing of our text rows:
 
 ```python
+from pyspark.sql.functions import expr
+
 (
     bad_json_dataframe
     .withColumn(
@@ -61,17 +125,48 @@ def parse_heterogeneous_json(json_str: str, schema: List[str]) -> List[str]:
     .show()
 ```
 
-|              parsed|
-|--------------------|
-|[NULL, John, Doe,...|
-|[NULL, NULL, Doe,...|
-|[NULL, John, NULL...|
-|[NULL, NULL, Doe,...|
-|[1279, NULL, NULL...|
-|[1279, John, Doe,...|
-|[1279, NULL, Doe,...|
-|[NULL, John, Doe,...|
-
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>json_field</th>
+      <th>schema</th>
+      <th>parsed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>{"first_name": "John", "email": "john_doe@example.com", "last_name": "Doe", "phone_number": "+1 234 567 8900", "age": 32, "last_login": "2022-03-21T07:25:34Z", "address": "123 Main St, Springfield, OH, 45503, USA"}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+      <td>[None, John, Doe, None, john_doe@example.com, +1 234 567 8900, 123 Main St, Springfield, OH, 45503, USA, 32, None, 2022-03-21T07:25:34Z]</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>{"address": "123 Main St, Springfield, OH, 45503, USA", "phone_number": "+1 234 567 8900", "email": "john_doe@example.com", "registration_date": "2020-01-20T12:12:12Z", "username": "johndoe", "last_login": "2022-03-21T07:25:34Z"}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+      <td>[None, None, None, johndoe, john_doe@example.com, +1 234 567 8900, 123 Main St, Springfield, OH, 45503, USA, None, 2020-01-20T12:12:12Z, 2022-03-21T07:25:34Z]</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>{"age": 32, "last_name": "Doe", "email": "john_doe@example.com", "last_login": "2022-03-21T07:25:34Z", "address": "123 Main St, Springfield, OH, 45503, USA", "username": "johndoe"}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+      <td>[None, None, Doe, johndoe, john_doe@example.com, None, 123 Main St, Springfield, OH, 45503, USA, 32, None, 2022-03-21T07:25:34Z]</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>{"first_name": "John", "address": "123 Main St, Springfield, OH, 45503, USA", "phone_number": "+1 234 567 8900", "last_name": "Doe", "id": 1279}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+      <td>[1279, John, Doe, None, None, +1 234 567 8900, 123 Main St, Springfield, OH, 45503, USA, None, None, None]</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>{"age": 32, "id": 1279, "last_login": "2022-03-21T07:25:34Z", "phone_number": "+1 234 567 8900", "first_name": "John", "email": "john_doe@example.com", "registration_date": "2020-01-20T12:12:12Z"}</td>
+      <td>[id, first_name, last_name, username, email, phone_number, address, age, registration_date, last_login]</td>
+      <td>[1279, John, None, None, john_doe@example.com, +1 234 567 8900, None, 32, 2020-01-20T12:12:12Z, 2022-03-21T07:25:34Z]</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Example 3: Extract email from raw text
 
@@ -94,16 +189,47 @@ def extract_email(text: str) -> str:
     """Extract first email from raw text"""
     ...
 
-df.select(expr("extract_email(value)")).show()
+spark.udf.register("extract_email", extract_email)
+df.select(lit("value").alias("raw"), expr("extract_email(value)").alias("email")).show()
 ```
 
-|extract_email(value)|
-|--------------------|
-|helpdesk@example.com|
-|   hr@ourcompany.com|
-|prof.mike@example...|
-|jane.doe@example.com|
-|   admin@oursite.net|
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>raw</th>
+      <th>email</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>value</td>
+      <td>helpdesk@example.com</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>value</td>
+      <td>hr@ourcompany.com</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>value</td>
+      <td>prof.mike@example.edu</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>value</td>
+      <td>jane.doe@example.com</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>value</td>
+      <td>admin@oursite.net</td>
+    </tr>
+  </tbody>
+</table>
+
 
 ## Example 4: Generate random numbers from Laplace distribution
 
