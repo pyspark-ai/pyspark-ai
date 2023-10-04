@@ -65,7 +65,7 @@ class AIMethodWrapper:
         """
         return self.spark_ai.plot_df(self.df_instance, desc, cache)
 
-    def verify(self, desc: str, cache: bool = True) -> None:
+    def verify(self, desc: str, cache: bool = True) -> bool:
         """
         Verify the DataFrame using the given description.
 
@@ -74,6 +74,9 @@ class AIMethodWrapper:
             cache: Indicates whether to utilize a cache for this method.
                 If `True`, fetches cached data, if available.
                 If `False`, retrieves fresh data and updates cache.
+
+        Returns:
+            True, if DataFrame tranformations are valid, otherwise False
         """
         return self.spark_ai.verify_df(self.df_instance, desc, cache)
 
