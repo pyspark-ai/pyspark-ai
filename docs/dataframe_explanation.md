@@ -5,6 +5,7 @@
 DataFrame.ai.explain(cache: bool = True) -> str:
 ```
 
+This method generates a natural language explanation of the SQL plan of the input Spark DataFrame.
 ## Example
 Given a DataFrame `auto_df` from [Data Ingestion](data_ingestion.md), you can explain a DataFrame with the following code:
 ```python

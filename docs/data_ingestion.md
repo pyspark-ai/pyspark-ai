@@ -2,13 +2,13 @@
 
 ## API
 ```python
-SparkAI.create_df(
+spark_ai.create_df(
     desc: str,
     columns: Optional[List[str]] = None,
     cache: bool = True) -> DataFrame
 ```
 
-This method create a Spark DataFrame by querying an LLM from web search result.
+Given a SparkAI instance `spark_ai`, you can use this method to create a Spark DataFrame by querying an LLM from web search result.
 
 - param desc: the description of the result DataFrame, which will be used for web searching
 - param columns: the expected column names in the result DataFrame
