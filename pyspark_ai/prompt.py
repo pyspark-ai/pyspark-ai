@@ -124,8 +124,10 @@ Here are the column names and types for your dataframe:
 {columns}
 ```
 
-Here are some sample rows from your dataframe:
-{sample_rows}
+Here are sample values from each column of the dataframe, to help you understand the columns.
+The format will be (column_name: type, [sample_value_1, sample_value_2...])... 
+Use these sample values to help you choose which columns to query.
+{sample_vals}
 
 Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc}
 {agent_scratchpad}"""
@@ -141,7 +143,7 @@ SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     input_variables=[
         "view_name",
         "columns",
-        "sample_rows",
+        "sample_vals",
         "comment",
         "desc",
         "agent_scratchpad",
