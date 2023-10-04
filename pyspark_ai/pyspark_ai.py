@@ -253,8 +253,9 @@ class SparkAI:
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
 
-    def _get_df_schema(self, df: DataFrame) -> str:
-        return "\n".join([f"{name}: {dtype}" for name, dtype in df.dtypes])
+    def _get_df_schema(self, df: DataFrame) -> list:
+        schema_lst = [f"{name}: {dtype}" for name, dtype in df.dtypes]
+        return schema_lst
 
     @staticmethod
     def _trim_hash_id(analyzed_plan):
@@ -375,39 +376,29 @@ class SparkAI:
         self,
         temp_view_name: str,
         schema: str,
-        sample_rows_str: str,
+        sample_vals_str: str,
         comment: str,
         desc: str,
     ) -> str:
         llm_result = self._sql_agent.run(
             view_name=temp_view_name,
             columns=schema,
-            sample_rows=sample_rows_str,
+            sample_vals=sample_vals_str,
             comment=comment,
             desc=desc,
         )
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
         return sql_query_from_response
 
-    def _get_sample_spark_rows(self, df: DataFrame, temp_view_name: str) -> str:
+    def _get_sample_spark_rows(self, df: DataFrame) -> list:
         if self._sample_rows_in_table_info <= 0:
-            return ""
-        columns_str = "\t".join([f.name for f in df.schema.fields])
+            return []
         try:
             sample_rows = SparkUtils.get_dataframe_results(df.limit(3))
-            # save the sample rows in string format
-            sample_rows_str = "\n".join(["\t".join(row) for row in sample_rows])
+            return sample_rows
         except Exception:
-            # If fail to get sample rows, return empty string
-            sample_rows_str = ""
-
-        return (
-            "/*\n"
-            f"{self._sample_rows_in_table_info} rows from {temp_view_name} table:\n"
-            f"{columns_str}\n"
-            f"{sample_rows_str}"
-            "*/\n"
-        )
+            # If fail to get sample rows, return empty list
+            return []
 
     def _get_table_comment_from_desc(self, table_name: str) -> str:
         try:
@@ -438,8 +429,16 @@ class SparkAI:
         )
         self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)
-        schema_str = self._get_df_schema(df)
-        sample_rows_str = self._get_sample_spark_rows(df, temp_view_name)
+        schema_lst = self._get_df_schema(df)
+        schema_str = "\n".join(schema_lst)
+        sample_rows = self._get_sample_spark_rows(df)
+        schema_row_lst = []
+        for index in range(len(schema_lst)):
+            sample_vals = []
+            for sample_row in sample_rows:
+                sample_vals.append(sample_row[index])
+            schema_row_lst.append((schema_lst[index], sample_vals))
+        sample_vals_str = "".join([str(val) for val in schema_row_lst])
         comment = self._get_table_comment(df)
 
         if cache:
@@ -451,13 +450,13 @@ class SparkAI:
                 return replace_view_name(cached_result, temp_view_name)
             else:
                 sql_query = self._get_transform_sql_query_from_agent(
-                    temp_view_name, schema_str, sample_rows_str, comment, desc
+                    temp_view_name, schema_str, sample_vals_str, comment, desc
                 )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
             return self._get_transform_sql_query_from_agent(
-                temp_view_name, schema_str, sample_rows_str, comment, desc
+                temp_view_name, schema_str, sample_vals_str, comment, desc
             )
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
