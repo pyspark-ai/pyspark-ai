@@ -2,7 +2,7 @@ import contextlib
 import io
 import os
 import re
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
 import pandas as pd  # noqa: F401
