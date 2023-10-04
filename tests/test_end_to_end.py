@@ -120,9 +120,7 @@ class EndToEndTestCase(unittest.TestCase):
         statements = create_temp_view_statements(
             "tests/data/test_transform_query_col.tables.jsonl"
         )
-        spark = SparkSession.builder.getOrCreate()
-        for stmt in statements:
-            spark.sql(stmt)
+        self.spark.sql(statements[0])
 
         table_name = get_table_name("1-1108394-47")
 
