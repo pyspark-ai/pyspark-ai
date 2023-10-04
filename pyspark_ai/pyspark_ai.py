@@ -511,13 +511,16 @@ class SparkAI:
         except Exception as e:
             raise Exception("Could not evaluate Python code", e)
 
-    def verify_df(self, df: DataFrame, desc: str, cache: bool = True) -> None:
+    def verify_df(self, df: DataFrame, desc: str, cache: bool = True) -> bool:
         """
         This method creates and runs test cases for the provided PySpark dataframe transformation function.
 
         :param df: The Spark DataFrame to be verified
         :param desc: A description of the expectation to be verified
         :param cache: If `True`, fetches cached data, if available. If `False`, retrieves fresh data and updates cache.
+        ...
+        :return: True if transformation is valied and False otherwise.
+        :rtpe: bool
         """
         tags = self._get_tags(cache)
         llm_output = self._verify_chain.run(tags=tags, df=df, desc=desc)
@@ -534,8 +537,12 @@ class SparkAI:
         try:
             exec(compile(llm_output, "verify_df-CodeGen", "exec"), {"df": df}, locals_)
         except Exception as e:
-            raise Exception("Could not evaluate Python code", e)
-        self.log(f"\nResult: {locals_['result']}")
+            self.log("Could not evaluate Python code")
+            self.log(str(e))
+            return False
+        self.log(f"\nResult: {locals_.get('result')}")
+
+        return locals_.get("result", False)
 
     def udf(self, func: Callable) -> Callable:
         from inspect import signature
