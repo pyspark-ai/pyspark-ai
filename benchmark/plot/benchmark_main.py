@@ -8,7 +8,7 @@ from pyspark_ai.ai_utils import AIUtils
 from benchmark.plot.benchmark_util import *
 
 
-def prep_df(spark_ai):
+def dummy_prep_df(spark_ai):
     data = [
         ("2023-08-30", 184.94, 187.85, 184.74, 187.65, 60590000),
         ("2023-08-31", 187.70, 190.00, 187.50, 189.50, 58500000),
@@ -26,6 +26,11 @@ def prep_df(spark_ai):
         ("2023-09-12", 195.60, 198.00, 195.40, 196.00, 53600000),
     ]
     df = spark_ai._spark.createDataFrame(data, ["DATE", "OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"])
+    return df
+
+
+def prep_df(spark_ai):
+    df = spark_ai._spark.read.csv('benchmark/plot/data/train/cleaned-world-university-rankings-2023.csv', header=True, inferSchema=True)
     return df
 
 import logging

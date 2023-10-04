@@ -1,0 +1,482 @@
+[
+    {
+        "uuid": "78abf1b72867cb3ca62f3b404327b1c1",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Walmart').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy(\"YEAR\").count().orderBy(\"YEAR\")\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a line plot using plotly\nfig = px.line(df_pandas, x='YEAR', y='count', title='Number of Walmart Stores Opened Each Year from 1962 to 2006')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "2ea6f698cd6e18c480492692a1978555",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('WalmartStores').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate the data by state\ndf_agg = df.groupBy('STRSTATE').count()\n\n# Convert the Spark DataFrame to a pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create a bar plot using plotly\nfig = px.bar(df_pd, x='STRSTATE', y='count', labels={'STRSTATE':'State', 'count':'Number of Stores'}, title='Count of Walmart Stores by State')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "575fe48f0a7ee8f1097b621e59a6f63e",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('store_openings').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate the data by month\ndf_agg = df.groupBy('MONTH').count()\n\n# Convert the Spark DataFrame to a pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create a histogram using plotly\nfig = px.histogram(df_pd, x='MONTH', y='count', nbins=12, labels={'MONTH':'Month', 'count':'Number of Store Openings'},\n                   title='Distribution of Store Openings by Month')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "7431528079c3f98ca97077eb99346ed8",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('WalmartStoreOpenings').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data by YEAR\ndf_agg = df.groupBy('YEAR').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df_agg.toPandas()\n\n# Use pd.concat instead of append\npandas_df = pd.concat([pandas_df])\n\n# Create density plot using Plotly\nfig = px.density_contour(pandas_df, x='YEAR', y='count', marginal_x='histogram', marginal_y='histogram')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "2e1cbcab79cf11f102daf50f2c5890de",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Walmart').getOrCreate()\n\n# Assuming df is the DataFrame you have\n\n# Aggregate data\ndf_agg = df.groupBy(\"YEAR\").count().orderBy(\"YEAR\")\n\n# Convert to pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Cumulative sum of stores opened\ndf_pd['cumulative_count'] = df_pd['count'].cumsum()\n\n# Create area plot\nfig = px.area(df_pd, x='YEAR', y='cumulative_count', title='Cumulative number of Walmart stores opened from 1962 to 2006')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "88c56c6c3af65705b116fa82b5351423",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Walmart_store_locations').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df.toPandas()\n\n# Create scatter plot using plotly\nfig = px.scatter_geo(pandas_df, lat='LAT', lon='LON', \n                     title='Walmart Store Locations',\n                     hover_name='storenum', \n                     hover_data=['STREETADDR', 'STRCITY', 'STRSTATE', 'ZIPCODE'])\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "9cc1c15b64b427df4c8e5908c4d2407c",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Walmart').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate the data\ndf_agg = df.groupBy('type_store').count()\n\n# Convert the Spark DataFrame to a pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create a pie chart\nfig = px.pie(df_pd, values='count', names='type_store', title='Proportion of Different Types of Walmart Stores')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "89263443d49da5bd33a6bf02afaccba7",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('WalmartStores').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate the data\ndf_agg = df.groupBy('MONTH').count().orderBy('MONTH')\n\n# Convert the Spark DataFrame to a pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create a bar plot using plotly\nfig = px.bar(df_pd, x='MONTH', y='count', labels={'MONTH':'Month', 'count':'Number of Stores'}, title='Number of Walmart Stores Opened Each Month')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "b03c942c04a3d0372bdda03bed011f76",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Walmart_store_density').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# If not, load the data into df\n\n# df = spark.read.format('...').load('...')\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df.toPandas()\n\n# Create a hexagonal bin plot using plotly\nfig = px.density_heatmap(pandas_df, x=\"LON\", y=\"LAT\", nbinsx=30, nbinsy=30, color_continuous_scale=\"Viridis\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "414356baec7526b48e7acf593d333500",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df\ndf_agg = df.groupBy('YEAR').avg('LAT', 'LON')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create scatter plot\nfig = px.scatter(df_pandas, x='avg(LAT)', y='avg(LON)', color='YEAR', title='Store Locations by Year of Opening')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "e6435c72d6f675d90b7f461f653cab6e",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('store_openings').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('MONTH', 'type_store').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create boxplot using plotly\nfig = px.box(df_pandas, x='MONTH', y='count', color='type_store', title='Store Openings by Month and Store Type')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "c312088992565618f4f4a3812bb5a9c5",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('WalmartStores').getOrCreate()\n\n# Assuming df is the Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('YEAR', 'type_store').count().orderBy('YEAR', 'type_store')\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Pivot the DataFrame to get the cumulative count of each type of store for each year\ndf_pivot = df_pd.pivot(index='YEAR', columns='type_store', values='count').fillna(0).cumsum()\n\n# Reset the index\ndf_pivot.reset_index(inplace=True)\n\n# Melt the DataFrame to get it in a long format suitable for plotting\ndf_melt = pd.melt(df_pivot, id_vars=['YEAR'], var_name='type_store', value_name='count')\n\n# Create the area plot\nfig = px.area(df_melt, x='YEAR', y='count', color='type_store', title='Cumulative number of Walmart stores by type')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "f0e434506c53e72525415ff4fed322b5",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('flights').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Filter for AA flights\ndf_aa = df.filter(df.airline == 'AA')\n\n# Aggregate data\ndf_agg = df_aa.groupBy('airport1').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create bar plot\nfig = px.bar(df_pd, x='airport1', y='count', labels={'airport1':'Starting Airport', 'count':'Number of Flights'}, title='Frequency of AA Flights from Different Starting Airports')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "5872b155227404346e8e30780e3aedc2",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('flights').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Filter df for AA flights\ndf_aa = df.filter(df.airline == 'AA')\n\n# Aggregate df_aa by ending locations\ndf_agg = df_aa.groupBy('end_lat', 'end_lon').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create a new column 'end_location' combining 'end_lat' and 'end_lon'\ndf_pd['end_location'] = df_pd['end_lat'].astype(str) + ', ' + df_pd['end_lon'].astype(str)\n\n# Plot bar plot using Plotly\nfig = px.bar(df_pd, x='end_location', y='count', labels={'end_location':'Ending Location', 'count':'Number of Flights'}, title='Distribution of Ending Locations for AA Flights')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "181d553ea8b968026dbeaa6523024243",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('flights').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate df\ndf_agg = df.groupBy('start_lon').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create histogram using Plotly\nfig = px.histogram(df_pd, x='start_lon', nbins=50, title='Common Starting Longitudes for Flights')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "87149b55223eb3926b556154ae0d1c63",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Popular Ending Latitudes for AA Flights').getOrCreate()\n\n# Assuming df is already defined and is a Spark DataFrame\n# Filter df for AA flights\ndf_aa = df.filter(df.airline == 'AA')\n\n# Aggregate df_aa by end_lat\ndf_agg = df_aa.groupBy('end_lat').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\npd_df = df_agg.toPandas()\n\n# Create histogram using Plotly\nfig = px.histogram(pd_df, x='end_lat', y='count', nbins=50, labels={'end_lat':'Ending Latitude', 'count':'Number of Flights'})\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "7dd17e5e451423420d80adb4563282c0",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Filter df for AA flights\ndf_AA = df.filter(df.airline == 'AA')\n\n# Aggregate df_AA to get the range of starting latitudes\ndf_AA_agg = df_AA.agg({\"start_lat\": \"collect_list\"})\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_AA_pd = df_AA_agg.toPandas()\n\n# Convert the list of starting latitudes to a Pandas Series\nstart_lat_series = pd.Series(df_AA_pd['collect_list(start_lat)'][0])\n\n# Create a new DataFrame with the starting latitudes\ndf_AA_start_lat = pd.DataFrame({'start_lat': start_lat_series})\n\n# Create a boxplot summarizing the range of starting latitudes for all AA flights\nfig = px.box(df_AA_start_lat, y=\"start_lat\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "670ffe7c740328c5139f185d771750cf",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('example_app').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# If not, you can create it using spark.createDataFrame()\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df.toPandas()\n\n# Create boxplot using Plotly\nfig = px.box(pandas_df, y=\"end_lon\", title=\"Boxplot of Ending Longitudes\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "d5c2ae805fc3cc95729b3c2e247d615a",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('density_plot').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('start_lat', 'start_lon').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create density plot using Plotly\nfig = px.density_mapbox(df_pd, lat='start_lat', lon='start_lon', z='count', radius=10,\n                        center=dict(lat=0, lon=180), zoom=0,\n                        mapbox_style=\"stamen-terrain\")\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "79f28ce94edf5b92f7e427746510703d",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('density_plot').getOrCreate()\n\n# Aggregate data\ndf_agg = df.groupBy('end_lat', 'end_lon').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create density plot\nfig = px.density_mapbox(df_pd, lat='end_lat', lon='end_lon', z='count', radius=10,\n                        center=dict(lat=0, lon=180), zoom=0,\n                        mapbox_style=\"stamen-terrain\")\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "bfd12ad945b6c169ecaba2e5478d98da",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('flights').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('start_lat', 'end_lat').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create area plot\nfig = px.area(df_pd, x='start_lat', y='count', color='end_lat', title='Frequency of Flights Based on Starting and Ending Latitudes in February 2011')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "984dfb990989236454e16e26e226edaf",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('flights').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate df\ndf_agg = df.groupBy('start_lat', 'start_lon', 'end_lat', 'end_lon').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create scatter plot\nfig = px.scatter(df_pd, x='start_lat', y='start_lon', color='count', \n                 size='count', hover_data=['end_lat', 'end_lon'])\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "924fa6a9f82390f82392c7229c3cdea2",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('flights').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate df by airport1\ndf_agg = df.groupBy('airport1').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create a pie chart with Plotly\nfig = px.pie(df_pd, values='count', names='airport1', title='Proportion of Flights by Starting Airport')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "976acb0eb0ce1cb1ae3e858d0abec73e",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('state').agg({'beef': 'sum'})\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pandas.columns = ['state', 'total_beef_exports']\n\n# Create a bar plot using plotly\nfig = px.bar(df_pandas, x='state', y='total_beef_exports', title='Beef Exports Across States')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "9ae082e1e5cb6d6a614ae2d82418a655",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark_plot').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('state').sum('poultry')\n\n# Convert the Spark DataFrame to a pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a histogram using plotly\nfig = px.histogram(df_pandas, x='sum(poultry)', nbins=50, labels={'sum(poultry)': 'Poultry Exports'})\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "27088b4ae28469078a0b2ed35530b7c0",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate df\ndf_agg = df.groupBy('state').sum('dairy')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename the column\ndf_pandas.columns = ['state', 'total_dairy_exports']\n\n# Create boxplot\nfig = px.box(df_pandas, y=\"total_dairy_exports\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "8822f28f4a2d5e1a42f67eff44b4ebe5",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('AreaPlot').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate df by state and sum the wheat exports\ndf_agg = df.groupBy('state').sum('wheat')\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pandas.columns = ['State', 'Total Wheat Exports']\n\n# Sort the DataFrame by 'Total Wheat Exports' in descending order\ndf_pandas = df_pandas.sort_values(by='Total Wheat Exports', ascending=False)\n\n# Create an area plot\nfig = px.area(df_pandas, x='State', y='Total Wheat Exports', title='Trend of Wheat Exports by State')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "ae95ce5cd9b0f0104f48cf647697e1a3",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark_plotly').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Perform necessary aggregation\ndf_agg = df.groupBy('fruits fresh', 'fruits proc').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a hexagonal bin plot using plotly\nfig = px.density_heatmap(df_pandas, x='fruits fresh', y='fruits proc', nbinsx=20, nbinsy=20, color_continuous_scale=\"Viridis\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "32857fbb5cb3264d3e69c797ed910d89",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark').getOrCreate()\n\n# Aggregate the data\ndf_agg = df.groupBy('state').agg({'total veggies': 'sum'})\n\n# Convert the Spark DataFrame to a pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pd.columns = ['state', 'total_veggies']\n\n# Create a pie chart\nfig = px.pie(df_pd, values='total_veggies', names='state', title='Share of Total Veggies Exported by Each State')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "6c041a5c225d005d2a0f717590bccffc",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('pork_exports').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('state').agg({'pork': 'sum'})\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df_agg.toPandas()\n\n# Rename columns for better readability\npandas_df.columns = ['state', 'total_pork_exports']\n\n# Create bar plot using plotly\nfig = px.bar(pandas_df, x='state', y='total_pork_exports', title='Pork Exports for Each State')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "22e23513b6cce92b4c5ea6dedd4a83dd",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('beef_exports').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('state').sum('beef')\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pandas.columns = ['state', 'total_beef_exports']\n\n# Create a histogram using plotly\nfig = px.histogram(df_pandas, x='total_beef_exports', nbins=50, labels={'total_beef_exports':'Total Beef Exports'})\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "2a919343b09ba64d4b84be42b5a6b989",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate df\ndf_agg = df.groupBy('state').agg({'wheat': 'sum'})\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename columns for better readability\ndf_pandas.columns = ['state', 'total_wheat_exports']\n\n# Create boxplot\nfig = px.box(df_pandas, x='state', y='total_wheat_exports', title='Boxplot of Wheat Exports for Each State')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "b3c5d2667295fbd7f0ae4fb9cd345d78",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('plotly_visualization').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Perform necessary aggregation\ndf_agg = df.groupBy('state').sum('beef', 'pork')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create hexagonal bin plot\nfig = px.density_heatmap(df_pandas, x=\"sum(beef)\", y=\"sum(pork)\", nbinsx=20, nbinsy=20, color_continuous_scale=\"Viridis\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "d3131f4dac5906bc214ef95cbea3f7cf",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('dairy_exports').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('state').agg({'dairy': 'sum'})\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pandas.columns = ['state', 'total_dairy_exports']\n\n# Create a pie chart\nfig = px.pie(df_pandas, values='total_dairy_exports', names='state', title='Share of Dairy Exports by State')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "709835076fce67179e16294175668ed3",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark_plot').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate df\ndf_agg = df.groupBy('state').agg({'cotton': 'sum'})\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename columns for better readability\ndf_pandas.columns = ['state', 'total_cotton_exports']\n\n# Create bar plot\nfig = px.bar(df_pandas, x='state', y='total_cotton_exports', title='Cotton Exports Across States')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "be5a21b84f50845620c3e6f4c28d7aca",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('fruit_exports').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('state').agg({'fruits fresh': 'sum', 'fruits proc': 'sum'})\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pd.columns = ['state', 'total_fruits_fresh', 'total_fruits_proc']\n\n# Create a hexagonal bin plot\nfig = px.density_heatmap(df_pd, x='total_fruits_fresh', y='total_fruits_proc', nbinsx=20, nbinsy=20, color_continuous_scale=\"Viridis\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "13df4bb49f1d7bbe75f2025fa58f2c99",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Boxplot').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Filter for southern states\nsouthern_states = ['Alabama', 'Arkansas', 'Delaware', 'Florida', 'Georgia', 'Kentucky', 'Louisiana', 'Maryland', 'Mississippi', 'North Carolina', 'Oklahoma', 'South Carolina', 'Tennessee', 'Texas', 'Virginia', 'West Virginia']\ndf_south = df.filter(df.state.isin(southern_states))\n\n# Aggregate total exports for each state\ndf_agg = df_south.groupBy('state').sum('total exports')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create boxplot using Plotly\nfig = px.box(df_pandas, y=\"sum(total exports)\", title=\"Boxplot of Total Exports for Southern States\")\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "ce3760b208738aa4d7ede60e30dd6f89",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('AreaPlot').getOrCreate()\n\n# Assuming df is the Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('state', 'category').sum('total exports')\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pd.columns = ['State', 'Category', 'Total Exports']\n\n# Create a pivot table for the area plot\npivot_df = df_pd.pivot(index='State', columns='Category', values='Total Exports')\n\n# Create the area plot\nfig = px.area(pivot_df, facet_col='Category', facet_col_wrap=2)\n\n# Show the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "f66de355c35106fa51cae8478221cc3c",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('aggregation').getOrCreate()\n\n# Assuming that df is the Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('state').agg({'fruits fresh': 'sum', 'dairy': 'sum'})\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pandas.columns = ['state', 'total_fruits_fresh', 'total_dairy']\n\n# Create a hexagonal bin plot using Plotly\nfig = px.density_heatmap(df_pandas, x='total_fruits_fresh', y='total_dairy', nbinsx=20, nbinsy=20, \n                         color_continuous_scale=\"Viridis\", \n                         labels={'total_fruits_fresh':'Total Fresh Fruits Exports', \n                                 'total_dairy':'Total Dairy Exports'},\n                         title='Hexagonal bin plot contrasting the exports of fresh fruits against dairy products')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "a0ee2b6defe4c06eb47b6bbd8e0b5701",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('IncidentsPerState').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('state').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create bar plot using Plotly\nfig = px.bar(df_pandas, x='state', y='count', title='Number of Incidents per State')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "c61f1618c129b5a63faab083fd130d07",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('IncidentsTrend').getOrCreate()\n\n# Assuming df is the DataFrame\n\n# Aggregate data by year\ndf_agg = df.groupBy('year').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Sort DataFrame by year\ndf_pd = df_pd.sort_values('year')\n\n# Create line plot\nfig = px.line(df_pd, x='year', y='count', title='Trend of Incidents Over the Years')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "cd14a7679b09d9a3c224e5d28c6fe895",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('IncidentsPerYear').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('year').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create histogram using Plotly\nfig = px.histogram(df_pandas, x='year', y='count', nbins=30, title='Number of Incidents per Year')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "865a96da2186c78c6545bf49231db9cb",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('incident_causes').getOrCreate()\n\n# Assuming df is your Spark DataFrame\n\n# Perform aggregation\ndf_agg = df.groupBy('cause').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create pie chart using Plotly\nfig = px.pie(df_pandas, values='count', names='cause', title='Distribution of Causes of Incidents')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "733b09055520825a21e8061ecac17c87",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# If not, load the data into df\n\n# Perform any necessary aggregation\n# In this case, no aggregation is needed\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df.toPandas()\n\n# Create scatter plot using plotly\nfig = px.scatter(pandas_df, x='longitude', y='latitude', title='Locations of Incidents')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "8a625528fe8c1567c0668f72f4d5318b",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('canine_incidents').getOrCreate()\n\n# Assuming df is the Spark DataFrame\n\n# Aggregate data\ndf_agg = df.groupBy('canine').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create bar plot using Plotly\nfig = px.bar(df_pandas, x='canine', y='count', title='Number of Incidents Involving Canines')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "dbe427cb2c7f5f3f4d01b92b0b927569",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('IncidentsOverYears').getOrCreate()\n\n# Assuming df is the DataFrame\n\n# Aggregate data\ndf_agg = df.groupBy('year').count()\n\n# Convert to pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Sort by year\ndf_pd = df_pd.sort_values('year')\n\n# Create area plot\nfig = px.area(df_pd, x='year', y='count', title='Number of Incidents Over the Years')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "bf914b84f2d4526ef6cbadce9891ddab",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('IncidentsPerYear').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('year').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create boxplot\nfig = px.box(df_pandas, x='year', y='count', title='Boxplot of Incidents per Year')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "2d41bb17fbfca8af861a97343f3325c6",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Incidents').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Perform aggregation\ndf_agg = df.groupBy('cause').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create histogram using Plotly\nfig = px.histogram(df_pd, x='cause', y='count', nbins=50, labels={'cause':'Cause', 'count':'Number of Incidents'})\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "edafa66d967441a491701314f36495b2",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Perform aggregation\ndf_agg = df.groupBy('cause_short').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create bar plot using plotly\nfig = px.bar(df_pandas, x='cause_short', y='count', title='Number of Incidents for Each Cause (Short Form)')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "284f9d95e8baee2cd833b4ad090708bb",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy('latitude', 'longitude').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create scatter plot\nfig = px.scatter(df_pandas, x='longitude', y='latitude', size='count', color='count',\n                 title='Distribution of Incidents Based on Latitude and Longitude')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "4c4c59d9f27d6e4c16e1645664c0097f",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('AreaPlot').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.filter(df['canine'] == True).groupBy('year').count().orderBy('year')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create area plot\nfig = px.area(df_pandas, x='year', y='count', title='Number of Incidents Involving Canines Over the Years')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "c166ceaa0b15d61e5772b55ed2aa8616",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('incident_density').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Perform aggregation if necessary (not required in this case)\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df.toPandas()\n\n# Create hexagonal bin plot using plotly\nfig = px.density_heatmap(pandas_df, x='longitude', y='latitude', nbinsx=30, nbinsy=30, color_continuous_scale=\"Viridis\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "12bbafcda588f6792758fffd070502d3",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Aggregate data\ndf_agg = df.groupBy('canine').count()\n\n# Convert Spark DataFrame to pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create pie chart\nfig = px.pie(df_pandas, values='count', names='canine', title='Distribution of incidents based on whether it involved a canine or not')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "57691c7622da2e09fb5b8710f1231eee",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Incidents').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('state').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create histogram using Plotly\nfig = px.histogram(df_pandas, x='state', y='count', nbins=50, title='Distribution of Incidents Based on State')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "c19b466254affba48b2e70d887d00e93",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('IncidentsTrend').getOrCreate()\n\n# Assuming df is the Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('year', 'cause').count().orderBy('year')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a pivot table for better visualization\npivot_df = df_pandas.pivot(index='year', columns='cause', values='count').reset_index()\n\n# Concatenate the dataframes\ndf_final = pd.concat([pivot_df], axis=1)\n\n# Create line plot\nfig = px.line(df_final, x='year', y=df_final.columns[1:], title='Trend of incidents based on cause over the years')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "48460af82e836e50c15ca259570c8cf5",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Incidents').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# If not, load the data into df\n\n# Aggregate data\ndf_agg = df.groupBy('state').agg({'latitude': 'mean', 'longitude': 'mean'})\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create scatter plot\nfig = px.scatter(df_pd, x='avg(longitude)', y='avg(latitude)', color='state', title='Distribution of Incidents in Different States')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "8af151f73421e1bf246e5bcc28da6273",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Incidents').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('cause').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create boxplot using Plotly\nfig = px.box(df_pd, x='cause', y='count', title='Distribution of Incidents Based on Cause')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "4d17f2ffdad22da0312055f878ca8524",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Incidents').getOrCreate()\n\n# Assuming df is your Spark DataFrame\n\n# Aggregate data\ndf_agg = df.groupBy('year', 'state').count()\n\n# Convert to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create a pivot table for the area plot\npivot_df = df_pd.pivot(index='year', columns='state', values='count').fillna(0)\n\n# Create area plot\nfig = px.area(pivot_df, title='Number of incidents in each state over the years')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "b20df99eaed1a254565541c739cdfc2a",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark_plot').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('Pclass').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create bar plot using plotly\nfig = px.bar(df_pandas, x='Pclass', y='count', labels={'Pclass':'Passenger Class', 'count':'Number of Passengers'}, title='Number of Passengers in Each Class')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "0c2938bdf3aeaad805de147ab0d28422",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy(\"Age\").count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create histogram using plotly\nfig = px.histogram(df_pandas, x=\"Age\", y=\"count\", nbins=30, title=\"Age distribution of passengers\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "541e1c9630256d86663b9575ec8577f6",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Titanic').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to get the count of each gender\ngender_df = df.groupBy('Sex').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ngender_pd_df = gender_df.toPandas()\n\n# Create a pie chart using plotly\nfig = px.pie(gender_pd_df, values='count', names='Sex', title='Gender Distribution Aboard the Titanic')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "d801fb18092e3871e5bb13fc99c9d63f",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Perform aggregation\ndf_agg = df.groupBy('Survived').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create bar plot using plotly\nfig = px.bar(df_pandas, x='Survived', y='count', labels={'Survived':'Survival Status', 'count':'Number of Passengers'}, title='Number of Survivors and Non-Survivors')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "ddd22e2820fc2be79e68a03daf53f5a9",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('plotly_visualization').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('Pclass').agg({'Fare': 'mean'}).orderBy('Pclass')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename columns for better readability\ndf_pandas.columns = ['Passenger Class', 'Average Fare']\n\n# Create area plot\nfig = px.area(df_pandas, x='Passenger Class', y='Average Fare', title='Fare Distribution Over Different Passenger Classes')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "5a71d71d2f15c8f931925f4ef5539150",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df\ndf_agg = df.groupBy('Age').avg('Fare')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create scatter plot using plotly\nfig = px.scatter(df_pandas, x='Age', y='avg(Fare)', title='Scatter plot of Age against Fare')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "58d14c4cdc071c0fd2e63548a63b2c8f",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation on df\ndf_grouped = df.groupBy('Embarked').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_grouped.toPandas()\n\n# Create a bar plot using plotly\nfig = px.bar(df_pandas, x='Embarked', y='count', title='Number of Passengers Boarding from Each Embarkation Port')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "75f28ca202f7d93704794c1f8b751c25",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df to get the count of fares\ndf_agg = df.groupBy('Fare').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a histogram using plotly\nfig = px.histogram(df_pandas, x='Fare', y='count', nbins=50, labels={'Fare':'Fare', 'count':'Count'})\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "1bea5b4e9813527a893ac13c365487c7",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('lifeboat_distribution').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_grouped = df.groupBy('Survived').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_grouped.toPandas()\n\n# Rename columns for better understanding\ndf_pandas.columns = ['Survived', 'Count']\n\n# Replace 'Survived' column values for better understanding\ndf_pandas['Survived'] = df_pandas['Survived'].replace({0: 'Not in lifeboat', 1: 'In lifeboat'})\n\n# Create pie chart using Plotly\nfig = px.pie(df_pandas, values='Count', names='Survived', title='Distribution of Passengers in Lifeboats')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "e9289de414dc300a8ce482595ab3a503",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark_plot').getOrCreate()\n\n# Perform aggregation on df\ndf_agg = df.groupBy('SibSp').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create bar plot using plotly\nfig = px.bar(df_pandas, x='SibSp', y='count', labels={'SibSp':'Number of Siblings/Spouses', 'count':'Number of Passengers'}, title='Number of Siblings/Spouses Each Passenger Had Aboard')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "7d2ce282c025f10b43947f4c47abe365",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy('Sex').agg({'Fare': 'collect_list'}).alias('Fares')\n\n# Convert to pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Prepare data for plot\ndata = pd.concat([pd.DataFrame({'Sex': row.Sex, 'Fare': row['collect_list(Fare)']}) for _, row in df_pd.iterrows()])\n\n# Create boxplot\nfig = px.box(data, x='Sex', y='Fare', points=\"all\", title='Fare Distribution for Male and Female Passengers')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "d3937c25fd1e9754d4470b1a4e37b77f",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.graph_objects as go\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Aggregate data\ndf_agg = df.groupBy('Survived', 'Age').count().orderBy('Age')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Split data into survivors and non-survivors\nsurvivors = df_pd[df_pd['Survived'] == 1]\nnon_survivors = df_pd[df_pd['Survived'] == 0]\n\n# Create area plot\nfig = go.Figure()\n\nfig.add_trace(go.Scatter(\n    x=survivors['Age'], y=survivors['count'],\n    fill='tozeroy',\n    mode='none',\n    name='Survivors'\n))\n\nfig.add_trace(go.Scatter(\n    x=non_survivors['Age'], y=non_survivors['count'],\n    fill='tonexty',\n    mode='none',\n    name='Non-Survivors'\n))\n\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "4a820c3c36395fc6d5f4c1d92a3d31b6",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('FamilySize').getOrCreate()\n\n# Perform aggregation\ndf_agg = df.groupBy('SibSp', 'Parch').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create scatter plot\nfig = px.scatter(df_pandas, x='SibSp', y='Parch', size='count', color='count',\n                 title='Scatter plot of siblings/spouses against parents/children to see family size',\n                 labels={'SibSp':'Number of Siblings/Spouses Aboard', 'Parch':'Number of Parents/Children Aboard'})\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "27a597a93daf34f19344657ca97515e0",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy(\"Cabin\").count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Replace null values in 'Cabin' column with 'No Cabin'\ndf_pandas['Cabin'].fillna('No Cabin', inplace=True)\n\n# Create a new column 'HasCabin' based on whether 'Cabin' column is 'No Cabin' or not\ndf_pandas['HasCabin'] = df_pandas['Cabin'].apply(lambda x: 'No' if x == 'No Cabin' else 'Yes')\n\n# Aggregate data again based on 'HasCabin' column\ndf_pandas_agg = df_pandas.groupby('HasCabin').sum().reset_index()\n\n# Plot data using plotly\nfig = px.bar(df_pandas_agg, x='HasCabin', y='count', title='Number of Passengers With and Without Cabins')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "3adde3cbc94e43206c4f06eb43a31456",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to get the count of passengers based on their embarkation port\ndf_agg = df.groupBy('Embarked').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a pie chart using plotly\nfig = px.pie(df_pandas, values='count', names='Embarked', title='Distribution of passengers based on their embarkation port')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "d09fa23d31efdf31329ff331806da15d",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('Sex').agg({'Survived': 'mean'})\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Rename columns for better readability\ndf_pd.columns = ['Sex', 'Survival Rate']\n\n# Create bar plot using plotly\nfig = px.bar(df_pd, x='Sex', y='Survival Rate', title='Survival Rate by Gender')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "98954654dded1f6a9a76ff6121d0ca06",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_survived = df.filter(df['Survived'] == 1).select('Age').toPandas()\ndf_not_survived = df.filter(df['Survived'] == 0).select('Age').toPandas()\n\n# Rename columns for better understanding\ndf_survived.columns = ['Survived']\ndf_not_survived.columns = ['Not Survived']\n\n# Concatenate dataframes\ndf_concat = pd.concat([df_survived, df_not_survived], axis=1)\n\n# Create boxplot\nfig = px.box(df_concat, y=['Survived', 'Not Survived'])\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "97217dfee3e96a76a71b4cf6cc10d04f",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('plotly_visualization').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('Embarked').agg({'Fare': 'sum'}).withColumnRenamed(\"sum(Fare)\", \"TotalFare\")\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create area plot using plotly\nfig = px.area(df_pandas, x='Embarked', y='TotalFare', title='Fare Distribution Over Different Embarkation Ports')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "1c56ef705aede7b0ba64521780792ba7",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark_plot').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Perform aggregation\ndf_agg = df.groupBy('Age').agg({'SibSp': 'sum'}).withColumnRenamed('sum(SibSp)', 'Total_SibSp')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create scatter plot using plotly\nfig = px.scatter(df_pandas, x='Age', y='Total_SibSp', title='Scatter plot of age against the number of siblings/spouses')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "ac56f416752889cc3ceab6bb761ad31f",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('pyspark_plot').getOrCreate()\n\n# Assuming df is already defined\n# Perform aggregation\ndf_agg = df.groupBy('Parch').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df_agg.toPandas()\n\n# Create bar plot using plotly\nfig = px.bar(pandas_df, x='Parch', y='count', labels={'Parch':'Number of Parents/Children', 'count':'Number of Passengers'}, title='Number of Parents/Children Each Passenger Had Aboard')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "8eaaa33ebb84332de96cbdc8681c55f9",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy('Sex', 'Age').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create histogram\nfig = px.histogram(df_pandas, x=\"Age\", y=\"count\", color=\"Sex\", nbins=30, \n                   labels={'count':'Number of Passengers'}, \n                   title='Age Distribution of Male and Female Passengers')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "a218fdbb97d1e1d12dee83f815ed3f2c",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_grouped = df.groupBy('Pclass', 'Survived').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df_grouped.toPandas()\n\n# Create a new DataFrame with survival rate for each passenger class\nsurvival_rate_df = pd.concat([pandas_df[pandas_df['Survived'] == 1].set_index('Pclass'), \n                              pandas_df[pandas_df['Survived'] == 0].set_index('Pclass')], \n                             axis=1, keys=['Survived', 'Not Survived'])\n\n# Calculate survival rate\nsurvival_rate_df['Survival Rate'] = survival_rate_df['Survived']['count'] / (survival_rate_df['Survived']['count'] + survival_rate_df['Not Survived']['count'])\n\n# Reset index\nsurvival_rate_df.reset_index(inplace=True)\n\n# Plot pie chart\nfig = px.pie(survival_rate_df, values='Survival Rate', names='Pclass', title='Survival Rate for Each Passenger Class')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "3b57bdf4cf7e0414a714d4a6d3f6437d",
+        "code": "from pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('lifeboat').getOrCreate()\n\n# Aggregate data\ndf_agg = df.groupBy('Cabin').count()\n\n# Convert to pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create bar plot\nfig = px.bar(df_pandas, x='Cabin', y='count', title='Number of Passengers in Each Lifeboat')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "9a989593be80fd67dd0eeed386a7de53",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate the data\ndf_agg = df.groupBy('alcohol').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a histogram using plotly\nfig = px.histogram(df_pandas, x='alcohol', nbins=50, title='Histogram of Alcohol Percentages in Wine Samples')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "927b21ef40f6e47f6d4fdb97225f0f86",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_quality').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to calculate average salt content for different quality wines\ndf_agg = df.groupBy('quality').agg({'chlorides': 'avg'})\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename columns for better readability in plot\ndf_pandas.columns = ['Quality', 'Average Salt Content']\n\n# Create bar plot using plotly\nfig = px.bar(df_pandas, x='Quality', y='Average Salt Content', title='Average Salt Content in Different Quality Wines')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "51213e047d95639ca3d684cd86e47f65",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy('residual sugar').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df_agg.toPandas()\n\n# Sort the dataframe by 'residual sugar'\npandas_df = pandas_df.sort_values(by='residual sugar')\n\n# Create area plot\nfig = px.area(pandas_df, x='residual sugar', y='count', title='Amount of Residual Sugar Across Different Wine Samples')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "d836d2b4ea22829e696bdd1de362b00f",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy('pH').count()\n\n# Convert to pandas DataFrame\npandas_df = df_agg.toPandas()\n\n# Create pie chart\nfig = px.pie(pandas_df, values='count', names='pH', title='Proportion of wines with different pH levels')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "6191b86230e7b0dfdcee47719362d3f7",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.graph_objects as go\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('sulfur_dioxide_distribution').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy('total sulfur dioxide').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df_agg.toPandas()\n\n# Create histogram\nfig = go.Figure(data=[go.Histogram(x=pandas_df['total sulfur dioxide'], \n                                   y=pandas_df['count'], \n                                   histfunc='count',\n                                   name='Sulfur Dioxide Levels')])\n\n# Set layout\nfig.update_layout(title_text='Distribution of Sulfur Dioxide Levels',\n                  xaxis_title='Total Sulfur Dioxide',\n                  yaxis_title='Count')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "3aa98e8b487d5d9ab873553e791a6e3b",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_quality').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('quality').avg('citric acid')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename columns for better readability\ndf_pandas.columns = ['Quality', 'Average Citric Acid']\n\n# Create bar plot using plotly\nfig = px.bar(df_pandas, x='Quality', y='Average Citric Acid', title='Average Citric Acid Content in Wines of Varying Quality')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "9239e9c3cb0922a98b3d021cd5c145c0",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already a Spark DataFrame\n# Perform aggregation\ndf_agg = df.groupBy('sulphates').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Sort the dataframe by 'sulphates' column\ndf_pandas = df_pandas.sort_values(by='sulphates')\n\n# Create a cumulative sum column\ndf_pandas['cumulative_count'] = df_pandas['count'].cumsum()\n\n# Create area plot\nfig = px.area(df_pandas, x='sulphates', y='cumulative_count', title='Distribution of Sulphate Levels Across Wine Samples')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "07dea19627a24a243b81fac551f3b729",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_quality').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate the data\ndf_agg = df.groupBy('quality').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a pie chart\nfig = px.pie(df_pandas, values='count', names='quality', title='Proportion of Wines in Each Quality Category')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "b48be6285b2d0d285b73432269216fbc",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# df = spark.read.format(...).load(...) \n\n# Aggregate the data\ndf_grouped = df.groupBy('pH').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\npandas_df = df_grouped.toPandas()\n\n# Create a histogram using plotly\nfig = px.histogram(pandas_df, x='pH', nbins=50, title='Distribution of pH values in the wine samples')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "16a6708523bfb76f91778ae5b8b91e67",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_quality').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('quality').avg('alcohol')\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df_agg.toPandas()\n\n# Rename columns for better readability in plot\npandas_df.columns = ['Quality', 'Average Alcohol Content']\n\n# Create bar plot using plotly\nfig = px.bar(pandas_df, x='Quality', y='Average Alcohol Content', \n             labels={'Quality':'Wine Quality Score', 'Average Alcohol Content':'Average Alcohol Content'},\n             title='Average Alcohol Content for Each Wine Quality Score')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "64d7c93d590c16aab832c563a7f26fbb",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_quality').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data\ndf_agg = df.groupBy('quality').avg('chlorides')\n\n# Convert to pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename columns for better readability in plot\ndf_pandas.columns = ['Quality', 'Average Chlorides']\n\n# Create scatter plot\nfig = px.scatter(df_pandas, x='Quality', y='Average Chlorides', title='Wine Quality vs Salt Content')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "56c007f55ef2354137808928427443b1",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_grouped = df.groupBy('fixed acidity').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\npandas_df = df_grouped.toPandas()\n\n# Create a pie chart\nfig = px.pie(pandas_df, values='count', names='fixed acidity', title='Proportion of wines with different levels of fixed acidity')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "f8089b45bb6010324d62209987fdebc5",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_quality').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.groupBy('quality').avg('volatile acidity')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename columns for better readability\ndf_pandas.columns = ['Quality', 'Average Volatile Acidity']\n\n# Create bar plot using plotly\nfig = px.bar(df_pandas, x='Quality', y='Average Volatile Acidity', \n             labels={'Quality':'Wine Quality Score', 'Average Volatile Acidity':'Average Volatile Acidity Levels'},\n             title='Average Volatile Acidity Levels for Different Wine Quality Scores')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "9dc6a73489f583c0d5f4631132227de1",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df\ndf_agg = df.groupBy().avg('residual sugar')\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create boxplot\nfig = px.box(df_pandas, y='avg(residual sugar)', title='Boxplot of Residual Sugar Levels in Wine Samples')\n\n# Display plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "0724d9d2c5ec6128c81c6f12c62dfedf",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation\ndf_agg = df.groupBy('citric acid').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create pie chart using plotly\nfig = px.pie(df_pandas, values='count', names='citric acid', title='Proportion of wines with varying levels of citric acid')\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "e923344dbf8001477c9169ce9971e70d",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.graph_objects as go\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df\ndf_agg = df.filter((df.sulphates >= 0.4) & (df.sulphates <= 0.6)).groupBy('sulphates').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create histogram using plotly\nfig = go.Figure(data=[go.Histogram(x=df_pandas['sulphates'], y=df_pandas['count'], nbinsx=20)])\n\n# Set plot title and labels\nfig.update_layout(\n    title_text='Distribution of Sulphate Level [0.4, 0.6]', \n    xaxis_title_text='Sulphate Level', \n    yaxis_title_text='Count', \n    bargap=0.2, \n    bargroupgap=0.1\n)\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "b746bd6b12bb2c98a9ea606f27beeff6",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Filter df for fixed acidity between 12 and 14 and volatile acidity between 0.2 and 0.4\ndf_filtered = df.filter((df['fixed acidity'] >= 12) & (df['fixed acidity'] <= 14) & \n                         (df['volatile acidity'] >= 0.2) & (df['volatile acidity'] <= 0.4))\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_filtered.toPandas()\n\n# Create scatter plot\nfig = px.scatter(df_pandas, x='fixed acidity', y='volatile acidity', \n                 title='Scatter plot comparing fixed acidity 12-14 with volatile acidity [0.2, 0.4]')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "50c660a180b19c544e2eddf0ddec1a42",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df\ndf_agg = df.filter((df['total sulfur dioxide'] >= 30) & (df['total sulfur dioxide'] <= 50)).groupBy('total sulfur dioxide').count()\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create area plot\nfig = px.area(df_pd, x='total sulfur dioxide', y='count', title='Distribution of Total Sulfur Dioxide Levels [30, 50]')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "b726c2eb27d8441ba3abf8c6d631b11c",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('wine_analysis').getOrCreate()\n\n# Perform aggregation on Spark DataFrame\ndf_agg = df.filter(df['density'] > 1)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create histogram using plotly\nfig = px.histogram(df_pd, x='density')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "494e51ddd400b8b9500cfd783f162ce6",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Filter the dataframe based on the conditions\ndf_filtered = df.filter((df['residual sugar'] >= 6) & (df['residual sugar'] <= 8) & \n                        (df['alcohol'] >= 9) & (df['alcohol'] <= 10))\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_filtered.toPandas()\n\n# Create scatter plot\nfig = px.scatter(df_pandas, x='residual sugar', y='alcohol', \n                 title='Scatter plot comparing residual sugar content from 6 to 8 with alcohol percentages from 9 to 10')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "8f8538bc9da384211f7073fe1f683d80",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to get the top 5 most populous cities\ndf_agg = df.groupBy('City', 'State').sum('Population').orderBy('sum(Population)', ascending=False).limit(5)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Rename the columns for better visualization\ndf_pd.columns = ['City', 'State', 'Total Population']\n\n# Create a new column 'City_State' combining 'City' and 'State'\ndf_pd['City_State'] = df_pd[['City', 'State']].apply(lambda x: ', '.join(x), axis=1)\n\n# Create bar plot using plotly\nfig = px.bar(df_pd, x='City_State', y='Total Population', title='Top 5 Most Populous Cities')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "2c4fe6f59d5a33e07cea1a8a4856d164",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('AreaPlot').getOrCreate()\n\n# Assuming df is the Spark DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('City').sum('Population').orderBy('sum(Population)', ascending=False).limit(5)\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pd.columns = ['City', 'Total Population']\n\n# Sort the data by Total Population in descending order\ndf_pd = df_pd.sort_values(by='Total Population', ascending=False)\n\n# Create the area plot\nfig = px.area(df_pd, x='City', y='Total Population', title='Area Plot of Populations for the Top 5 Cities')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "991009090107bca3410f289dd54eb971",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df to get top 5 most populous cities\ndf_agg = df.orderBy(df['Population'].desc()).limit(5)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create scatter plot using plotly\nfig = px.scatter(df_pd, x='lon', y='lat', color='City', size='Population', \n                 title='Scatter plot of latitude versus longitude for top 5 most populous cities')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "223948757000fc199ad2eac5b408d97e",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Population Distribution').getOrCreate()\n\n# Perform aggregation to get the top 5 cities by population\ndf_agg = df.groupBy('City').sum('Population').orderBy('sum(Population)', ascending=False).limit(5)\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a pie chart using plotly\nfig = px.pie(df_pandas, values='sum(Population)', names='City', title='Population Distribution of Top 5 Cities')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "0bbaa8fc7030d01f1249a2615ce9d06d",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to get the number of cities in each state\ndf_agg = df.groupBy('State').count()\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a bar plot using plotly\nfig = px.bar(df_pandas, x='State', y='count', labels={'count':'Number of Cities'}, title='Number of Cities in Each State')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "9f77b74c823fc62f584e2cc476321878",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to get the top 5 most populous cities\ndf_top_cities = df.orderBy(df['Population'].desc()).limit(5)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_top_cities.toPandas()\n\n# Create a histogram of latitudes of the top 5 most populous cities\nfig = px.histogram(df_pandas, x='lat', nbins=50, title='Histogram of Latitudes of Top 5 Most Populous Cities')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "4516966426c5ae676842df2ae0dd8308",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('PopulationVsLatitude').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to get top 10 most populous cities\ndf_top10 = df.orderBy(df['Population'].desc()).limit(10)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_top10.toPandas()\n\n# Create scatter plot using plotly\nfig = px.scatter(df_pandas, x='lat', y='Population', color='City', title='Population vs Latitude for Top 10 Most Populous Cities')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "7b860b4b2f75d8254f3a04f379b4ae6f",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df to get top 5 most populous cities\ndf_agg = df.groupBy('City', 'lat', 'lon').agg({'Population': 'sum'}).orderBy('sum(Population)', ascending=False).limit(5)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create hexagonal bin plot\nfig = px.density_heatmap(df_pd, x='lon', y='lat', nbinsx=30, nbinsy=30, color_continuous_scale=\"Viridis\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "da0a49e0c0caab7075294b5eb4c458b5",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Population').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to get the top 5 most populous cities in California\ndf_agg = df.filter(df.State == 'California').orderBy(df.Population.desc()).limit(5)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create bar plot using plotly\nfig = px.bar(df_pd, x='City', y='Population', title='Top 5 Most Populous Cities in California')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "52faa13a37663e3c9aa9b6edc8be77eb",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('PopulationBoxPlot').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df to get the top 5 most populous cities in Texas\ndf_agg = df.filter(df.State == 'Texas').groupBy('City').sum('Population').orderBy('sum(Population)', ascending=False).limit(5)\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename the columns for better readability\ndf_pandas.columns = ['City', 'Population']\n\n# Create a boxplot using plotly\nfig = px.box(df_pandas, y='Population', labels={'Population':'Population in Millions'}, title='Boxplot of populations for the top 5 most populous cities in Texas')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "be05f57767fd0ada7577c996af773a9d",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('AreaPlot').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate data to get top 5 most populous cities in Florida\ndf_agg = df.filter(df.State == 'Florida').groupBy('City').sum('Population').orderBy('sum(Population)', ascending=False).limit(5)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Rename columns for better readability in plot\ndf_pandas.columns = ['City', 'Population']\n\n# Sort dataframe by Population in descending order\ndf_pandas = df_pandas.sort_values(by='Population', ascending=False)\n\n# Create area plot\nfig = px.area(df_pandas, x='City', y='Population', title='Area plot of populations for the top 5 most populous cities in Florida')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "1c5807c72a68814699e2fa8ea09ed592",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport plotly.express as px\nimport pandas as pd\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate the data\ndf_agg = df.groupBy('State').count().orderBy('count', ascending=False).limit(5)\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pandas = df_agg.toPandas()\n\n# Create a pie chart\nfig = px.pie(df_pandas, values='count', names='State', title='Number of Cities in Top 5 States')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "37404fec67c0bb6638000e894fddb6d7",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('SparkSQL').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Perform aggregation to get the least populous 8 cities\ndf_least_populous = df.orderBy('Population').limit(8)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pandas = df_least_populous.toPandas()\n\n# Create a bar plot using plotly\nfig = px.bar(df_pandas, x='City', y='Population', color='State', title='Least Populous 8 Cities')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "a7e6fdfcb15c7b2ae7149f5d1ea06bf6",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Boxplot').getOrCreate()\n\n# Filter df for records where the state is 'New York'\ndf_ny = df.filter(df.State == 'New York')\n\n# Convert Spark DataFrame to pandas DataFrame\ndf_ny_pd = df_ny.toPandas()\n\n# Create boxplot of latitudes for cities in New York state\nfig = px.box(df_ny_pd, y=\"lat\", title=\"Boxplot of latitudes for cities in New York state\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "2356b7471d4ea0e3cb820212a0e8d364",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('AreaPlot').getOrCreate()\n\n# Assuming df is the Spark DataFrame\n# Perform aggregation to get the bottom 10 cities by population\ndf_agg = df.orderBy('Population').limit(10)\n\n# Convert the Spark DataFrame to a Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create an area plot using plotly\nfig = px.area(df_pd, x='City', y='Population', color='State', title='Area plot of populations for the bottom 10 cities')\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "cb2210b6af5e4630178766ac0c815c8d",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('PopulationVsLatitude').getOrCreate()\n\n# Assuming df is the Spark DataFrame\n# Aggregate df to get top 5 most populous cities\ndf_agg = df.groupBy('City', 'lat').agg({'Population': 'sum'}).orderBy('sum(Population)', ascending=False).limit(5)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Rename columns for better readability in plot\ndf_pd.columns = ['City', 'Latitude', 'Total Population']\n\n# Create hexagonal bin plot\nfig = px.density_heatmap(df_pd, x='Latitude', y='Total Population', nbinsx=20, nbinsy=20, color_continuous_scale='Viridis')\n\n# Show the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "8e168c98f3c64ccc7e6928f5eb434994",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('density_map').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Aggregate df to get top 10 most populous cities\ndf_agg = df.groupBy('City', 'State', 'lat', 'lon').sum('Population').orderBy('sum(Population)', ascending=False).limit(10)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Create a density map using plotly\nfig = px.density_mapbox(df_pd, lat='lat', lon='lon', z='sum(Population)', radius=10,\n                        center=dict(lat=0, lon=180), zoom=0,\n                        mapbox_style=\"stamen-terrain\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "676b2b6aab147c7252209f98e1a36f8d",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('density_map').getOrCreate()\n\n# Assuming df is already defined and loaded with data\n# Filter for California state and sort by population\ndf_ca = df.filter(df.State == 'California').sort(df.Population.desc())\n\n# Select top 5 most populous cities\ndf_ca_top5 = df_ca.limit(5)\n\n# Convert Spark DataFrame to Pandas DataFrame\ndf_ca_top5_pd = df_ca_top5.toPandas()\n\n# Create a Mapbox density map\nfig = px.density_mapbox(df_ca_top5_pd, lat='lat', lon='lon', z='Population', radius=10,\n                        center=dict(lat=36.7783, lon=-119.4179), zoom=5,\n                        mapbox_style=\"stamen-terrain\")\n\n# Display the plot\nprint(fig.to_json())"
+    },
+    {
+        "uuid": "dac34e39533e967da9ffad96913afc81",
+        "code": "# Import necessary libraries\nfrom pyspark.sql import SparkSession\nimport pandas as pd\nimport plotly.express as px\n\n# Start Spark session\nspark = SparkSession.builder.appName('Population Distribution').getOrCreate()\n\n# Assuming df is the DataFrame\n# Aggregate the data\ndf_agg = df.groupBy('State').agg({'Population': 'sum'}).orderBy('sum(Population)', ascending=False).limit(5)\n\n# Convert to pandas DataFrame\ndf_pd = df_agg.toPandas()\n\n# Rename columns for better readability\ndf_pd.columns = ['State', 'Population']\n\n# Create pie chart\nfig = px.pie(df_pd, values='Population', names='State', title='Population Distribution of Most Populous City in Each of the Top 5 States')\n\n# Display the plot\nprint(fig.to_json())"
+    }
+]

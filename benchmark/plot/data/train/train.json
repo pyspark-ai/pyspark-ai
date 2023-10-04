@@ -1,0 +1,842 @@
+[
+    {
+        "uuid": "78abf1b72867cb3ca62f3b404327b1c1",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Line plot displaying the number of Walmart stores opened each year from 1962 to 2006."
+    },
+    {
+        "uuid": "2ea6f698cd6e18c480492692a1978555",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing the count of Walmart stores by state."
+    },
+    {
+        "uuid": "575fe48f0a7ee8f1097b621e59a6f63e",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram illustrating the distribution of store openings by month."
+    },
+    {
+        "uuid": "7431528079c3f98ca97077eb99346ed8",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Density plot showcasing the distribution of Walmart store openings over the years."
+    },
+    {
+        "uuid": "2e1cbcab79cf11f102daf50f2c5890de",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot highlighting the cumulative number of Walmart stores opened from 1962 to 2006."
+    },
+    {
+        "uuid": "88c56c6c3af65705b116fa82b5351423",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot of Walmart store locations using latitude and longitude."
+    },
+    {
+        "uuid": "9cc1c15b64b427df4c8e5908c4d2407c",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart showing the proportion of different types of Walmart stores."
+    },
+    {
+        "uuid": "89263443d49da5bd33a6bf02afaccba7",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot representing the number of Walmart stores opened each month."
+    },
+    {
+        "uuid": "b03c942c04a3d0372bdda03bed011f76",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Hexagonal bin plot showing the density of Walmart store locations using latitude and longitude."
+    },
+    {
+        "uuid": "414356baec7526b48e7acf593d333500",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Scatter plot with a color gradient representing the year of opening, plotted against latitude and longitude."
+    },
+    {
+        "uuid": "e6435c72d6f675d90b7f461f653cab6e",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Boxplot comparing the distribution of store openings by month, separated by store type."
+    },
+    {
+        "uuid": "c312088992565618f4f4a3812bb5a9c5",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Area plot representing the cumulative number of Walmart stores, with each type of store shaded differently."
+    },
+    {
+        "uuid": "f0e434506c53e72525415ff4fed322b5",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plots showcasing the frequency of AA flights from different starting airports."
+    },
+    {
+        "uuid": "5872b155227404346e8e30780e3aedc2",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plots representing the distribution of ending locations for AA flights."
+    },
+    {
+        "uuid": "181d553ea8b968026dbeaa6523024243",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram illustrating the common starting longitudes for the flights."
+    },
+    {
+        "uuid": "87149b55223eb3926b556154ae0d1c63",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram depicting the popular ending latitudes for AA flights."
+    },
+    {
+        "uuid": "7dd17e5e451423420d80adb4563282c0",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot summarizing the range of starting latitudes for all AA flights."
+    },
+    {
+        "uuid": "670ffe7c740328c5139f185d771750cf",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot visualizing the range of ending longitudes for these flights."
+    },
+    {
+        "uuid": "d5c2ae805fc3cc95729b3c2e247d615a",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Density plots highlighting the concentration of starting locations."
+    },
+    {
+        "uuid": "79f28ce94edf5b92f7e427746510703d",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Density plots emphasizing the concentration of ending locations."
+    },
+    {
+        "uuid": "bfd12ad945b6c169ecaba2e5478d98da",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Area plots comparing the frequency of flights based on starting and ending latitudes."
+    },
+    {
+        "uuid": "984dfb990989236454e16e26e226edaf",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Scatter plots visualizing the correlation between starting and ending locations for the flights."
+    },
+    {
+        "uuid": "924fa6a9f82390f82392c7229c3cdea2",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Pie plots representing the proportion of flights based on their starting airports."
+    },
+    {
+        "uuid": "976acb0eb0ce1cb1ae3e858d0abec73e",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot comparing beef exports across states."
+    },
+    {
+        "uuid": "9ae082e1e5cb6d6a614ae2d82418a655",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram showing the distribution of poultry exports."
+    },
+    {
+        "uuid": "27088b4ae28469078a0b2ed35530b7c0",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot representing the spread of dairy exports."
+    },
+    {
+        "uuid": "8822f28f4a2d5e1a42f67eff44b4ebe5",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot indicating the trend of wheat exports by state."
+    },
+    {
+        "uuid": "ae95ce5cd9b0f0104f48cf647697e1a3",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Hexagonal bin plot showing the relationship between fruits fresh and fruits processed exports."
+    },
+    {
+        "uuid": "32857fbb5cb3264d3e69c797ed910d89",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart representing the share of total veggies exported by each state."
+    },
+    {
+        "uuid": "6c041a5c225d005d2a0f717590bccffc",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot of pork exports for each state."
+    },
+    {
+        "uuid": "22e23513b6cce92b4c5ea6dedd4a83dd",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram of beef exports distribution."
+    },
+    {
+        "uuid": "2a919343b09ba64d4b84be42b5a6b989",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot of wheat exports for each state."
+    },
+    {
+        "uuid": "b3c5d2667295fbd7f0ae4fb9cd345d78",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Hexagonal bin plot for the relationship between beef and pork exports."
+    },
+    {
+        "uuid": "d3131f4dac5906bc214ef95cbea3f7cf",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart of the share of dairy exports by state."
+    },
+    {
+        "uuid": "709835076fce67179e16294175668ed3",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot comparing cotton exports across states."
+    },
+    {
+        "uuid": "be5a21b84f50845620c3e6f4c28d7aca",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Hexagonal bin plot illustrating the correlation between fresh and processed fruit exports."
+    },
+    {
+        "uuid": "13df4bb49f1d7bbe75f2025fa58f2c99",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Boxplot showcasing the range and outliers of total exports for the southern states."
+    },
+    {
+        "uuid": "ce3760b208738aa4d7ede60e30dd6f89",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Area plot stacked by category showing the trend of exports for a selected group of states."
+    },
+    {
+        "uuid": "f66de355c35106fa51cae8478221cc3c",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Hexagonal bin plot contrasting the exports of fresh fruits against dairy products."
+    },
+    {
+        "uuid": "a0ee2b6defe4c06eb47b6bbd8e0b5701",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing the number of incidents per state."
+    },
+    {
+        "uuid": "c61f1618c129b5a63faab083fd130d07",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Line plot showing the trend of incidents over the years."
+    },
+    {
+        "uuid": "cd14a7679b09d9a3c224e5d28c6fe895",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram of the number of incidents per year."
+    },
+    {
+        "uuid": "865a96da2186c78c6545bf49231db9cb",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart representing the distribution of causes of incidents."
+    },
+    {
+        "uuid": "733b09055520825a21e8061ecac17c87",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot of latitude versus longitude to visualize the locations of incidents."
+    },
+    {
+        "uuid": "8a625528fe8c1567c0668f72f4d5318b",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing the number of incidents involving canines."
+    },
+    {
+        "uuid": "dbe427cb2c7f5f3f4d01b92b0b927569",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot indicating the number of incidents over the years."
+    },
+    {
+        "uuid": "bf914b84f2d4526ef6cbadce9891ddab",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot of incidents per year to visualize the distribution."
+    },
+    {
+        "uuid": "2d41bb17fbfca8af861a97343f3325c6",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram showing the distribution of incidents based on cause."
+    },
+    {
+        "uuid": "edafa66d967441a491701314f36495b2",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing the number of incidents for each cause in short form."
+    },
+    {
+        "uuid": "284f9d95e8baee2cd833b4ad090708bb",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot showing the distribution of incidents based on latitude and longitude."
+    },
+    {
+        "uuid": "4c4c59d9f27d6e4c16e1645664c0097f",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot representing the number of incidents involving canines over the years."
+    },
+    {
+        "uuid": "c166ceaa0b15d61e5772b55ed2aa8616",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Hexagonal bin plot of latitude versus longitude to visualize incident density."
+    },
+    {
+        "uuid": "12bbafcda588f6792758fffd070502d3",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart representing the distribution of incidents based on whether it involved a canine or not."
+    },
+    {
+        "uuid": "57691c7622da2e09fb5b8710f1231eee",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram showing the distribution of incidents based on state."
+    },
+    {
+        "uuid": "c19b466254affba48b2e70d887d00e93",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Line plot indicating the trend of incidents based on cause over the years."
+    },
+    {
+        "uuid": "48460af82e836e50c15ca259570c8cf5",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot showing the distribution of incidents in different states based on latitude and longitude."
+    },
+    {
+        "uuid": "8af151f73421e1bf246e5bcc28da6273",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot showing the distribution of incidents based on cause."
+    },
+    {
+        "uuid": "4d17f2ffdad22da0312055f878ca8524",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/US-shooting-incidents.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot representing the number of incidents in each state over the years."
+    },
+    {
+        "uuid": "b20df99eaed1a254565541c739cdfc2a",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing the number of passengers in each class."
+    },
+    {
+        "uuid": "0c2938bdf3aeaad805de147ab0d28422",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram showcasing the age distribution of passengers."
+    },
+    {
+        "uuid": "541e1c9630256d86663b9575ec8577f6",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart representing the gender distribution aboard the Titanic."
+    },
+    {
+        "uuid": "d801fb18092e3871e5bb13fc99c9d63f",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot indicating the number of survivors and non-survivors."
+    },
+    {
+        "uuid": "ddd22e2820fc2be79e68a03daf53f5a9",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot illustrating the fare distribution over different passenger classes."
+    },
+    {
+        "uuid": "5a71d71d2f15c8f931925f4ef5539150",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot of age against fare to see if there's a correlation."
+    },
+    {
+        "uuid": "58d14c4cdc071c0fd2e63548a63b2c8f",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing the number of passengers boarding from each embarkation port."
+    },
+    {
+        "uuid": "75f28ca202f7d93704794c1f8b751c25",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram displaying the distribution of fares paid by passengers."
+    },
+    {
+        "uuid": "1bea5b4e9813527a893ac13c365487c7",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart showcasing the distribution of passengers in lifeboats."
+    },
+    {
+        "uuid": "e9289de414dc300a8ce482595ab3a503",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot indicating the number of siblings/spouses each passenger had aboard."
+    },
+    {
+        "uuid": "7d2ce282c025f10b43947f4c47abe365",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot showing the fare distribution for male and female passengers."
+    },
+    {
+        "uuid": "d3937c25fd1e9754d4470b1a4e37b77f",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot representing the age distribution of survivors and non-survivors."
+    },
+    {
+        "uuid": "4a820c3c36395fc6d5f4c1d92a3d31b6",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot of siblings/spouses against parents/children to see family size."
+    },
+    {
+        "uuid": "27a597a93daf34f19344657ca97515e0",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showcasing the number of passengers with and without cabins."
+    },
+    {
+        "uuid": "3adde3cbc94e43206c4f06eb43a31456",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart representing the distribution of passengers based on their embarkation port."
+    },
+    {
+        "uuid": "d09fa23d31efdf31329ff331806da15d",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing the survival rate for each gender."
+    },
+    {
+        "uuid": "98954654dded1f6a9a76ff6121d0ca06",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot displaying the age distribution for survivors and non-survivors."
+    },
+    {
+        "uuid": "97217dfee3e96a76a71b4cf6cc10d04f",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot illustrating the fare distribution over different embarkation ports."
+    },
+    {
+        "uuid": "1c56ef705aede7b0ba64521780792ba7",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot of age against the number of siblings/spouses."
+    },
+    {
+        "uuid": "ac56f416752889cc3ceab6bb761ad31f",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot indicating the number of parents/children each passenger had aboard."
+    },
+    {
+        "uuid": "8eaaa33ebb84332de96cbdc8681c55f9",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram showcasing the age distribution of male and female passengers."
+    },
+    {
+        "uuid": "a218fdbb97d1e1d12dee83f815ed3f2c",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart representing the survival rate for each passenger class."
+    },
+    {
+        "uuid": "3b57bdf4cf7e0414a714d4a6d3f6437d",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/titanic.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing the number of passengers in each lifeboat."
+    },
+    {
+        "uuid": "9a989593be80fd67dd0eeed386a7de53",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram of alcohol percentages in the wine samples."
+    },
+    {
+        "uuid": "927b21ef40f6e47f6d4fdb97225f0f86",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot of average salt content in different quality wines."
+    },
+    {
+        "uuid": "51213e047d95639ca3d684cd86e47f65",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot representing the amount of residual sugar across different wine samples."
+    },
+    {
+        "uuid": "d836d2b4ea22829e696bdd1de362b00f",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart showing the proportion of wines with different pH levels."
+    },
+    {
+        "uuid": "6191b86230e7b0dfdcee47719362d3f7",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram showcasing the distribution of sulfur dioxide levels."
+    },
+    {
+        "uuid": "3aa98e8b487d5d9ab873553e791a6e3b",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot indicating the average citric acid content in wines of varying quality."
+    },
+    {
+        "uuid": "9239e9c3cb0922a98b3d021cd5c145c0",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot representing the distribution of sulphate levels across wine samples."
+    },
+    {
+        "uuid": "07dea19627a24a243b81fac551f3b729",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart illustrating the proportion of wines in each quality category."
+    },
+    {
+        "uuid": "b48be6285b2d0d285b73432269216fbc",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram of the distribution of pH values in the wine samples."
+    },
+    {
+        "uuid": "16a6708523bfb76f91778ae5b8b91e67",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing average alcohol content for each wine quality score."
+    },
+    {
+        "uuid": "64d7c93d590c16aab832c563a7f26fbb",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot comparing salt content with wine quality scores."
+    },
+    {
+        "uuid": "56c007f55ef2354137808928427443b1",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart representing the proportion of wines with different levels of fixed acidity."
+    },
+    {
+        "uuid": "f8089b45bb6010324d62209987fdebc5",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot of average volatile acidity levels for different wine quality scores."
+    },
+    {
+        "uuid": "9dc6a73489f583c0d5f4631132227de1",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot showing the range of residual sugar levels in the wine samples."
+    },
+    {
+        "uuid": "0724d9d2c5ec6128c81c6f12c62dfedf",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart showing the proportion of wines with varying levels of citric acid."
+    },
+    {
+        "uuid": "e923344dbf8001477c9169ce9971e70d",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram illustrating the distribution of sulphate level [0.4, 0.6]"
+    },
+    {
+        "uuid": "b746bd6b12bb2c98a9ea606f27beeff6",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot comparing fixed acidity 12-14 with volatile acidity [0.2, 0.4]"
+    },
+    {
+        "uuid": "50c660a180b19c544e2eddf0ddec1a42",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot representing the distribution of total sulfur dioxide levels [30, 50]"
+    },
+    {
+        "uuid": "b726c2eb27d8441ba3abf8c6d631b11c",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram of the distribution of density values above 1 in the wine samples"
+    },
+    {
+        "uuid": "494e51ddd400b8b9500cfd783f162ce6",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/winequality-red.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot comparing residual sugar content from 6 to 8 with alcohol percentages from 9 to 10"
+    },
+    {
+        "uuid": "8f8538bc9da384211f7073fe1f683d80",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot of the top 5 most populous cities"
+    },
+    {
+        "uuid": "2c4fe6f59d5a33e07cea1a8a4856d164",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot of populations for the top 5 cities"
+    },
+    {
+        "uuid": "991009090107bca3410f289dd54eb971",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot of latitude versus longitude for top 5 most populous cities"
+    },
+    {
+        "uuid": "223948757000fc199ad2eac5b408d97e",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart showing the population distribution of the top 5 cities"
+    },
+    {
+        "uuid": "0bbaa8fc7030d01f1249a2615ce9d06d",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot of the number of cities in each state"
+    },
+    {
+        "uuid": "9f77b74c823fc62f584e2cc476321878",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Histogram of latitudes of the top 5 most populous cities"
+    },
+    {
+        "uuid": "4516966426c5ae676842df2ae0dd8308",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Scatter plot of population versus latitude for the top 10 most populous cities"
+    },
+    {
+        "uuid": "7b860b4b2f75d8254f3a04f379b4ae6f",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Hexagonal bin plot of latitude versus longitude for the top 5 most populous cities"
+    },
+    {
+        "uuid": "da0a49e0c0caab7075294b5eb4c458b5",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot showing populations of the top 5 most populous cities in California"
+    },
+    {
+        "uuid": "52faa13a37663e3c9aa9b6edc8be77eb",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot of populations for the top 5 most populous cities in Texas"
+    },
+    {
+        "uuid": "be05f57767fd0ada7577c996af773a9d",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot of populations for the top 5 most populous cities in Florida"
+    },
+    {
+        "uuid": "1c5807c72a68814699e2fa8ea09ed592",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Pie chart of the number of cities in the top 5 states"
+    },
+    {
+        "uuid": "37404fec67c0bb6638000e894fddb6d7",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Bar plot of the least populous 8 cities"
+    },
+    {
+        "uuid": "a7e6fdfcb15c7b2ae7149f5d1ea06bf6",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Boxplot of latitudes for cities in New York state"
+    },
+    {
+        "uuid": "2356b7471d4ea0e3cb820212a0e8d364",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Area plot of populations for the bottom 10 cities"
+    },
+    {
+        "uuid": "cb2210b6af5e4630178766ac0c815c8d",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Hexagonal bin plot of population versus latitude for the top 5 most populous cities"
+    },
+    {
+        "uuid": "8e168c98f3c64ccc7e6928f5eb434994",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Mapbox density map showing the top 10 most populous cities"
+    },
+    {
+        "uuid": "676b2b6aab147c7252209f98e1a36f8d",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "easy",
+        "description": "Mapbox density map showing the top 5 most populous cities in California"
+    },
+    {
+        "uuid": "dac34e39533e967da9ffad96913afc81",
+        "dataset": "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv",
+        "language": "English",
+        "complexity": "hard",
+        "description": "Pie chart showing the population distribution of most populous city in each of the top 5 states"
+    }
+]
