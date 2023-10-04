@@ -542,7 +542,7 @@ class SparkAI:
             return False
         self.log(f"\nResult: {locals_.get('result')}")
 
-        return True
+        return locals_.get("result", False)
 
     def udf(self, func: Callable) -> Callable:
         from inspect import signature
