@@ -128,9 +128,8 @@ class TestSimilarValueTool(unittest.TestCase):
 
         # prepare tables
         statements = create_temp_view_statements(table_file)
-        spark = SparkSession.builder.getOrCreate()
         for stmt in statements:
-            spark.sql(stmt)
+            self.spark.sql(stmt)
 
         (
             tables,
@@ -144,7 +143,7 @@ class TestSimilarValueTool(unittest.TestCase):
             table_name = get_table_name(table)
             try:
                 df = self.spark.table(f"`{table_name}`")
-                df.createOrReplaceTempView("sample_df")
+                df.createOrReplaceTempView(f"`{table_name}`")
                 observation = similar_value_tool.run(f"{tool_input}{table_name}")
 
                 self.assertEqual(observation, expected_result)

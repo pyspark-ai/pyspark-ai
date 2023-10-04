@@ -10,6 +10,10 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import expr, lit, mean, stddev
 from pyspark.sql.types import ArrayType, DoubleType, StringType
 from pyspark_ai import SparkAI
+from benchmark.wikisql.wiki_sql import (
+    get_table_name,
+    create_temp_view_statements,
+)
 
 
 @unittest.skipUnless(
@@ -111,18 +115,27 @@ class EndToEndTestCase(unittest.TestCase):
         transformed_df = df.ai.transform("what city had the warmest temperature?")
         self.assertEqual(transformed_df.collect()[0][0], "Austin")
 
-    def test_transform_col_query_unintuitive(self):
-        """Test that agent selects correct query column, even with unintuitive column names,
-        by using sample column values"""
-        df = self.spark_ai._spark.createDataFrame(
-            [
-                ("Alice", 1),
-                ("Bob", 2),
-            ],
-            ["age", "name"],
+    def test_transform_col_query_wikisql(self):
+        """Test that agent selects correct query column for ambiguous wikisql table example"""
+        statements = create_temp_view_statements(
+            "tests/data/test_transform_query_col.tables.jsonl"
         )
-        transformed_df = df.ai.transform("what is the name with oldest age?")
-        self.assertEqual(transformed_df.collect()[0][0], "Bob")
+        spark = SparkSession.builder.getOrCreate()
+        for stmt in statements:
+            spark.sql(stmt)
+
+        table_name = get_table_name("1-1108394-47")
+
+        try:
+            df = self.spark.table(f"`{table_name}`")
+            df.createOrReplaceTempView(f"`{table_name}`")
+
+            transformed_df = df.ai.transform(
+                "which candidate won 88 votes in Queens in 1921?"
+            )
+            self.assertEqual(transformed_df.collect()[0][0], "jerome t. de hunt")
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
     def test_array_udf_output(self):
         @self.spark_ai.udf
