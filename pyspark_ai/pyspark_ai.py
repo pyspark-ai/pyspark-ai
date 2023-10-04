@@ -253,10 +253,9 @@ class SparkAI:
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
 
-    def _get_df_schema(self, df: DataFrame) -> Tuple[list, str]:
+    def _get_df_schema(self, df: DataFrame) -> list:
         schema_lst = [f"{name}: {dtype}" for name, dtype in df.dtypes]
-        schema_str = "\n".join([f"{name}: {dtype}" for name, dtype in df.dtypes])
-        return schema_lst, schema_str
+        return schema_lst
 
     @staticmethod
     def _trim_hash_id(analyzed_plan):
@@ -430,7 +429,8 @@ class SparkAI:
         )
         self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)
-        schema_lst, schema_str = self._get_df_schema(df)
+        schema_lst = self._get_df_schema(df)
+        schema_str = "\n".join(schema_lst)
         sample_rows = self._get_sample_spark_rows(df)
         schema_row_lst = []
         for index in range(len(schema_lst)):

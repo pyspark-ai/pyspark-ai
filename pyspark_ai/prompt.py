@@ -41,20 +41,21 @@ SQL_PROMPT = PromptTemplate(
 )
 
 SPARK_SQL_EXAMPLES = [
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following columns:
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
+    in the format (column_name: type, [sample_value_1, sample_value_2...]):
 ```
-MountainName STRING
-Height INT
-Country STRING
-Continent STRING
+(a: STRING, [Kongur Tagh, Grossglockner])
+(b: INT, [7649, 3798])
+(c: STRING, [China, Austria])
 ```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Moorea.
-Thought: I should filter on the `Country` column to find the mountain located in Moorea.
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
+Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
+and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
 Action: query_validation
-Action Input: SELECT `MountainName` FROM `spark_ai_temp_view_14kjd0` WHERE `Country` = 'Moorea'
+Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
 Observation: OK
 Thought:I now know the final answer.
-Final Answer: SELECT `MountainName` FROM `spark_ai_temp_view_14kjd0` WHERE `Country` = 'Moorea'"""
+Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
 ```
 Product STRING

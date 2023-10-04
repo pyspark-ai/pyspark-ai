@@ -96,6 +96,34 @@ class EndToEndTestCase(unittest.TestCase):
         transformed_df = df.ai.transform("what is the name with oldest age?")
         self.assertEqual(transformed_df.collect()[0][0], "Bob")
 
+    def test_transform_col_query_nondescriptive(self):
+        """Test that agent selects correct query column, even with non-descriptive column names,
+        by using sample column values"""
+        df = self.spark_ai._spark.createDataFrame(
+            [
+                ("Shanghai", 31, "China"),
+                ("Seattle", 30, "United States"),
+                ("Austin", 33, "United States"),
+                ("Paris", 29, "France"),
+            ],
+            ["col1", "col2", "col3"],
+        )
+        transformed_df = df.ai.transform("what city had the warmest temperature?")
+        self.assertEqual(transformed_df.collect()[0][0], "Austin")
+
+    def test_transform_col_query_unintuitive(self):
+        """Test that agent selects correct query column, even with unintuitive column names,
+        by using sample column values"""
+        df = self.spark_ai._spark.createDataFrame(
+            [
+                ("Alice", 1),
+                ("Bob", 2),
+            ],
+            ["age", "name"],
+        )
+        transformed_df = df.ai.transform("what is the name with oldest age?")
+        self.assertEqual(transformed_df.collect()[0][0], "Bob")
+
     def test_array_udf_output(self):
         @self.spark_ai.udf
         def parse_heterogeneous_json(json_str: str, schema: List[str]) -> List[str]:
