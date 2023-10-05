@@ -51,6 +51,7 @@ SPARK_SQL_EXAMPLES = [
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
 Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
 and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
+I will use = rather than "like" in my SQL query because I need an exact match.
 Action: query_validation
 Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
 Observation: OK
@@ -79,7 +80,8 @@ Student STRING
 Birthday STRING
 ```
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
-Thought: I need to filter by an exact birthday value from the df. I will use the tool similar_value to help me choose my filter value.
+Thought: The keyword 'January 1, 2006' is most similar to the sample values in the `Birthday` column.
+I need to filter on an exact value from the `Birthday` column, so I will use the tool similar_value to help me choose my filter value.
 Action: similar_value
 Action Input: January 1, 2006|Birthday|spark_ai_temp_view_12qcl3
 Observation: 01-01-2006
