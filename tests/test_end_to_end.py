@@ -89,7 +89,7 @@ class EndToEndTestCase(unittest.TestCase):
             schema="string",
         )
 
-    def get_table_name(
+    def create_and_get_table_name(
         self, table: str, table_file: str = "tests/data/test_transform_e2e.tables.jsonl"
     ):
         """Util function to create temp view for desired table and return the table name"""
@@ -130,7 +130,7 @@ class EndToEndTestCase(unittest.TestCase):
 
     def test_transform_col_query_wikisql(self):
         """Test that agent selects correct query column for ambiguous wikisql table example"""
-        table_name = self.get_table_name("1-1108394-47")
+        table_name = self.create_and_get_table_name("1-1108394-47")
 
         try:
             df = self.spark.table(f"`{table_name}`")
@@ -145,7 +145,7 @@ class EndToEndTestCase(unittest.TestCase):
 
     def test_filter_exact(self):
         """Test that agent filters by an exact value"""
-        table_name = self.get_table_name("1-11545282-10")
+        table_name = self.create_and_get_table_name("1-11545282-10")
 
         try:
             df = self.spark.table(f"`{table_name}`")
