@@ -128,7 +128,7 @@ class TestSimilarValueTool(unittest.TestCase):
 
         # prepare tables
         statements = create_temp_view_statements(table_file)
-        for stmt in statements[:3]:
+        for stmt in statements:
             self.spark.sql(stmt)
 
         (
