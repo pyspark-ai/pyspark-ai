@@ -89,6 +89,19 @@ class EndToEndTestCase(unittest.TestCase):
             schema="string",
         )
 
+    def create_and_get_table_name(
+        self, table: str, table_file: str = "tests/data/test_transform_e2e.tables.jsonl"
+    ):
+        """Util function to create temp view for desired table and return the table name"""
+        statements = create_temp_view_statements(table_file)
+        tbl_in_json = table.replace("-", "_")
+
+        for statement in statements:
+            if tbl_in_json in statement:
+                self.spark.sql(statement)
+
+        return get_table_name(table)
+
     def test_dataframe_transform(self):
         df = self.spark_ai._spark.createDataFrame(
             [
@@ -117,12 +130,7 @@ class EndToEndTestCase(unittest.TestCase):
 
     def test_transform_col_query_wikisql(self):
         """Test that agent selects correct query column for ambiguous wikisql table example"""
-        statements = create_temp_view_statements(
-            "tests/data/test_transform_query_col.tables.jsonl"
-        )
-        self.spark.sql(statements[0])
-
-        table_name = get_table_name("1-1108394-47")
+        table_name = self.create_and_get_table_name("1-1108394-47")
 
         try:
             df = self.spark.table(f"`{table_name}`")
@@ -132,6 +140,19 @@ class EndToEndTestCase(unittest.TestCase):
                 "which candidate won 88 votes in Queens in 1921?"
             )
             self.assertEqual(transformed_df.collect()[0][0], "jerome t. de hunt")
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    def test_filter_exact(self):
+        """Test that agent filters by an exact value"""
+        table_name = self.create_and_get_table_name("1-11545282-10")
+
+        try:
+            df = self.spark.table(f"`{table_name}`")
+            df.createOrReplaceTempView(f"`{table_name}`")
+
+            transformed_df = df.ai.transform("which forward player has the number 22?")
+            self.assertEqual(transformed_df.collect()[0][0], "henry james")
         finally:
             self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
