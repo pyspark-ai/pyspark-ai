@@ -118,9 +118,12 @@ class EndToEndTestCase(unittest.TestCase):
     def test_transform_col_query_wikisql(self):
         """Test that agent selects correct query column for ambiguous wikisql table example"""
         statements = create_temp_view_statements(
-            "tests/data/test_transform_query_col.tables.jsonl"
+            "tests/data/test_transform.tables.jsonl"
         )
-        self.spark.sql(statements[0])
+
+        for statement in statements:
+            if "1_1108394_47" in statement:
+                self.spark.sql(statement)
 
         table_name = get_table_name("1-1108394-47")
 
@@ -132,6 +135,27 @@ class EndToEndTestCase(unittest.TestCase):
                 "which candidate won 88 votes in Queens in 1921?"
             )
             self.assertEqual(transformed_df.collect()[0][0], "jerome t. de hunt")
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    def test_filter_exact(self):
+        """Test that agent filters by an exact value"""
+        statements = create_temp_view_statements(
+            "tests/data/test_transform.tables.jsonl"
+        )
+
+        for statement in statements:
+            if "table_1_11545282_10" in statement:
+                self.spark.sql(statement)
+
+        table_name = get_table_name("1-11545282-10")
+
+        try:
+            df = self.spark.table(f"`{table_name}`")
+            df.createOrReplaceTempView(f"`{table_name}`")
+
+            transformed_df = df.ai.transform("which forward player has the number 22?")
+            self.assertEqual(transformed_df.collect()[0][0], "henry james")
         finally:
             self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
