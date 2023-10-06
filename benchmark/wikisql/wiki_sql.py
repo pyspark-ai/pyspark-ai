@@ -9,12 +9,7 @@ from pyspark_ai import SparkAI
 
 
 def replace_quotes_and_backslashes(s):
-    return (
-        s.replace("'", "''")
-        .replace("\\", "\\\\")
-        .replace("(", "'('")
-        .replace(")", "')'")
-    )
+    return s.replace("'", "''").replace("\\", "\\\\")
 
 
 # Generate ingestion SQL statements from the table definition file, using `CREATE TEMP VIEW ... AS SELECT`.
