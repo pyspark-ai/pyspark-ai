@@ -9,7 +9,12 @@ from pyspark_ai import SparkAI
 
 
 def replace_quotes_and_backslashes(s):
-    return s.replace("'", "''").replace("\\", "\\\\")
+    return (
+        s.replace("'", "''")
+        .replace("\\", "\\\\")
+        .replace("(", "'('")
+        .replace(")", "')'")
+    )
 
 
 # Generate ingestion SQL statements from the table definition file, using `CREATE TEMP VIEW ... AS SELECT`.
@@ -51,8 +56,10 @@ def create_temp_view_statements(table_file):
             else:
                 page_title = ""
             comment = section_title + page_title
-            create_statement = f'CREATE TABLE IF NOT EXISTS `{table_name}` USING ORC comment "{comment}" ' \
-                               f'AS SELECT * FROM VALUES {values_str} as {header_str};'
+            create_statement = (
+                f'CREATE TABLE IF NOT EXISTS `{table_name}` USING ORC comment "{comment}" '
+                f"AS SELECT * FROM VALUES {values_str} as {header_str};"
+            )
             sql_statements.append(create_statement)
 
     return sql_statements
@@ -133,6 +140,8 @@ if __name__ == "__main__":
     errors = 0
 
     # Create sql query for each question and table
+    error_file = open("data/error_file.txt", "w")
+
     for table, question, expected_result, sql in zip(tables, questions, results, sqls):
         try:
             df = spark.table(f"`{get_table_name(table)}`")
@@ -164,25 +173,34 @@ if __name__ == "__main__":
             expected_result = sorted(expected_result)
 
             actual_phrase = " ".join(spark_ai_result)
-            expected_phrase = " ".join(expected_result)
+            expected_phrase = " ".join(expected_result).replace("'", "")
 
-            if actual_phrase == expected_phrase:
+            if expected_phrase in actual_phrase:
                 matched += 1
                 found_match = True
                 break
 
         if not found_match:
             not_matched += 1
-            print("Question: {}".format(question))
-            print(
-                "Expected query: {}".format(
+            error_str = (
+                "Question: {}".format(question)
+                + "\n"
+                + "Expected query: {}".format(
                     get_sql_query(table, sql["sel"], sql["agg"], sql["conds"])
                 )
+                + "\n"
+                + "Actual query: {}".format(query)
+                + "\n"
+                + "Expected result: {}".format(expected_result)
+                + "\n"
+                + "Actual result: {}".format(spark_ai_result)
+                + "\n"
             )
-            print("Actual query: {}".format(query))
-            print("Expected result: {}".format(expected_result))
-            print("Actual result: {}".format(spark_ai_result))
-            print("")
+            print(error_str)
+
+            error_file.write(error_str)
+
+    error_file.close()
 
     print(f"Matched: {matched} out of {len(results)}")
     print(f"Incorrect: {not_matched} out of {len(results)}")

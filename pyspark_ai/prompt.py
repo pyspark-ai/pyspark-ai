@@ -87,7 +87,7 @@ Action Input: January 1, 2006|Birthday|spark_ai_temp_view_12qcl3
 Observation: 01-01-2006
 Thought: The correct Birthday filter should be '01-01-2006' because it is semantically closest to the keyword.
 I will use the column 'Birthday' to filter the rows where its value is '01-01-2006' and then select the COUNT(`Student`) 
-because COUNT gives me the total number of students.
+because the question asks for the total number of students.
 Action: query_validation
 Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'
 Observation: OK
