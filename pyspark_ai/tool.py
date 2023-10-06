@@ -1,5 +1,7 @@
 from typing import Optional, Any, Union
+from collections import OrderedDict
 import os
+import shutil
 
 from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
@@ -101,12 +103,39 @@ class QueryValidationTool(BaseTool):
         raise NotImplementedError("ListTablesSqlDbTool does not support async")
 
 
+class VectorFileLRUCache:
+    """Implements an LRU policy to remove vector files form disk, after a set max number of files."""
+
+    def __init__(self, max_files: int = 128):
+        # key: filename -> value: None
+        self.cache = OrderedDict()
+        self.max_files = max_files
+
+    def access(self, file_path: str) -> None:
+        # move accessed key to end of LRU cache
+        if file_path in self.cache:
+            self.cache.move_to_end(file_path)
+
+    def put(self, file_path: str) -> None:
+        # remove file path if LRU max files exceeded, else put
+        self.cache[file_path] = None
+        self.cache.move_to_end(file_path)
+        print("put max files", self.max_files)
+        print("put num files", len(self.cache))
+        if len(self.cache) > self.max_files:
+            self.cache.popitem(last=False)
+            shutil.rmtree(file_path)
+
+
 class VectorSearchUtil:
     """This class contains helper methods for similarity search performed by SimilarValueTool."""
 
     @staticmethod
     def vector_similarity_search(
-        col_lst: Optional[list], vector_store_path: Optional[str], search_text: str
+        col_lst: Optional[list],
+        vector_store_path: Optional[str],
+        vector_file_cache: Optional[VectorFileLRUCache],
+        search_text: str,
     ):
         from langchain.vectorstores import FAISS
         from langchain.embeddings import HuggingFaceBgeEmbeddings
@@ -124,6 +153,7 @@ class VectorSearchUtil:
                     encode_kwargs=encode_kwargs,
                 ),
             )
+            vector_file_cache.access(vector_store_path)
         else:
             vector_db = FAISS.from_texts(
                 col_lst,
@@ -136,6 +166,7 @@ class VectorSearchUtil:
 
             if vector_store_path:
                 vector_db.save_local(vector_store_path)
+                vector_file_cache.put(vector_store_path)
 
         docs = vector_db.similarity_search(search_text)
         return docs[0].page_content
@@ -154,6 +185,7 @@ class SimilarValueTool(BaseTool):
     """
 
     vector_store_dir: Optional[str]
+    vector_file_cache: Optional[VectorFileLRUCache]
 
     def _run(
         self, inputs: str, run_manager: Optional[CallbackManagerForToolRun] = None
@@ -180,7 +212,7 @@ class SimilarValueTool(BaseTool):
             col_lst = None
 
         return VectorSearchUtil.vector_similarity_search(
-            col_lst, vector_store_path, search_text
+            col_lst, vector_store_path, self.vector_file_cache, search_text
         )
 
     async def _arun(self, *args: Any, **kwargs: Any) -> Any:
