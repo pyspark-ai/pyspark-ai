@@ -134,9 +134,9 @@ if __name__ == "__main__":
     not_matched = 0
     errors = 0
 
-    # Create sql query for each question and table
-    error_file = open("data/error_file.txt", "w")
+    mismatched_examples = open("data/mismatched_results.txt", "w")
 
+    # Create sql query for each question and table
     for table, question, expected_result, sql in zip(tables, questions, results, sqls):
         try:
             df = spark.table(f"`{get_table_name(table)}`")
@@ -193,9 +193,9 @@ if __name__ == "__main__":
             )
             print(error_str)
 
-            error_file.write(error_str)
+            mismatched_examples.write(error_str)
 
-    error_file.close()
+    mismatched_examples.close()
 
     print(f"Matched: {matched} out of {len(results)}")
     print(f"Incorrect: {not_matched} out of {len(results)}")
