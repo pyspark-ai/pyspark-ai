@@ -39,7 +39,7 @@ from pyspark_ai.tool import (
     QuerySparkSQLTool,
     QueryValidationTool,
     SimilarValueTool,
-    VectorFileLRUCache,
+    LRUVectorStore,
 )
 from pyspark_ai.spark_utils import SparkUtils
 
@@ -61,7 +61,7 @@ class SparkAI:
         cache_file_format: str = "json",
         cache_file_location: Optional[str] = None,
         vector_store_dir: Optional[str] = None,
-        vector_cache_max_files: Optional[int] = 64,
+        vector_store_max_size: Optional[float] = 1e6,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         sample_rows_in_table_info: int = 3,
@@ -107,7 +107,7 @@ class SparkAI:
         else:
             self._cache = None
         self._vector_store_dir = vector_store_dir
-        self._vector_cache_max_files = vector_cache_max_files
+        self._vector_store_max_size = vector_store_max_size
         self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
         self._max_tokens_of_web_content = max_tokens_of_web_content
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
@@ -137,7 +137,9 @@ class SparkAI:
                 SimilarValueTool(
                     spark=self._spark,
                     vector_store_dir=self._vector_store_dir,
-                    vector_file_cache=VectorFileLRUCache(self._vector_cache_max_files),
+                    lru_vector_store=LRUVectorStore(
+                        self._vector_store_dir, self._vector_store_max_size
+                    ),
                 ),
             ]
             if self._vector_store_dir

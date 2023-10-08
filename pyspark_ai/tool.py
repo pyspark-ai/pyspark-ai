@@ -103,13 +103,24 @@ class QueryValidationTool(BaseTool):
         raise NotImplementedError("ListTablesSqlDbTool does not support async")
 
 
-class VectorFileLRUCache:
-    """Implements an LRU policy to remove vector files form disk, after a set max number of files."""
+class LRUVectorStore:
+    """Implements an LRU policy to enforce a max storage space for vector file storage."""
 
-    def __init__(self, max_files: int = 128):
-        # key: filename -> value: None
+    def __init__(self, vector_file_dir: str, max_size: float = 1e6):
+        # by default, max_size = 1e6 bytes
         self.cache = OrderedDict()
-        self.max_files = max_files
+        self.vector_file_dir = vector_file_dir
+        self.max_size = max_size
+
+    @staticmethod
+    def get_storage(vector_file_dir):
+        # calculate current storage space of vector files, in bytes
+        size = 0
+        for path, dirs, files in os.walk(vector_file_dir):
+            for f in files:
+                fp = os.path.join(path, f)
+                size += os.path.getsize(fp)
+        return size
 
     def access(self, file_path: str) -> None:
         # move accessed key to end of LRU cache
@@ -117,12 +128,11 @@ class VectorFileLRUCache:
             self.cache.move_to_end(file_path)
 
     def put(self, file_path: str) -> None:
-        # remove file path if LRU max files exceeded, else put
+        # remove file path if max storage size exceeded, else put
         self.cache[file_path] = None
         self.cache.move_to_end(file_path)
-        print("put max files", self.max_files)
-        print("put num files", len(self.cache))
-        if len(self.cache) > self.max_files:
+
+        while LRUVectorStore.get_storage(self.vector_file_dir) > self.max_size:
             self.cache.popitem(last=False)
             shutil.rmtree(file_path)
 
@@ -134,7 +144,7 @@ class VectorSearchUtil:
     def vector_similarity_search(
         col_lst: Optional[list],
         vector_store_path: Optional[str],
-        vector_file_cache: Optional[VectorFileLRUCache],
+        lru_vector_store: Optional[LRUVectorStore],
         search_text: str,
     ):
         from langchain.vectorstores import FAISS
@@ -153,7 +163,7 @@ class VectorSearchUtil:
                     encode_kwargs=encode_kwargs,
                 ),
             )
-            vector_file_cache.access(vector_store_path)
+            lru_vector_store.access(vector_store_path)
         else:
             vector_db = FAISS.from_texts(
                 col_lst,
@@ -166,7 +176,7 @@ class VectorSearchUtil:
 
             if vector_store_path:
                 vector_db.save_local(vector_store_path)
-                vector_file_cache.put(vector_store_path)
+                lru_vector_store.put(vector_store_path)
 
         docs = vector_db.similarity_search(search_text)
         return docs[0].page_content
@@ -185,7 +195,7 @@ class SimilarValueTool(BaseTool):
     """
 
     vector_store_dir: Optional[str]
-    vector_file_cache: Optional[VectorFileLRUCache]
+    lru_vector_store: Optional[LRUVectorStore]
 
     def _run(
         self, inputs: str, run_manager: Optional[CallbackManagerForToolRun] = None
@@ -212,7 +222,7 @@ class SimilarValueTool(BaseTool):
             col_lst = None
 
         return VectorSearchUtil.vector_similarity_search(
-            col_lst, vector_store_path, self.vector_file_cache, search_text
+            col_lst, vector_store_path, self.lru_vector_store, search_text
         )
 
     async def _arun(self, *args: Any, **kwargs: Any) -> Any:
