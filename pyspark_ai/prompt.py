@@ -51,7 +51,12 @@ SPARK_SQL_EXAMPLES = [
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
 Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
 and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
-I will use = rather than "like" in my SQL query because I need an exact match.
+I will use = rather than "like" in my SQL query because I need an exact match. I'll use the similar_value tool to help
+me choose an exact filter value for `c`.
+Action: similar_value
+Action Input: Japan|c|spark_ai_temp_view_14kjd0
+Observation: Japan
+Thought: The correct `c` filter should be 'Japan' because it is semantically closest to the keyword.
 Action: query_validation
 Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
 Observation: OK
@@ -85,9 +90,9 @@ I need to filter on an exact value from the `Birthday` column, so I will use the
 Action: similar_value
 Action Input: January 1, 2006|Birthday|spark_ai_temp_view_12qcl3
 Observation: 01-01-2006
-Thought: The correct Birthday filter should be '01-01-2006' because it is semantically closest to the keyword.
-I will use the column 'Birthday' to filter the rows where its value is '01-01-2006' and then select the COUNT(`Student`) 
-because COUNT gives me the total number of students.
+Thought: The correct `Birthday` filter should be '01-01-2006' because it is semantically closest to the keyword.
+I will use the column `Birthday` to filter the rows where its value is '01-01-2006' and then select the COUNT(`Student`) 
+because the question asks for the total number of students.
 Action: query_validation
 Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'
 Observation: OK
