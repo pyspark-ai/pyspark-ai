@@ -168,7 +168,7 @@ class TestSimilarValueTool(unittest.TestCase):
             finally:
                 self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
-    @patch("pyspark_ai.tool.LRUVectorStore.get_file_size_bytes")
+    @patch("pyspark_ai.tool.LRUVectorStore.get_file_size_bytes", return_value=1e9)
     def test_vector_file_lru_store_eviction(self, mock_get_file_size_bytes):
         """Tests LRUVectorStore LRU file eviction, using mocked get_file_size_bytes"""
 

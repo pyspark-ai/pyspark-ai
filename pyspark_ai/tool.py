@@ -119,10 +119,13 @@ class LRUVectorStore:
         # TODO: write LRU to disk, to evict existing files in LRU order
         if os.path.exists(self.vector_file_dir):
             for file in os.listdir(self.vector_file_dir):
-                file_full_path = os.path.join(self.vector_file_dir, file)
-                file_size = LRUVectorStore.get_file_size_bytes(file_full_path)
-                self.current_size += file_size
-                self.files[file_full_path] = file_size
+                file_path = os.path.join(self.vector_file_dir, file)
+                file_size = LRUVectorStore.get_file_size_bytes(file_path)
+                if LRUVectorStore.get_file_size_bytes(file_path) <= self.max_bytes:
+                    self.files[file_path] = file_size
+                    self.current_size += file_size
+                else:
+                    shutil.rmtree(file_path)
 
     @staticmethod
     def get_file_size_bytes(file_path: str) -> float:
@@ -146,9 +149,12 @@ class LRUVectorStore:
     def add(self, file_path: str) -> None:
         # remove file path if max storage size exceeded, else add
         curr_file_size = LRUVectorStore.get_file_size_bytes(file_path)
-        self.files[file_path] = curr_file_size
-        self.current_size += curr_file_size
-        self.files.move_to_end(file_path)
+        if curr_file_size <= self.max_bytes:
+            self.files[file_path] = curr_file_size
+            self.current_size += curr_file_size
+            self.files.move_to_end(file_path)
+        else:
+            shutil.rmtree(file_path)
 
         # evict files while max_size exceeded
         while self.current_size > self.max_bytes:
