@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 from langchain import LLMChain
 from langchain.callbacks.manager import Callbacks
 from langchain.chat_models.base import BaseChatModel
-from langchain.schema import AIMessage, BaseMessage, HumanMessage
+from langchain.schema import BaseMessage, HumanMessage
 from pyspark.sql import DataFrame
 
 from pyspark_ai.code_logger import CodeLogger
@@ -20,7 +20,7 @@ class PythonExecutor(LLMChain):
     """LLM Chain to generate python code. It supports caching and retrying."""
 
     df: DataFrame
-    cache: Cache
+    cache: Cache = None
     logger: CodeLogger
     max_retries: int = 3
 
@@ -65,11 +65,15 @@ class PythonExecutor(LLMChain):
             exec(compile(code, "plot_df-CodeGen", "exec"))
             return response.content
         except Exception as e:
-            if retries == 0:
-                # if we have no more retries, raise the exception
-                raise e
             if self.logger is not None:
                 self.logger.warning("Getting the following error: \n" + str(e))
+            if retries == 0:
+                # if we have no more retries, raise the exception
+                self.logger.log(
+                    "No more retries left, please modify the instruction or modify the generated code"
+                )
+                return ""
+            if self.logger is not None:
                 self.logger.log("Retrying with " + str(retries) + " retries left")
 
             messages.append(response)

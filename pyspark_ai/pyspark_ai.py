@@ -255,7 +255,8 @@ class SparkAI:
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
 
-    def _get_df_schema(self, df: DataFrame) -> list:
+    @staticmethod
+    def _get_df_schema(df: DataFrame) -> list:
         schema_lst = [f"{name}: {dtype}" for name, dtype in df.dtypes]
         return schema_lst
 
