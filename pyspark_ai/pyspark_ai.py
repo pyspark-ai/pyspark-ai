@@ -195,7 +195,7 @@ class SparkAI:
 
     def log(self, message: str) -> None:
         if self._verbose:
-            self._logger.log(message)
+            self._logger.info(message)
 
     def _trim_text_from_end(self, text: str, max_tokens: int) -> str:
         """

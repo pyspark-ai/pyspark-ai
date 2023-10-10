@@ -66,7 +66,7 @@ class PythonExecutor(LLMChain):
     ) -> str:
         response = chat_model.predict_messages(messages)
         if self.logger is not None:
-            self.logger.log(response.content)
+            self.logger.info(response.content)
         code = "\n".join(AIUtils.extract_code_blocks(response.content))
         try:
             self._execute_code(df, code)
@@ -76,12 +76,12 @@ class PythonExecutor(LLMChain):
                 self.logger.warning("Getting the following error: \n" + str(e))
             if retries <= 0:
                 # if we have no more retries, raise the exception
-                self.logger.log(
+                self.logger.info(
                     "No more retries left, please modify the instruction or modify the generated code"
                 )
                 return ""
             if self.logger is not None:
-                self.logger.log("Retrying with " + str(retries) + " retries left")
+                self.logger.info("Retrying with " + str(retries) + " retries left")
 
             messages.append(response)
             # append the exception as a HumanMessage into messages
