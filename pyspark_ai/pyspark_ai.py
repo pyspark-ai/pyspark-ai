@@ -502,10 +502,12 @@ class SparkAI:
         If `desc` is not provided, the method will try to plot the DataFrame based on its schema.
 
         :param df: The PySpark dataframe to generate plotting code for.
-        :param desc: An optional natural language string that outlines the specific transformation to be applied on the DataFrame.
+        :param desc: An optional natural language string that outlines the specific transformation to be applied on the
+                     DataFrame.
         :param cache: Whether to cache the dataframe or not. Default is True.
 
-        :return: Returns the generated code as a string. If the generated code is not valid Python code, an empty string is returned.
+        :return: Returns the generated code as a string. If the generated code is not valid Python code, an empty string
+                 is returned.
         """
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
