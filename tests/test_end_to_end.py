@@ -14,7 +14,6 @@ from benchmark.wikisql.wiki_sql import (
     get_table_name,
     create_temp_view_statements,
 )
-from pyspark_ai.python_executor import PythonExecutor
 
 
 @unittest.skipUnless(

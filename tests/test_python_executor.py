@@ -26,12 +26,19 @@ class TestPythonExecutor(unittest.TestCase):
     class MockLLM(BaseChatModel):
         predict_messages_calls: int
 
-        def _generate(self, messages: List[BaseMessage], stop: Optional[List[str]] = None,
-                      run_manager: Optional[CallbackManagerForLLMRun] = None, **kwargs: Any) -> ChatResult:
+        def _generate(
+                self,
+                messages: List[BaseMessage],
+                stop: Optional[List[str]] = None,
+                run_manager: Optional[CallbackManagerForLLMRun] = None,
+                **kwargs: Any) -> ChatResult:
             pass
 
-        async def _agenerate(self, messages: List[BaseMessage], stop: Optional[List[str]] = None,
-                             run_manager: Optional[AsyncCallbackManagerForLLMRun] = None, **kwargs: Any) -> ChatResult:
+        async def _agenerate(
+                self, messages: List[BaseMessage],
+                stop: Optional[List[str]] = None,
+                run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
+                **kwargs: Any) -> ChatResult:
             pass
 
         @property
