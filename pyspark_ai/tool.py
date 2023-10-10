@@ -106,35 +106,53 @@ class QueryValidationTool(BaseTool):
 class LRUVectorStore:
     """Implements an LRU policy to enforce a max storage space for vector file storage."""
 
-    def __init__(self, vector_file_dir: str, max_size: float = 1e6):
-        # by default, max_size = 1e6 bytes
-        self.cache = OrderedDict()
+    def __init__(self, vector_file_dir: str, max_size: float = 1e6) -> None:
+        # by default, max_size = 1e6 GB
+        self.files: OrderedDict[str, float] = OrderedDict()
         self.vector_file_dir = vector_file_dir
-        self.max_size = max_size
+        # represent in bytes to address floating point errors
+        self.max_bytes = max_size * 1e9
+        self.current_size = 0
+
+        # initialize the file cache, if vector_file_dir exists
+        if os.path.exists(self.vector_file_dir):
+            for file in os.listdir(self.vector_file_dir):
+                file_full_path = os.path.join(self.vector_file_dir, file)
+                file_size = os.path.getsize(file_full_path)
+                self.current_size += file_size
+                self.files[file_full_path] = file_size
 
     @staticmethod
-    def get_storage(vector_file_dir):
+    def get_file_size_gb(file_path: str) -> float:
+        return os.path.getsize(file_path)
+
+    @staticmethod
+    def get_storage(vector_file_dir: str) -> float:
         # calculate current storage space of vector files, in bytes
         size = 0
         for path, dirs, files in os.walk(vector_file_dir):
             for f in files:
                 fp = os.path.join(path, f)
-                size += os.path.getsize(fp)
+                size += LRUVectorStore.get_file_size_gb(fp)
         return size
 
     def access(self, file_path: str) -> None:
         # move accessed key to end of LRU cache
-        if file_path in self.cache:
-            self.cache.move_to_end(file_path)
+        if file_path in self.files:
+            self.files.move_to_end(file_path)
 
-    def put(self, file_path: str) -> None:
-        # remove file path if max storage size exceeded, else put
-        self.cache[file_path] = None
-        self.cache.move_to_end(file_path)
+    def add(self, file_path: str) -> None:
+        # remove file path if max storage size exceeded, else add
+        curr_file_size = LRUVectorStore.get_file_size_gb(file_path)
+        self.files[file_path] = curr_file_size
+        self.current_size += curr_file_size
+        self.files.move_to_end(file_path)
 
-        while LRUVectorStore.get_storage(self.vector_file_dir) > self.max_size:
-            self.cache.popitem(last=False)
-            shutil.rmtree(file_path)
+        # evict files while max_size exceeded
+        while self.current_size > self.max_bytes:
+            evicted_file_path, evicted_file_size = self.files.popitem(last=False)
+            self.current_size -= evicted_file_size
+            shutil.rmtree(evicted_file_path)
 
 
 class VectorSearchUtil:
@@ -146,7 +164,7 @@ class VectorSearchUtil:
         vector_store_path: Optional[str],
         lru_vector_store: Optional[LRUVectorStore],
         search_text: str,
-    ):
+    ) -> str:
         from langchain.vectorstores import FAISS
         from langchain.embeddings import HuggingFaceBgeEmbeddings
 
@@ -176,7 +194,7 @@ class VectorSearchUtil:
 
             if vector_store_path:
                 vector_db.save_local(vector_store_path)
-                lru_vector_store.put(vector_store_path)
+                lru_vector_store.add(vector_store_path)
 
         docs = vector_db.similarity_search(search_text)
         return docs[0].page_content
