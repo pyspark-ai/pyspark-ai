@@ -110,11 +110,13 @@ class LRUVectorStore:
         # by default, max_size = 1e6 GB
         self.files: OrderedDict[str, float] = OrderedDict()
         self.vector_file_dir = vector_file_dir
-        # represent in bytes to address floating point errors
+        # represent in bytes to prevent floating point errors
         self.max_bytes = max_size * 1e9
         self.current_size = 0
 
         # initialize the file cache, if vector_file_dir exists
+        # existing files will get evicted in reverse-alphabetical order
+        # TODO: write LRU to disk, to evict existing files in LRU order
         if os.path.exists(self.vector_file_dir):
             for file in os.listdir(self.vector_file_dir):
                 file_full_path = os.path.join(self.vector_file_dir, file)
