@@ -65,10 +65,13 @@ class PythonExecutor(LLMChain):
             exec(compile(code, "plot_df-CodeGen", "exec"))
             return response.content
         except Exception as e:
-            if self.logger is not None:
-                self.logger.log("Getting the following error: \n" + str(e))
             if retries == 0:
-                return response.content
+                # if we have no more retries, raise the exception
+                raise e
+            if self.logger is not None:
+                self.logger.warning("Getting the following error: \n" + str(e))
+                self.logger.log("Retrying with " + str(retries) + " retries left")
+
             messages.append(response)
             # append the exception as a HumanMessage into messages
             messages.append(HumanMessage(content=str(e)))

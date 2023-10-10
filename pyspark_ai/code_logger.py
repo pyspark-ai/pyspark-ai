@@ -54,3 +54,6 @@ class CodeLogger:
                 )
         # Log the message with colored code blocks
         self.logger.info(colored_message)
+
+    def warning(self, message):
+        self.logger.warning(message)
