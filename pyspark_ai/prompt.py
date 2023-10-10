@@ -227,8 +227,6 @@ EXPLAIN_DF_PROMPT = FewShotPromptTemplate(
 )
 
 PLOT_PROMPT_TEMPLATE = """
-For example, you will not use the pandas method "append" because it is deprecated.
-
 Given a pyspark DataFrame `df`, with the output columns:
 {columns}
 
