@@ -71,7 +71,7 @@ class PythonExecutor(LLMChain):
         except Exception as e:
             if self.logger is not None:
                 self.logger.warning("Getting the following error: \n" + str(e))
-            if retries == 0:
+            if retries <= 0:
                 # if we have no more retries, raise the exception
                 self.logger.log(self.failure_message())
                 return ""
