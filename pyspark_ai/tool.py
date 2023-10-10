@@ -106,8 +106,8 @@ class QueryValidationTool(BaseTool):
 class LRUVectorStore:
     """Implements an LRU policy to enforce a max storage space for vector file storage."""
 
-    def __init__(self, vector_file_dir: str, max_size: float = 1e6) -> None:
-        # by default, max_size = 1e6 GB
+    def __init__(self, vector_file_dir: str, max_size: float = 16) -> None:
+        # by default, max_size = 16 GB
         self.files: OrderedDict[str, float] = OrderedDict()
         self.vector_file_dir = vector_file_dir
         # represent in bytes to prevent floating point errors
@@ -120,12 +120,12 @@ class LRUVectorStore:
         if os.path.exists(self.vector_file_dir):
             for file in os.listdir(self.vector_file_dir):
                 file_full_path = os.path.join(self.vector_file_dir, file)
-                file_size = os.path.getsize(file_full_path)
+                file_size = LRUVectorStore.get_file_size_bytes(file_full_path)
                 self.current_size += file_size
                 self.files[file_full_path] = file_size
 
     @staticmethod
-    def get_file_size_gb(file_path: str) -> float:
+    def get_file_size_bytes(file_path: str) -> float:
         return os.path.getsize(file_path)
 
     @staticmethod
@@ -135,7 +135,7 @@ class LRUVectorStore:
         for path, dirs, files in os.walk(vector_file_dir):
             for f in files:
                 fp = os.path.join(path, f)
-                size += LRUVectorStore.get_file_size_gb(fp)
+                size += LRUVectorStore.get_file_size_bytes(fp)
         return size
 
     def access(self, file_path: str) -> None:
@@ -145,7 +145,7 @@ class LRUVectorStore:
 
     def add(self, file_path: str) -> None:
         # remove file path if max storage size exceeded, else add
-        curr_file_size = LRUVectorStore.get_file_size_gb(file_path)
+        curr_file_size = LRUVectorStore.get_file_size_bytes(file_path)
         self.files[file_path] = curr_file_size
         self.current_size += curr_file_size
         self.files.move_to_end(file_path)
@@ -225,17 +225,17 @@ class SimilarValueTool(BaseTool):
         # parse input
         search_text = input_lst[0]
         col = input_lst[1]
-        temp_name = input_lst[2]
+        temp_view_name = input_lst[2]
 
         vector_store_path = (
-            self.vector_store_dir + temp_name + "_" + col
+            self.vector_store_dir + temp_view_name + "_" + col
             if self.vector_store_dir
             else None
         )
 
         if not self.vector_store_dir or not os.path.exists(vector_store_path):
             new_df = self.spark.sql(
-                "select distinct `{}` from {}".format(col, temp_name)
+                "select distinct `{}` from {}".format(col, temp_view_name)
             )
             col_lst = [str(row[col]) for row in new_df.collect()]
         else:

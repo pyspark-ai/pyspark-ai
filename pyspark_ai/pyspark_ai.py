@@ -61,7 +61,7 @@ class SparkAI:
         cache_file_format: str = "json",
         cache_file_location: Optional[str] = None,
         vector_store_dir: Optional[str] = None,
-        vector_store_max_gb: Optional[float] = 1e6,
+        vector_store_max_gb: Optional[float] = 16,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         sample_rows_in_table_info: int = 3,

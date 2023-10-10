@@ -1,7 +1,7 @@
 import os
 import shutil
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from langchain.base_language import BaseLanguageModel
 from pyspark.sql import SparkSession
 
@@ -168,9 +168,64 @@ class TestSimilarValueTool(unittest.TestCase):
             finally:
                 self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
+    @patch("pyspark_ai.tool.LRUVectorStore.get_file_size_bytes")
+    def test_vector_file_lru_store_eviction(self, mock_get_file_size_bytes):
+        """Tests LRUVectorStore LRU file eviction, using mocked get_file_size_bytes"""
+
+        # mock the return value of LRUVectorStore.get_file_size_bytes, to always be 1 GB
+        mock_get_file_size_bytes.return_value = 1e9
+
+        spark_ai = SparkAI(
+            llm=self.llm_mock,
+            spark_session=self.spark,
+            vector_store_dir=self.vector_store_dir,
+            vector_store_max_gb=2,
+        )
+        agent = spark_ai._create_sql_agent()
+        similar_value_tool = agent.lookup_tool("similar_value")
+
+        table_file = "tests/data/test_transform_ai_tools.tables.jsonl"
+        source_file = "tests/data/test_similar_value_tool_e2e.jsonl"
+
+        stored_vector_files = []
+
+        # prepare tables
+        statements = create_temp_view_statements(table_file)
+        for stmt in statements:
+            self.spark.sql(stmt)
+
+        (
+            tables,
+            tool_inputs,
+            expected_results,
+        ) = TestSimilarValueTool.get_expected_results(source_file)
+
+        for table, tool_input, expected_result in zip(
+            tables, tool_inputs, expected_results
+        ):
+            table_name = get_table_name(table)
+            try:
+                df = self.spark.table(f"`{table_name}`")
+                df.createOrReplaceTempView(f"`{table_name}`")
+                similar_value_tool.run(f"{tool_input}{table_name}")
+
+                # test that stored vector files never exceed max size, 2GB
+                self.assertTrue(len(os.listdir(self.vector_store_dir)) <= 2)
+
+                # add only new file to stored_vector_files
+                for file in os.listdir(self.vector_store_dir):
+                    if file not in stored_vector_files:
+                        stored_vector_files.append(file)
+            finally:
+                self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+        # check that only first file added was the one evicted
+        self.assertTrue(len(os.listdir(self.vector_store_dir)) <= 2)
+        self.assertTrue(os.listdir(self.vector_store_dir) == stored_vector_files[1:])
+
     def test_vector_file_lru_store_large_max_files(self):
         """Tests LRUVectorStore stores all vector files to disk with large max size, for 3 small dfs"""
-        vector_store_max_gb = 5e6
+        vector_store_max_gb = 100
 
         spark_ai = SparkAI(
             llm=self.llm_mock,
