@@ -234,8 +234,6 @@ For example, you will not use the pandas method "append" because it is deprecate
 Given a pyspark DataFrame `df`, with the output columns:
 {columns}
 
-And an explanation of `df`: {explain}
-
 Write Python code to visualize the result of `df` using plotly. Do any aggregation against `df` 
 first, before converting the `df` to a pandas DataFrame. Make sure to use the exact column names 
 of `df`.
@@ -251,7 +249,7 @@ Ensure that your code is correct.
 """
 
 PLOT_PROMPT = PromptTemplate(
-    input_variables=["columns", "explain", "instruction"], template=PLOT_PROMPT_TEMPLATE
+    input_variables=["columns", "instruction"], template=PLOT_PROMPT_TEMPLATE
 )
 
 VERIFY_TEMPLATE = """

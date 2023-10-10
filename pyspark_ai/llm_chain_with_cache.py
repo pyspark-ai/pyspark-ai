@@ -12,14 +12,6 @@ SKIP_CACHE_TAGS = ["SKIP_CACHE"]
 class LLMChainWithCache(LLMChain):
     cache: Cache
 
-    @staticmethod
-    def _sort_and_stringify(*args: Any) -> str:
-        # Convert all arguments to strings, then sort them
-        sorted_args = sorted(str(arg) for arg in args)
-        # Join all the sorted, stringified arguments with a space
-        result = " ".join(sorted_args)
-        return result
-
     def run(
         self,
         *args: Any,

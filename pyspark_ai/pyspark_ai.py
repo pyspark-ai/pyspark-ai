@@ -28,6 +28,7 @@ from pyspark_ai.prompt import (
     UDF_PROMPT,
     VERIFY_PROMPT,
 )
+from pyspark_ai.python_executor import PythonExecutor
 from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.temp_view_utils import (
@@ -111,13 +112,14 @@ class SparkAI:
         self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
         self._sql_agent = self._create_sql_agent()
-        self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
         self._sample_rows_in_table_info = sample_rows_in_table_info
         self._verbose = verbose
         if verbose:
             self._logger = CodeLogger("spark_ai")
+        else:
+            self._logger = None
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:
@@ -496,19 +498,18 @@ class SparkAI:
     ) -> None:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
-        response = self._plot_chain.run(
+        plot_chain = PythonExecutor(
+            df=df,
+            prompt=PLOT_PROMPT,
+            cache=self._cache,
+            llm=self._llm,
+            logger=self._logger,
+        )
+        plot_chain.run(
             tags=tags,
             columns=self._get_df_schema(df),
-            explain=self._get_df_explain(df, cache),
             instruction=instruction,
         )
-        self.log(response)
-        codeblocks = AIUtils.extract_code_blocks(response)
-        code = "\n".join(codeblocks)
-        try:
-            exec(compile(code, "plot_df-CodeGen", "exec"))
-        except Exception as e:
-            raise Exception("Could not evaluate Python code", e)
 
     def verify_df(self, df: DataFrame, desc: str, cache: bool = True) -> bool:
         """
