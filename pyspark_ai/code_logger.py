@@ -7,7 +7,7 @@ from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer, SqlLexer
 
 GREEN = "\033[92m"  # terminal code for green
-YELLOW = "\033[93m"   # terminal code for yellow
+YELLOW = "\033[93m"  # terminal code for yellow
 RESET = "\033[0m"  # reset terminal color
 
 
