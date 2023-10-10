@@ -496,7 +496,16 @@ class SparkAI:
 
     def plot_df(
         self, df: DataFrame, desc: Optional[str] = None, cache: bool = True
-    ) -> None:
+    ) -> str:
+        """
+        Generates plotting code for the provided PySpark dataframe and optional description.
+
+        :param df: The PySpark dataframe to generate plotting code for.
+        :param desc: An optional description. If provided, the generated code will be more specific to the provided description. Default is None.
+        :param cache: Whether to cache the dataframe or not. Default is True.
+
+        :return: Returns the generated code as a string. If the generated code is not valid Python code, an empty string is returned.
+        """
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
         plot_chain = PythonExecutor(
@@ -506,7 +515,7 @@ class SparkAI:
             llm=self._llm,
             logger=self._logger,
         )
-        plot_chain.run(
+        return plot_chain.run(
             tags=tags,
             columns=self._get_df_schema(df),
             instruction=instruction,

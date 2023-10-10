@@ -50,6 +50,10 @@ class PythonExecutor(LLMChain):
             self.cache.update(prompt_str, response)
         return response
 
+    @staticmethod
+    def failure_message() -> str:
+        return "No more retries left, please modify the instruction or modify the generated code"
+
     def _generate_python_with_retries(
         self,
         df: DataFrame,
@@ -63,15 +67,13 @@ class PythonExecutor(LLMChain):
         code = "\n".join(AIUtils.extract_code_blocks(response.content))
         try:
             exec(compile(code, "plot_df-CodeGen", "exec"))
-            return response.content
+            return code
         except Exception as e:
             if self.logger is not None:
                 self.logger.warning("Getting the following error: \n" + str(e))
             if retries == 0:
                 # if we have no more retries, raise the exception
-                self.logger.log(
-                    "No more retries left, please modify the instruction or modify the generated code"
-                )
+                self.logger.log(self.failure_message())
                 return ""
             if self.logger is not None:
                 self.logger.log("Retrying with " + str(retries) + " retries left")
