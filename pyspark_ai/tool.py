@@ -125,7 +125,10 @@ class LRUVectorStore:
                     self.files[file_path] = file_size
                     self.current_size += file_size
                 else:
-                    shutil.rmtree(file_path)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
 
     @staticmethod
     def get_file_size_bytes(file_path: str) -> float:
