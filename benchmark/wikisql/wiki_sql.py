@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
     source_file = args.source_file
     tables, questions, results, sqls = get_tables_and_questions(source_file)
-    spark_ai = SparkAI(spark_session=spark, vector_store_dir="data", verbose=False)
+    spark_ai = SparkAI(spark_session=spark, vector_store_dir="data/", verbose=False)
     matched = 0
     not_matched = 0
     errors = 0

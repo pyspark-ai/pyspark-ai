@@ -39,6 +39,7 @@ from pyspark_ai.tool import (
     QuerySparkSQLTool,
     QueryValidationTool,
     SimilarValueTool,
+    LRUVectorStore,
 )
 from pyspark_ai.spark_utils import SparkUtils
 
@@ -60,6 +61,7 @@ class SparkAI:
         cache_file_format: str = "json",
         cache_file_location: Optional[str] = None,
         vector_store_dir: Optional[str] = None,
+        vector_store_max_gb: Optional[float] = 16,
         encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         sample_rows_in_table_info: int = 3,
@@ -73,6 +75,11 @@ class SparkAI:
         :param web_search_tool: optional function to perform web search,
                                 Google search will be used if not provided
         :param spark_session: optional SparkSession, a new one will be created if not provided
+        :param enable_cache: optional boolean, whether to enable caching of results
+        :param cache_file_format: optional str, format for cache file if enabled
+        :param vector_store_dir: optional str, directory path for vector similarity search files,
+                                if storing to disk is desired
+        :param vector_store_max_gb: optional float, max size of vector store dir in GB
         :param encoding: optional Encoding, cl100k_base will be used if not provided
         :param max_tokens_of_web_content: maximum tokens of web content after encoding
         :param sample_rows_in_table_info: number of rows to be sampled and shown in the table info.
@@ -105,6 +112,7 @@ class SparkAI:
         else:
             self._cache = None
         self._vector_store_dir = vector_store_dir
+        self._vector_store_max_gb = vector_store_max_gb
         self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
         self._max_tokens_of_web_content = max_tokens_of_web_content
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
@@ -132,7 +140,11 @@ class SparkAI:
                 QuerySparkSQLTool(spark=self._spark),
                 QueryValidationTool(spark=self._spark),
                 SimilarValueTool(
-                    spark=self._spark, vector_store_dir=self._vector_store_dir
+                    spark=self._spark,
+                    vector_store_dir=self._vector_store_dir,
+                    lru_vector_store=LRUVectorStore(
+                        self._vector_store_dir, self._vector_store_max_gb
+                    ),
                 ),
             ]
             if self._vector_store_dir

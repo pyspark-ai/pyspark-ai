@@ -1,5 +1,7 @@
+import os
+import shutil
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from langchain.base_language import BaseLanguageModel
 from pyspark.sql import SparkSession
 
@@ -9,6 +11,7 @@ from pyspark_ai.tool import (
     QueryValidationTool,
     SimilarValueTool,
     VectorSearchUtil,
+    LRUVectorStore,
 )
 from benchmark.wikisql.wiki_sql import (
     get_table_name,
@@ -23,6 +26,15 @@ class TestToolsInit(unittest.TestCase):
     def setUpClass(cls):
         cls.spark = SparkSession.builder.getOrCreate()
         cls.llm_mock = MagicMock(spec=BaseLanguageModel)
+        cls.vector_store_dir = "tests/data/vector_files/"
+
+    @classmethod
+    def tearDown(cls):
+        """Remove vector files after each test"""
+        try:
+            shutil.rmtree("tests/data/vector_files/")
+        except Exception:
+            pass
 
     def test_exclude_similar_value_tool(self):
         """Test that SimilarValueTool is excluded by default"""
@@ -38,23 +50,17 @@ class TestToolsInit(unittest.TestCase):
 
     def test_include_similar_value_tool(self):
         """Test that SimilarValueTool is included when vector_store_dir is specified"""
-        vector_store_dir = "data/"
         spark_ai = SparkAI(
             llm=self.llm_mock,
             spark_session=self.spark,
-            vector_store_dir=vector_store_dir,
+            vector_store_dir=self.vector_store_dir,
         )
         agent = spark_ai._create_sql_agent()
-        self.assertEqual(
-            agent.tools,
-            [
-                QuerySparkSQLTool(spark=spark_ai._spark),
-                QueryValidationTool(spark=spark_ai._spark),
-                SimilarValueTool(
-                    spark=spark_ai._spark, vector_store_dir=vector_store_dir
-                ),
-            ],
-        )
+        tools = agent.tools
+
+        self.assertTrue(isinstance(tools[0], QuerySparkSQLTool))
+        self.assertTrue(isinstance(tools[1], QueryValidationTool))
+        self.assertTrue(isinstance(tools[2], SimilarValueTool))
 
 
 class TestSimilarValueTool(unittest.TestCase):
@@ -64,6 +70,15 @@ class TestSimilarValueTool(unittest.TestCase):
     def setUpClass(cls):
         cls.spark = SparkSession.builder.getOrCreate()
         cls.llm_mock = MagicMock(spec=BaseLanguageModel)
+        cls.vector_store_dir = "tests/data/vector_files/"
+
+    @classmethod
+    def tearDown(cls):
+        """Remove vector files after each test"""
+        try:
+            shutil.rmtree("tests/data/vector_files/")
+        except Exception:
+            pass
 
     def test_similar_dates(self):
         """Test retrieval of similar date by similarity_vector_search"""
@@ -91,7 +106,10 @@ class TestSimilarValueTool(unittest.TestCase):
 
         for search_date in search_dates:
             similar_value = VectorSearchUtil.vector_similarity_search(
-                dates, None, search_date
+                col_lst=dates,
+                vector_store_path=None,
+                lru_vector_store=None,
+                search_text=search_date,
             )
             self.assertEqual(similar_value, "2023-03-25")
 
@@ -118,7 +136,7 @@ class TestSimilarValueTool(unittest.TestCase):
         spark_ai = SparkAI(
             llm=self.llm_mock,
             spark_session=self.spark,
-            vector_store_dir="tests/data/",
+            vector_store_dir=self.vector_store_dir,
         )
         agent = spark_ai._create_sql_agent()
         similar_value_tool = agent.lookup_tool("similar_value")
@@ -147,6 +165,201 @@ class TestSimilarValueTool(unittest.TestCase):
                 observation = similar_value_tool.run(f"{tool_input}{table_name}")
 
                 self.assertEqual(observation, expected_result)
+            finally:
+                self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    @patch("pyspark_ai.tool.LRUVectorStore.get_file_size_bytes", return_value=1e9)
+    def test_vector_file_lru_store_eviction(self, mock_get_file_size_bytes):
+        """Tests LRUVectorStore LRU file eviction, using mocked get_file_size_bytes"""
+
+        # mock the return value of LRUVectorStore.get_file_size_bytes, to always be 1 GB
+        mock_get_file_size_bytes.return_value = 1e9
+
+        spark_ai = SparkAI(
+            llm=self.llm_mock,
+            spark_session=self.spark,
+            vector_store_dir=self.vector_store_dir,
+            vector_store_max_gb=2,
+        )
+        agent = spark_ai._create_sql_agent()
+        similar_value_tool = agent.lookup_tool("similar_value")
+
+        table_file = "tests/data/test_transform_ai_tools.tables.jsonl"
+        source_file = "tests/data/test_similar_value_tool_e2e.jsonl"
+
+        stored_vector_files = []
+
+        # prepare tables
+        statements = create_temp_view_statements(table_file)
+        for stmt in statements:
+            self.spark.sql(stmt)
+
+        (
+            tables,
+            tool_inputs,
+            expected_results,
+        ) = TestSimilarValueTool.get_expected_results(source_file)
+
+        for table, tool_input, expected_result in zip(
+            tables, tool_inputs, expected_results
+        ):
+            table_name = get_table_name(table)
+            try:
+                df = self.spark.table(f"`{table_name}`")
+                df.createOrReplaceTempView(f"`{table_name}`")
+                similar_value_tool.run(f"{tool_input}{table_name}")
+
+                # test that stored vector files never exceed max size, 2GB
+                self.assertTrue(len(os.listdir(self.vector_store_dir)) <= 2)
+
+                # add only new file to stored_vector_files
+                for file in os.listdir(self.vector_store_dir):
+                    if file not in stored_vector_files:
+                        stored_vector_files.append(file)
+            finally:
+                self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+        # check that only first file added was the one evicted
+        self.assertTrue(len(os.listdir(self.vector_store_dir)) <= 2)
+        self.assertTrue(
+            sorted(os.listdir(self.vector_store_dir)) == sorted(stored_vector_files[1:])
+        )
+
+    def test_vector_file_lru_store_large_max_files(self):
+        """Tests LRUVectorStore stores all vector files to disk with large max size, for 3 small dfs"""
+        vector_store_max_gb = 100
+
+        spark_ai = SparkAI(
+            llm=self.llm_mock,
+            spark_session=self.spark,
+            vector_store_dir=self.vector_store_dir,
+            vector_store_max_gb=vector_store_max_gb,
+        )
+        agent = spark_ai._create_sql_agent()
+        similar_value_tool = agent.lookup_tool("similar_value")
+
+        table_file = "tests/data/test_transform_ai_tools.tables.jsonl"
+        source_file = "tests/data/test_similar_value_tool_e2e.jsonl"
+
+        # prepare tables
+        statements = create_temp_view_statements(table_file)
+        for stmt in statements:
+            self.spark.sql(stmt)
+
+        (
+            tables,
+            tool_inputs,
+            expected_results,
+        ) = TestSimilarValueTool.get_expected_results(source_file)
+
+        for table, tool_input, expected_result in zip(
+            tables, tool_inputs, expected_results
+        ):
+            table_name = get_table_name(table)
+            try:
+                df = self.spark.table(f"`{table_name}`")
+                df.createOrReplaceTempView(f"`{table_name}`")
+                similar_value_tool.run(f"{tool_input}{table_name}")
+            finally:
+                self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+        # test that all 3 vector files stored on disk
+        self.assertTrue(len(os.listdir(self.vector_store_dir)) == 3)
+
+    def test_vector_file_lru_store_zero_max_files(self):
+        """Tests LRUVectorStore always evicts files when max dir size is 0"""
+        vector_store_max_gb = 0
+
+        spark_ai = SparkAI(
+            llm=self.llm_mock,
+            spark_session=self.spark,
+            vector_store_dir=self.vector_store_dir,
+            vector_store_max_gb=vector_store_max_gb,
+        )
+        agent = spark_ai._create_sql_agent()
+        similar_value_tool = agent.lookup_tool("similar_value")
+
+        table_file = "tests/data/test_transform_ai_tools.tables.jsonl"
+        source_file = "tests/data/test_similar_value_tool_e2e.jsonl"
+
+        # prepare tables
+        statements = create_temp_view_statements(table_file)
+        for stmt in statements:
+            self.spark.sql(stmt)
+
+        (
+            tables,
+            tool_inputs,
+            expected_results,
+        ) = TestSimilarValueTool.get_expected_results(source_file)
+
+        for table, tool_input, expected_result in zip(
+            tables, tool_inputs, expected_results
+        ):
+            table_name = get_table_name(table)
+            try:
+                df = self.spark.table(f"`{table_name}`")
+                df.createOrReplaceTempView(f"`{table_name}`")
+                similar_value_tool.run(f"{tool_input}{table_name}")
+
+                # test that number of vector files stored on disk never exceeds vector_store_max_gb, 0
+                self.assertTrue(len(os.listdir(self.vector_store_dir)) == 0)
+                self.assertTrue(LRUVectorStore.get_storage(self.vector_store_dir) == 0)
+            finally:
+                self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    def test_vector_file_lru_store_prepopulated_files(self):
+        """Tests LRUVectorStore counts files already present in vector store dir in eviction policy"""
+        # add two dirs to vector_store_dir
+        if not os.path.exists(self.vector_store_dir):
+            os.makedirs(self.vector_store_dir)
+
+        path1 = os.path.join(self.vector_store_dir, "dir1")
+        path2 = os.path.join(self.vector_store_dir, "dir2")
+
+        os.makedirs(path1)
+        os.makedirs(path2)
+
+        # check that vector_store_dir contains the 2 files
+        self.assertTrue(len(os.listdir(self.vector_store_dir)) == 2)
+
+        vector_store_max_gb = 0
+
+        spark_ai = SparkAI(
+            llm=self.llm_mock,
+            spark_session=self.spark,
+            vector_store_dir=self.vector_store_dir,
+            vector_store_max_gb=vector_store_max_gb,
+        )
+        agent = spark_ai._create_sql_agent()
+        similar_value_tool = agent.lookup_tool("similar_value")
+
+        table_file = "tests/data/test_transform_ai_tools.tables.jsonl"
+        source_file = "tests/data/test_similar_value_tool_e2e.jsonl"
+
+        # prepare tables
+        statements = create_temp_view_statements(table_file)
+        for stmt in statements:
+            self.spark.sql(stmt)
+
+        (
+            tables,
+            tool_inputs,
+            expected_results,
+        ) = TestSimilarValueTool.get_expected_results(source_file)
+
+        for table, tool_input, expected_result in zip(
+            tables, tool_inputs, expected_results
+        ):
+            table_name = get_table_name(table)
+            try:
+                df = self.spark.table(f"`{table_name}`")
+                df.createOrReplaceTempView(f"`{table_name}`")
+                similar_value_tool.run(f"{tool_input}{table_name}")
+
+                # test that previously present files get evicted
+                self.assertTrue(len(os.listdir(self.vector_store_dir)) == 0)
+                self.assertTrue(LRUVectorStore.get_storage(self.vector_store_dir) == 0)
             finally:
                 self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
