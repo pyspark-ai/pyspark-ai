@@ -221,9 +221,9 @@ class TestSimilarValueTool(unittest.TestCase):
 
         # check that only first file added was the one evicted
         self.assertTrue(len(os.listdir(self.vector_store_dir)) <= 2)
-        spark_ai._logger.log(str(os.listdir(self.vector_store_dir)))
-        spark_ai._logger.log(str(stored_vector_files[1:]))
-        self.assertTrue(os.listdir(self.vector_store_dir) == stored_vector_files[1:])
+        self.assertTrue(
+            sorted(os.listdir(self.vector_store_dir)) == sorted(stored_vector_files[1:])
+        )
 
     def test_vector_file_lru_store_large_max_files(self):
         """Tests LRUVectorStore stores all vector files to disk with large max size, for 3 small dfs"""
