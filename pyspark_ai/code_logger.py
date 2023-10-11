@@ -7,13 +7,18 @@ from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer, SqlLexer
 
 GREEN = "\033[92m"  # terminal code for green
+YELLOW = "\033[93m"  # terminal code for yellow
 RESET = "\033[0m"  # reset terminal color
 
 
 # Custom Formatter
 class CustomFormatter(logging.Formatter):
     def format(self, record):
-        return GREEN + "INFO: " + RESET + super().format(record)
+        if record.levelname == "INFO":
+            return GREEN + "INFO: " + RESET + super().format(record)
+        elif record.levelname == "WARNING":
+            return YELLOW + "WARN: " + RESET + super().format(record)
+        return super().format(record)
 
 
 class CodeLogger:
@@ -37,7 +42,7 @@ class CodeLogger:
             raise ValueError(f"Unsupported language: {language}")
         return highlight(code, lexer, TerminalFormatter())
 
-    def log(self, message):
+    def info(self, message):
         # Define pattern to match code blocks with optional language specifiers
         pattern = r"```(python|sql)?(.*?)```"
         # Split message into parts. Every 3rd part will be a code block.
@@ -54,3 +59,6 @@ class CodeLogger:
                 )
         # Log the message with colored code blocks
         self.logger.info(colored_message)
+
+    def warning(self, message):
+        self.logger.warning(message)

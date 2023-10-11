@@ -212,3 +212,10 @@ class EndToEndTestCase(unittest.TestCase):
 
         assert abs(spark_results["mean"] - numpy_mean) / numpy_mean <= 0.05
         assert abs(spark_results["stddev"] - numpy_stddev) / numpy_stddev <= 0.05
+
+    def test_plot(self):
+        flight_df = self.spark_ai._spark.read.option("header", "true").csv("data/2011_february_aa_flight_paths.csv")
+        # The following plotting will probably fail on the first run with error:
+        #     'DataFrame' object has no attribute 'date'
+        code = flight_df.ai.plot("Boxplot summarizing the range of starting latitudes for all AA flights in February 2011.")
+        assert(code != "")

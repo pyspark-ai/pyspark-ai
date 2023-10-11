@@ -5,7 +5,6 @@ import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
-import pandas as pd  # noqa: F401
 import requests
 import tiktoken
 from bs4 import BeautifulSoup
@@ -28,6 +27,7 @@ from pyspark_ai.prompt import (
     UDF_PROMPT,
     VERIFY_PROMPT,
 )
+from pyspark_ai.python_executor import PythonExecutor
 from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.temp_view_utils import (
@@ -119,13 +119,14 @@ class SparkAI:
         self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
         self._sql_agent = self._create_sql_agent()
-        self._plot_chain = self._create_llm_chain(prompt=PLOT_PROMPT)
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
         self._sample_rows_in_table_info = sample_rows_in_table_info
         self._verbose = verbose
         if verbose:
             self._logger = CodeLogger("spark_ai")
+        else:
+            self._logger = None
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:
@@ -206,7 +207,7 @@ class SparkAI:
 
     def log(self, message: str) -> None:
         if self._verbose:
-            self._logger.log(message)
+            self._logger.info(message)
 
     def _trim_text_from_end(self, text: str, max_tokens: int) -> str:
         """
@@ -265,7 +266,8 @@ class SparkAI:
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
 
-    def _get_df_schema(self, df: DataFrame) -> list:
+    @staticmethod
+    def _get_df_schema(df: DataFrame) -> list:
         schema_lst = [f"{name}: {dtype}" for name, dtype in df.dtypes]
         return schema_lst
 
@@ -505,22 +507,33 @@ class SparkAI:
 
     def plot_df(
         self, df: DataFrame, desc: Optional[str] = None, cache: bool = True
-    ) -> None:
+    ) -> str:
+        """
+        Plot a Spark DataFrame, the specifics of which are determined by the `desc` parameter.
+        If `desc` is not provided, the method will try to plot the DataFrame based on its schema.
+
+        :param df: The PySpark dataframe to generate plotting code for.
+        :param desc: An optional natural language string that outlines the specific transformation to be applied on the
+                     DataFrame.
+        :param cache: Whether to cache the dataframe or not. Default is True.
+
+        :return: Returns the generated code as a string. If the generated code is not valid Python code, an empty string
+                 is returned.
+        """
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
-        response = self._plot_chain.run(
+        plot_chain = PythonExecutor(
+            df=df,
+            prompt=PLOT_PROMPT,
+            cache=self._cache,
+            llm=self._llm,
+            logger=self._logger,
+        )
+        return plot_chain.run(
             tags=tags,
             columns=self._get_df_schema(df),
-            explain=self._get_df_explain(df, cache),
             instruction=instruction,
         )
-        self.log(response)
-        codeblocks = AIUtils.extract_code_blocks(response)
-        code = "\n".join(codeblocks)
-        try:
-            exec(compile(code, "plot_df-CodeGen", "exec"))
-        except Exception as e:
-            raise Exception("Could not evaluate Python code", e)
 
     def verify_df(self, df: DataFrame, desc: str, cache: bool = True) -> bool:
         """

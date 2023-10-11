@@ -227,31 +227,25 @@ EXPLAIN_DF_PROMPT = FewShotPromptTemplate(
 )
 
 PLOT_PROMPT_TEMPLATE = """
-You are an Apache Spark SQL expert programmer.
-It is forbidden to include old deprecated APIs in your code.
-For example, you will not use the pandas method "append" because it is deprecated.
-
 Given a pyspark DataFrame `df`, with the output columns:
 {columns}
 
-And an explanation of `df`: {explain}
+Write Python code to visualize the result of `df` using plotly:
+1. Do any aggregation against `df` first, before converting the `df` to a pandas DataFrame. 
+2. Make sure to use the exact column names of `df`.
+3. Your code may NOT contain "append" anywhere. Instead of append, use pd.concat.
+4. There is no need to install any package with pip. Do include any necessary import statements.
+5. Display the plot directly, instead of saving into an HTML.
+6. Do not use scatter plot to display any kind of percentage data.
+7. You must import and start your Spark session with `spark = SparkSession.builder.getOrCreate()`.
+8. It is forbidden to include old deprecated APIs in your code.
+9. Ensure that your code is correct.
 
-Write Python code to visualize the result of `df` using plotly. Do any aggregation against `df` 
-first, before converting the `df` to a pandas DataFrame. Make sure to use the exact column names 
-of `df`.
-Your code may NOT contain "append" anywhere. Instead of append, use pd.concat.
-There is no need to install any package with pip. Do include any necessary import statements.
-Display the plot directly, instead of saving into an HTML.
-Do not use scatter plot to display any kind of percentage data.
-You must import and start your Spark session if you use a Spark DataFrame.
-Remember to ensure that your code does NOT include "append" anywhere, under any circumstance (use pd.concat instead).
-
-Ensure that your code is correct.
 {instruction}
 """
 
 PLOT_PROMPT = PromptTemplate(
-    input_variables=["columns", "explain", "instruction"], template=PLOT_PROMPT_TEMPLATE
+    input_variables=["columns", "instruction"], template=PLOT_PROMPT_TEMPLATE
 )
 
 VERIFY_TEMPLATE = """
