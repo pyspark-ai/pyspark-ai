@@ -221,6 +221,8 @@ class TestSimilarValueTool(unittest.TestCase):
 
         # check that only first file added was the one evicted
         self.assertTrue(len(os.listdir(self.vector_store_dir)) <= 2)
+        print(os.listdir(self.vector_store_dir))
+        print(stored_vector_files[1:])
         self.assertTrue(os.listdir(self.vector_store_dir) == stored_vector_files[1:])
 
     def test_vector_file_lru_store_large_max_files(self):
