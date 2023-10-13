@@ -2825,4 +2825,4 @@ vector-search = []
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "ea8464ead52f93d0c49411200594d43546aa0ebfaa3281dca10d83795a4236ff"
+content-hash = "4f1aa18cb96dfae3d1596914fb701a43211e787b2b8f2afb7e7fe3b27cb43eb9"
