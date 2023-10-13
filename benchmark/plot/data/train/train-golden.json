@@ -6732,6 +6732,147 @@
     }
   },
   {
+    "uuid": "c298ebba2c257a692bbd672b638fc2a2",
+    "plot_json": {
+      "data": {
+        "x": [
+          1997,
+          1998,
+          1996,
+          1999,
+          2000,
+          2002,
+          2001,
+          2004,
+          2003,
+          2006,
+          2005
+        ],
+        "y": [
+          48,
+          56,
+          46,
+          73,
+          94,
+          98,
+          91,
+          120,
+          91,
+          37,
+          109
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "b8d94f407b88c0613290a6085e14444b",
+    "plot_json": {
+      "data": {
+        "x": [
+          "TX",
+          "FL",
+          "CA",
+          "IL",
+          "OH"
+        ],
+        "y": [
+          315,
+          175,
+          159,
+          130,
+          124
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "7f2200854b910cb7495fa929dd21c1bc",
+    "plot_json": {
+      "data": {
+        "type": "pie",
+        "domain": {
+          "x": [
+            0.0,
+            1.0
+          ],
+          "y": [
+            0.0,
+            1.0
+          ]
+        },
+        "labels": [
+          "Wal-Mart",
+          "Supercenter"
+        ],
+        "values": [
+          139,
+          407
+        ]
+      }
+    }
+  },
+  {
+    "uuid": "c869d7a7da2dbb8768abb23880f58242",
+    "plot_json": {
+      "data": {
+        "type": "pie",
+        "domain": {
+          "x": [
+            0.0,
+            1.0
+          ],
+          "y": [
+            0.0,
+            1.0
+          ]
+        },
+        "labels": [
+          "Wal-Mart",
+          "Supercenter"
+        ],
+        "values": [
+          0.3788265306122449,
+          0.6211734693877551
+        ]
+      }
+    }
+  },
+  {
+    "uuid": "92ff1ea853e6927e3bd4076bb39ad8d7",
+    "plot_json": {
+      "data": {
+        "x": [
+          2002,
+          2001,
+          2004,
+          2003,
+          2006,
+          2005
+        ],
+        "y": [
+          98,
+          91,
+          120,
+          91,
+          37,
+          109
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "histogram",
+        "orientation": "v"
+      }
+    }
+  },
+  {
     "uuid": "f0e434506c53e72525415ff4fed322b5",
     "plot_json": {
       "data": {
@@ -8473,6 +8614,88 @@
     }
   },
   {
+    "uuid": "14f29b8efe02540e2456c1f12610fd36",
+    "plot_json": {
+      "data": {
+        "x": [
+          "DFW",
+          "ORD",
+          "MIA",
+          "LAX",
+          "BOS"
+        ],
+        "y": [
+          13729,
+          3587,
+          3468,
+          1820,
+          1344
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "c7e2a693998e0e836e5fb4c21a82aa5d",
+    "plot_json": {
+      "data": {
+        "x": [
+          "DFW",
+          "ORD",
+          "MIA",
+          "LAX",
+          "SJU"
+        ],
+        "y": [
+          35,
+          19,
+          17,
+          10,
+          7
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "927cd9952fda5b05d637ae2bb38dbadb",
+    "plot_json": {
+      "data": {
+        "type": "pie",
+        "domain": {
+          "x": [
+            0.0,
+            1.0
+          ],
+          "y": [
+            0.0,
+            1.0
+          ]
+        },
+        "labels": [
+          "DFW",
+          "ORD",
+          "MIA",
+          "LAX",
+          "SJU"
+        ],
+        "values": [
+          35,
+          19,
+          17,
+          10,
+          7
+        ]
+      }
+    }
+  },
+  {
     "uuid": "976acb0eb0ce1cb1ae3e858d0abec73e",
     "plot_json": {
       "data": {
@@ -10075,6 +10298,326 @@
         "yaxis": "y",
         "ybingroup": "y",
         "type": "histogram2d"
+      }
+    }
+  },
+  {
+    "uuid": "f8c1a8d7f6024475ce53701bf58c1697",
+    "plot_json": {
+      "data": {
+        "x": [
+          "California",
+          "Wisconsin",
+          "New York",
+          "Idaho",
+          "Pennsylvania"
+        ],
+        "y": [
+          929.95,
+          633.6,
+          331.8,
+          294.6,
+          280.87
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "8dd01a484552964a4b01310a26b2bc11",
+    "plot_json": {
+      "data": {
+        "type": "pie",
+        "domain": {
+          "x": [
+            0.0,
+            1.0
+          ],
+          "y": [
+            0.0,
+            1.0
+          ]
+        },
+        "labels": [
+          "total_beef",
+          "total_pork",
+          "total_poultry"
+        ],
+        "values": [
+          17.7,
+          22.2,
+          5.8
+        ]
+      }
+    }
+  },
+  {
+    "uuid": "e3056411d3a6749bc03dd8765b039f2c",
+    "plot_json": {
+      "data": {
+        "type": "pie",
+        "domain": {
+          "x": [
+            0.0,
+            1.0
+          ],
+          "y": [
+            0.0,
+            1.0
+          ]
+        },
+        "labels": [
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "fresh",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed",
+          "processed"
+        ],
+        "values": [
+          null,
+          0.3187250996015936,
+          0.32006633499170817,
+          0.31884057971014496,
+          0.3195595439769241,
+          0.3184357541899442,
+          0.32061068702290074,
+          0.3333333333333333,
+          0.31955079122001023,
+          0.3189189189189189,
+          0.31948608137044965,
+          0.3194444444444444,
+          0.32,
+          0.3125,
+          0.31782945736434104,
+          0.3225806451612903,
+          0.31818181818181823,
+          0.3202247191011236,
+          0.31782945736434104,
+          0.3193069306930693,
+          0.31923076923076926,
+          0.3164556962025316,
+          0.3194875776397515,
+          0.31764705882352945,
+          0.3181818181818181,
+          0.31818181818181823,
+          0.3333333333333333,
+          0.3333333333333333,
+          0.319634703196347,
+          0.325,
+          0.3199214916584887,
+          0.3194630872483222,
+          0.31950617283950616,
+          0.31985294117647056,
+          0.3333333333333333,
+          0.3225806451612903,
+          0.3195810853697239,
+          0.3195530726256983,
+          0.32142857142857145,
+          0.3225806451612903,
+          0.31962616822429907,
+          0.37499999999999994,
+          0.31707317073170727,
+          0.3193193193193193,
+          0.325,
+          0.31956746807776376,
+          0.3189655172413793,
+          0.3205479452054794,
+          0.5,
+          0.319880418535127,
+          null,
+          0.6812749003984064,
+          0.6799336650082919,
+          0.6811594202898551,
+          0.6804404560230758,
+          0.6815642458100559,
+          0.6793893129770991,
+          0.6666666666666666,
+          0.6804492087799898,
+          0.681081081081081,
+          0.6805139186295504,
+          0.6805555555555555,
+          0.68,
+          0.6875,
+          0.6821705426356589,
+          0.6774193548387097,
+          0.6818181818181819,
+          0.6797752808988764,
+          0.6821705426356589,
+          0.6806930693069307,
+          0.6807692307692308,
+          0.6835443037974683,
+          0.6805124223602484,
+          0.6823529411764706,
+          0.6818181818181818,
+          0.6818181818181819,
+          0.6666666666666666,
+          0.6666666666666666,
+          0.680365296803653,
+          0.675,
+          0.6800785083415112,
+          0.6805369127516779,
+          0.6804938271604939,
+          0.6801470588235294,
+          0.6666666666666666,
+          0.6774193548387096,
+          0.680418914630276,
+          0.6804469273743017,
+          0.6785714285714286,
+          0.6774193548387097,
+          0.6803738317757009,
+          0.625,
+          0.6829268292682926,
+          0.6806806806806807,
+          0.675,
+          0.6804325319222363,
+          0.6810344827586207,
+          0.6794520547945205,
+          0.5,
+          0.6801195814648728
+        ]
+      }
+    }
+  },
+  {
+    "uuid": "66999ed46bceb52cbec0ba9239c02079",
+    "plot_json": {
+      "data": {
+        "x": [
+          225.4
+        ],
+        "y": [
+          228.7
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "0abd204295610f9053cc66b84fba4b0b",
+    "plot_json": {
+      "data": {
+        "type": "pie",
+        "domain": {
+          "x": [
+            0.0,
+            1.0
+          ],
+          "y": [
+            0.0,
+            1.0
+          ]
+        },
+        "labels": [
+          "sum(poultry)",
+          "sum(beef)",
+          "sum(pork)"
+        ],
+        "values": [
+          339.2,
+          961.0,
+          42.7
+        ]
       }
     }
   },
@@ -31405,6 +31948,196 @@
     }
   },
   {
+    "uuid": "4133ed43c50977ac645bcaa9465ae55a",
+    "plot_json": {
+      "data": {
+        "x": [
+          1984,
+          1985,
+          1986,
+          1987,
+          1988,
+          1989,
+          1990,
+          1991,
+          1992,
+          1993,
+          1994,
+          1995,
+          1996,
+          1997,
+          1998,
+          1999,
+          2000,
+          2001,
+          2002,
+          2003,
+          2004,
+          2005,
+          2006,
+          2007,
+          2008,
+          2009,
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "y": [
+          82,
+          161,
+          162,
+          172,
+          180,
+          177,
+          144,
+          131,
+          152,
+          140,
+          160,
+          163,
+          126,
+          168,
+          146,
+          140,
+          162,
+          226,
+          143,
+          153,
+          153,
+          160,
+          152,
+          189,
+          158,
+          138,
+          165,
+          175,
+          141,
+          123,
+          148,
+          140,
+          69
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "157d5103815583a0021a9ea19090872e",
+    "plot_json": {
+      "data": {
+        "x": [
+          "Port Authority of New York and New Jersey Police Department",
+          "New York City Police Department",
+          "New York State Office of Tax Enforcement - Revenue Crimes Bureau",
+          "New York State Office of Court Administration",
+          "Chicago Police Department"
+        ],
+        "y": [
+          38,
+          23,
+          4,
+          3,
+          3
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "134e44c38a311e39866cde77c0387d23",
+    "plot_json": {
+      "data": {
+        "type": "pie",
+        "domain": {
+          "x": [
+            0.0,
+            1.0
+          ],
+          "y": [
+            0.0,
+            1.0
+          ]
+        },
+        "labels": [
+          "Cause of Death: Gunfire",
+          "Cause of Death: Automobile accident",
+          "Cause of Death: Heart attack",
+          "Cause of Death: Vehicular assault",
+          "Cause of Death: Struck by vehicle"
+        ],
+        "values": [
+          1768,
+          936,
+          388,
+          366,
+          285
+        ]
+      }
+    }
+  },
+  {
+    "uuid": "9ecde33820e7e39d7a38956fe5137b25",
+    "plot_json": {
+      "data": {
+        "x": [
+          "Terrorist attack",
+          "Gunfire",
+          "Automobile accident",
+          "Vehicular assault",
+          "Struck by vehicle"
+        ],
+        "y": [
+          70,
+          58,
+          31,
+          16,
+          10
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "c310d8f6150e133cae5e4c98e1e6713e",
+    "plot_json": {
+      "data": {
+        "x": [
+          2000,
+          2001,
+          2002,
+          2003,
+          2004,
+          2005
+        ],
+        "y": [
+          162,
+          388,
+          531,
+          684,
+          837,
+          997
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
     "uuid": "b20df99eaed1a254565541c739cdfc2a",
     "plot_json": {
       "data": {
@@ -33317,6 +34050,194 @@
         "yaxis": "y",
         "type": "bar",
         "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "187ada0c20a0449eedee6fbe1a1c5a27",
+    "plot_json": {
+      "data": {
+        "x": [
+          38.0,
+          26.0,
+          35.0,
+          27.0,
+          14.0,
+          4.0,
+          58.0,
+          55.0,
+          34.0,
+          15.0,
+          28.0,
+          38.0,
+          14.0,
+          3.0,
+          19.0,
+          49.0,
+          29.0,
+          21.0,
+          5.0,
+          38.0,
+          29.0,
+          17.0,
+          32.0,
+          0.83,
+          30.0,
+          29.0,
+          17.0,
+          33.0,
+          23.0,
+          23.0,
+          34.0,
+          21.0,
+          32.5,
+          12.0,
+          24.0,
+          29.0,
+          19.0,
+          22.0,
+          24.0,
+          27.0,
+          22.0
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "histogram",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "4ebf16febfae5fcf4d0d51b8883b5ee8",
+    "plot_json": {
+      "data": {
+        "x": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "y": [
+          19.81554390243902,
+          29.51307272727273,
+          32.02287021276596,
+          27.432965217391306,
+          37.413636363636364,
+          32.613025,
+          36.239599999999996,
+          21.2021
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "0687dcd9898b79c12363c87a1efea59b",
+    "plot_json": {
+      "data": {
+        "x": [
+          "Q",
+          "C",
+          "S",
+          "NaN"
+        ],
+        "y": [
+          7,
+          12,
+          34,
+          1
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "1d5102a6958b13542ba6914572cfd05e",
+    "plot_json": {
+      "data": {
+        "x": [
+          1,
+          2,
+          3
+        ],
+        "y": [
+          79.50193999999998,
+          23.659719999999997,
+          13.44006041666667
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "box",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "1e096e8f7ea22580325c9c1afa0b8a89",
+    "plot_json": {
+      "data": {
+        "x": [
+          0,
+          10,
+          20,
+          30,
+          40,
+          50,
+          60,
+          70
+        ],
+        "y": [
+          41,
+          63,
+          110,
+          133,
+          144,
+          152,
+          154,
+          156
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "59521074144a12e252a1f58d8511b8c1",
+    "plot_json": {
+      "data": {
+        "type": "pie",
+        "domain": {
+          "x": [
+            0.0,
+            1.0
+          ],
+          "y": [
+            0.0,
+            1.0
+          ]
+        },
+        "labels": [
+          1,
+          3,
+          2
+        ],
+        "values": [
+          30,
+          96,
+          30
+        ]
       }
     }
   },
@@ -35281,6 +36202,172 @@
     }
   },
   {
+    "uuid": "e2dbd61691f1e075583160018cad9fa9",
+    "plot_json": {
+      "data": {
+        "x": [
+          6,
+          5,
+          4,
+          3
+        ],
+        "y": [
+          8.34717868338558,
+          8.16725403817915,
+          7.779245283018867,
+          8.36
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "2b5f6df7a9a79be34c8c0a8f977b217e",
+    "plot_json": {
+      "data": {
+        "x": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "y": [
+          0.8845000000000001,
+          0.6939622641509433,
+          0.5770411160058738,
+          0.49748432601880876
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "3f2e3807ac5cf23f4747dbf6deca0c72",
+    "plot_json": {
+      "data": {
+        "x": [
+          0.9973,
+          0.9976,
+          0.9924,
+          0.9964,
+          0.9987,
+          0.9988,
+          0.9972,
+          0.9917,
+          0.99417,
+          0.99462,
+          0.99451,
+          0.99235,
+          0.9908,
+          0.99516,
+          0.99472,
+          0.996,
+          0.99419
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "histogram",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "d11a07940a34109063910c8043e2adf3",
+    "plot_json": {
+      "data": {
+        "x": [
+          3.35,
+          3.23,
+          3.56,
+          3.22,
+          3.15,
+          2.88,
+          3.72,
+          3.46,
+          3.21,
+          3.2,
+          2.98,
+          3.5,
+          3.24
+        ],
+        "y": [
+          2,
+          3,
+          1,
+          1,
+          3,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "histogram",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "a7d90fecb3a81028bb58eda95fa4b002",
+    "plot_json": {
+      "data": {
+        "x": [
+          0.45,
+          0.46,
+          0.05,
+          0.72,
+          0.67,
+          0.56,
+          0.24,
+          0.53,
+          0.09,
+          0.5,
+          0.54,
+          0.34,
+          0.39,
+          0.03,
+          0.33,
+          0.31,
+          0.3
+        ],
+        "y": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "histogram",
+        "orientation": "v"
+      }
+    }
+  },
+  {
     "uuid": "8f8538bc9da384211f7073fe1f683d80",
     "plot_json": {
       "data": {
@@ -35851,6 +36938,134 @@
           7410114,
           6055539
         ]
+      }
+    }
+  },
+  {
+    "uuid": "a61e0d15d3a9a6a3020b291cbe748f1b",
+    "plot_json": {
+      "data": {
+        "x": [
+          "New York"
+        ],
+        "y": [
+          8405837
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "de72ff1a43b1d1df234632e90d4eefbf",
+    "plot_json": {
+      "data": {
+        "x": [
+          "Tulsa",
+          "Oklahoma City",
+          "Lawton",
+          "Broken Arrow",
+          "Muskogee",
+          "Stillwater",
+          "Midwest City",
+          "Edmond",
+          "Enid",
+          "Norman",
+          "Moore"
+        ],
+        "y": [
+          398121,
+          610613,
+          97151,
+          103500,
+          38863,
+          47186,
+          56756,
+          87004,
+          50725,
+          118197,
+          58414
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "19b0f310e99e7334397af66fce0d68c3",
+    "plot_json": {
+      "data": {
+        "x": [
+          40.7127837
+        ],
+        "y": [
+          8405837
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "scatter",
+        "orientation": "v"
+      }
+    }
+  },
+  {
+    "uuid": "7a1808297ee75b9d2f9d86938c4f8359",
+    "plot_json": {
+      "data": {
+        "type": "scattergeo",
+        "lat": [
+          39.9525839,
+          32.7766642,
+          29.4241219,
+          32.715738,
+          41.8781136,
+          29.7604267,
+          40.7127837,
+          34.0522342,
+          33.4483771
+        ],
+        "lon": [
+          -75.1652215,
+          -96.7969879,
+          -98.4936282,
+          -117.1610838,
+          -87.62979820000001,
+          -95.3698028,
+          -74.00594129999999,
+          -118.24368490000002,
+          -112.0740373
+        ]
+      }
+    }
+  },
+  {
+    "uuid": "07a48920abb45632ee5c977bfd1f141a",
+    "plot_json": {
+      "data": {
+        "x": [
+          "Henderson",
+          "Reno",
+          "North Las Vegas",
+          "Sparks",
+          "Carson City",
+          "Las Vegas"
+        ],
+        "y": [
+          270811,
+          233294,
+          226877,
+          93282,
+          54080,
+          603488
+        ],
+        "xaxis": "x",
+        "yaxis": "y",
+        "type": "bar",
+        "orientation": "v"
       }
     }
   }

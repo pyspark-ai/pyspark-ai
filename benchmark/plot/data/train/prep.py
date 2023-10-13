@@ -8,13 +8,12 @@ from io import StringIO
 from pyspark.sql import SparkSession
 from pyspark_ai import SparkAI
 from pyspark_ai.ai_utils import AIUtils
-from benchmark.plot.benchmark_main import substitute_show_to_json
 
 # Constants
 INCLUDE_KEYS = [
     "x", "y", "xaxis", "yaxis", "type", "orientation",
     "lat", "lon", "z",  # density_mapbox
-    "domain", "labels", "values",  # pie
+    "domain", "labels", "values",  # pie # labels should not be compared
     "xbingroup", "ybingroup",  # bin
 ]
 
@@ -67,7 +66,7 @@ def gen_test_case(dataset):
     """
     Generate test cases with uuid -> test.json
     """
-    if "1962_2006_walmart_store_openings" in dataset:
+    if "1962_2006_walmart_store_openings.csv" in dataset:
         easy_descriptions = [
             "Line plot displaying the number of Walmart stores opened each year from 1962 to 2006.",
             "Bar plot showing the count of Walmart stores by state.",
@@ -78,17 +77,22 @@ def gen_test_case(dataset):
             "Scatter plot of Walmart store locations using latitude and longitude.",
             "Pie chart showing the proportion of different types of Walmart stores.",
             "Bar plot representing the number of Walmart stores opened each month.",
-            "Line plot illustrating the trend of store conversions over the years."
-        ]
-
-        hard_descriptions = [
+            "Line plot illustrating the trend of store conversions over the years.",
             "Hexagonal bin plot showing the density of Walmart store locations using latitude and longitude.",
             "Scatter plot with a color gradient representing the year of opening, plotted against latitude and longitude.",
             "Boxplot comparing the distribution of store openings by month, separated by store type.",
             "Density plot illustrating the distribution of store conversions, segmented by state.",
             "Area plot representing the cumulative number of Walmart stores, with each type of store shaded differently."
         ]
-    elif "2011_february_aa_flight_paths" in dataset:
+
+        hard_descriptions = [
+            "Yearly trend of Walmart store openings from 1996 to 2006.",
+            "Top 5 states with the highest number of Walmart store openings.",
+            "Proportion of stores by type after 2000.",
+            "Proportion of stores by type before 2000.",
+            "Distribution of the number of stores opened each year after 2000.",
+        ]
+    elif "2011_february_aa_flight_paths.csv" in dataset:
         easy_descriptions = [
             'Bar plots showcasing the frequency of AA flights from different starting airports.',
             'Bar plots representing the distribution of ending locations for AA flights.',
@@ -97,15 +101,18 @@ def gen_test_case(dataset):
             'Boxplot summarizing the range of starting latitudes for all AA flights.',
             'Boxplot visualizing the range of ending longitudes for these flights.',
             'Density plots highlighting the concentration of starting locations.',
-            'Density plots emphasizing the concentration of ending locations.'
-        ]
-
-        hard_descriptions = [
+            'Density plots emphasizing the concentration of ending locations.',
             'Area plots comparing the frequency of flights based on starting and ending latitudes.',
             'Scatter plots visualizing the correlation between starting and ending locations for the flights.',
             'Pie plots representing the proportion of flights based on their starting airports.'
         ]
-    elif "2011_us_ag_exports" in dataset:
+
+        hard_descriptions = [
+            "Top 5 airports with the highest number of arrivals.",
+            "Top 5 airports with the highest number of departure.",
+            "Proportion of top 5 flights based on their starting airports.",
+        ]
+    elif "2011_us_ag_exports.csv" in dataset:
         easy_descriptions = [
             "Bar plot comparing beef exports across states.",
             "Histogram showing the distribution of poultry exports.",
@@ -119,15 +126,20 @@ def gen_test_case(dataset):
             "Hexagonal bin plot for the relationship between beef and pork exports.",
             "Pie chart of the share of dairy exports by state.",
             "Bar plot comparing cotton exports across states.",
-        ]
-
-        hard_descriptions = [
             "Hexagonal bin plot illustrating the correlation between fresh and processed fruit exports.",
             "Boxplot showcasing the range and outliers of total exports for the southern states.",
             "Area plot stacked by category showing the trend of exports for a selected group of states.",
             "Hexagonal bin plot contrasting the exports of fresh fruits against dairy products.",
         ]
-    elif "US-shooting-incidents" in dataset:
+
+        hard_descriptions = [
+            "Dairy earnings for the top 5 states.",
+            "Meat revenue breakdown for New York state.",
+            "Proportion of the export market for fresh versus processed fruits.",
+            "Relationship between beef revenue and poultry revenue among states: Texas, California, Florida, New York, and Illinois.",
+            "Proportion of meat revenue components for Texas."
+        ]
+    elif "US-shooting-incidents.csv" in dataset:
         easy_descriptions = [
             "Bar plot showing the number of incidents per state.",
             "Line plot showing the trend of incidents over the years.",
@@ -149,8 +161,14 @@ def gen_test_case(dataset):
             "Boxplot showing the distribution of incidents based on cause.",
             "Area plot representing the number of incidents in each state over the years.",
         ]
-        hard_descriptions = []
-    elif "titanic" in dataset:
+        hard_descriptions = [
+            "Yearly trend of incidents.",
+            "Top 5 departments with the highest incidents in 2001.",
+            "Proportion of incidents by top 5 casuse of death.",
+            "Top 5 casuse of death in 2001.",
+            "Cumulative incidents from 2000 to 2005.",
+        ]
+    elif "titanic.csv" in dataset:
         easy_descriptions = [
             "Bar plot showing the number of passengers in each class.",
             "Histogram showcasing the age distribution of passengers.",
@@ -178,16 +196,12 @@ def gen_test_case(dataset):
         ]
 
         hard_descriptions = [
-            # "Hexagonal bin plot of age against fare to identify dense regions of passengers.",
-            # "Scatter plot of age against fare, colored by survival status.",
-            # "Boxplot displaying the age distribution, separated by gender and survival status.",
-            # "Area plot illustrating the fare distribution, separated by embarkation port and passenger class.",
-            # "Scatter plot of age against the number of siblings/spouses, colored by survival status.",
-            # "Hexagonal bin plot of age against the number of parents/children.",
-            # "Boxplot showing the fare distribution, separated by having a cabin or not and by gender.",
-            # "Scatter plot of fare against the number of siblings/spouses, colored by passenger class.",
-            # "Hexagonal bin plot of age against the number of siblings/spouses for survivors.",
-            # "Area plot representing the age distribution, separated by embarkation port and survival status."
+            "Distribution of age for survivors and non-survivors.",
+            "Trend of average fare over age groups.",
+            "Number of survivors from each embarkation port.",
+            "Fare variability across ticket classes.",
+            "Cumulative number of passengers across age groups.",
+            "Proportion of passengers by ticket class."
         ]
     elif "winequality-red.csv" in dataset:
         easy_descriptions = [
@@ -214,16 +228,11 @@ def gen_test_case(dataset):
         ]
 
         hard_descriptions = [
-            # "Hexagonal bin plot comparing alcohol content with residual sugar levels.",
-            # "Scatter plot with a color gradient based on wine quality, comparing alcohol content with acidity levels.",
-            # "Hexagonal bin plot comparing pH values with sulphate levels.",
-            # "Scatter plot with a color gradient based on wine quality, comparing fixed acidity with volatile acidity.",
-            # "Hexagonal bin plot comparing density with residual sugar content.",
-            # "Scatter plot with a color gradient based on wine quality, comparing citric acid levels with sulfur dioxide levels.",
-            # "Hexagonal bin plot comparing alcohol percentages with pH values.",
-            # "Scatter plot with a color gradient based on wine quality, comparing salt content with sulphate levels.",
-            # "Hexagonal bin plot comparing volatile acidity with fixed acidity.",
-            # "Scatter plot with a color gradient based on wine quality, comparing density with alcohol content."
+            "Trend of average fixed acidity levels for wines rated from 3 to 6",
+            "Trend of average volatile acidity levels for wines rated from 3 to 6",
+            "Distribution of density for wines rated 8.",
+            "Distribution of pH levels for wines rated 8.",
+            "Distribution of citric acid levels for wines rated 8.",
         ]
     elif "us-cities-top-1k.csv" in dataset:
         easy_descriptions = [
@@ -244,19 +253,16 @@ def gen_test_case(dataset):
             "Area plot of populations for the bottom 10 cities",
             "Hexagonal bin plot of population versus latitude for the top 5 most populous cities",
             "Mapbox density map showing the top 10 most populous cities"
-            "Mapbox density map showing the top 5 most populous cities in California"
+            "Mapbox density map showing the top 5 most populous cities in California",
+            "Pie chart showing the population distribution of most populous city in each of the top 5 states",
         ]
 
         hard_descriptions = [
-            # "Scatter plot of latitude versus longitude for cities, colored by population",
-            # "Hexagonal bin plot of latitude versus longitude for cities in California, with population as density",
-            # "Area plot of populations for the top 3 cities in Texas and California separately",
-            # "Scatter plot of population versus latitude for cities, sized by longitude",
-            # "Bar plot of the number of cities in each state, colored by average population of cities in that state",
-            # "Boxplot of populations for cities, grouped by their geographical region (East, West, North, South)",
-            # "Hexagonal bin plot of population versus latitude for cities in the northern US, with longitude as density",
-            # "Scatter plot of latitude versus longitude for cities in New York and California, colored by population",
-            "Pie chart showing the population distribution of most populous city in each of the top 5 states",
+            "Top 10 cities by population",
+            "Population distribution of cities in Oklahoma",
+            "Relationship between latitude and population for top 10 cities by population",
+            "Cities with a population greater than 1 million",
+            "Population comparison of cities in South Carolina and Nevada"
         ]
     else:
         raise ValueError("No automation of test cases curation for the given dataset.")
@@ -286,6 +292,11 @@ def gen_test_case(dataset):
     with open('benchmark/plot/data/train/dummy-train.json', 'w') as file:
         json.dump(combined_list, file, indent=4)
 
+def substitute_show_to_json(string):
+    import re
+
+    return re.sub(r'(\w+)\.show\(\)', r'print(\1.to_json())', string)
+
 
 def gen_golden(dataset):
     """
@@ -311,10 +322,13 @@ def gen_golden(dataset):
         if test_case['dataset'] == dataset:
             uuid = test_case['uuid']
             try:
-                captured_output = capture_plot_logs(df, test_case['description'], spark_ai)
-                codeblocks = AIUtils.extract_code_blocks(captured_output)
-                sub_codeblocks = substitute_show_to_json(codeblocks)
-                code = "\n".join(sub_codeblocks)
+                original_code = df.ai.plot(test_case['description'])
+                code = substitute_show_to_json(original_code)
+
+                # captured_output = capture_plot_logs(df, test_case['description'], spark_ai)
+                # codeblocks = AIUtils.extract_code_blocks(captured_output)
+                # sub_codeblocks = substitute_show_to_json(codeblocks)
+                # code = "\n".join(sub_codeblocks)
 
                 golden_codes.append({
                     'uuid': uuid,
@@ -344,74 +358,7 @@ def gen_golden(dataset):
         json.dump(golden_jsons, file, indent=4)
 
 
-def debug_test_case(uuid, dataset, use_code_from_file=True, include_keys=INCLUDE_KEYS):
-    """Debugging helper function.
-
-    :param uuid:
-    :param dataset:
-    :param use_code_from_file: If True, read the code from train-code.json; otherwise, generate the code.
-    :param include_keys:  Print the plot's json fields in `include_keys` only. If set to None, print the whole json.
-    """
-    with open('benchmark/plot/data/train/dummy-train.json', 'r') as file:
-        test_cases = json.load(file)
-
-    golden_codes = []
-
-    # Filter for the specific test case
-    test_case = next((tc for tc in test_cases if tc['uuid'] == uuid), None)
-    if not test_case:
-        print(f"No test case found with UUID {uuid}")
-        return
-
-    spark = SparkSession.builder.getOrCreate()
-    spark_ai = SparkAI(spark_session=spark, verbose=True)
-    spark_ai.activate()
-    import pandas as pd
-    pdf = pd.read_csv(dataset)
-    df = spark_ai._spark.createDataFrame(pdf)
-
-    code = None
-    if use_code_from_file:
-        with open('benchmark/plot/data/train/dummy-train-code.json', 'r') as code_file:
-            code_data = json.load(code_file)
-            code_entry = next((item for item in code_data if item['uuid'] == uuid), None)
-            if code_entry:
-                code = code_entry['code']
-
-    if not code:
-        captured_output = capture_plot_logs(df, test_case['description'], spark_ai)
-        codeblocks = AIUtils.extract_code_blocks(captured_output)
-        sub_codeblocks = substitute_show_to_json(codeblocks)
-        code = "\n".join(sub_codeblocks)
-
-        golden_codes.append({
-            'uuid': uuid,
-            'code': code
-        })
-
-    try:
-        buffer = io.StringIO()
-        with contextlib.redirect_stdout(buffer):
-            exec(compile(code, "plot_df-CodeGen-benchmark", "exec"))
-        captured_output = buffer.getvalue()[:-1]
-        # Take data field (not layout field) as golden
-        golden_json = {
-            'uuid': uuid,
-            'plot_json': filter_golden_json_data(captured_output, include_keys)
-        }
-    except Exception as e:
-        print(f"Test case with UUID {uuid} failed due to: {str(e)}")
-
-    # Convert the golden_codes list to JSON
-    with open('benchmark/plot/data/train/output-train-code.json', 'w') as file:
-        json.dump(golden_codes, file, indent=4)
-
-    # Convert the golden_json list to JSON
-    with open('benchmark/plot/data/train/output-train-golden.json', 'w') as file:
-        json.dump(golden_json, file, indent=4)
-
-
 if __name__ == "__main__":
-    dataset = "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv"
+    dataset = "https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv"
     gen_test_case(dataset)
     gen_golden(dataset)
