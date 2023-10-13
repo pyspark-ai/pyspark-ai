@@ -125,9 +125,11 @@ class LRUVectorStore:
                     self.files[file_path] = file_size
                     self.current_size += file_size
                 else:
-                    raise Exception(f"Vector store directory {self.vector_store_dir} already exceeds max "
-                                    f"directory size. You can change the vector store directory, delete files, "
-                                    "or increase the max directory size. ")
+                    raise Exception(
+                        f"Vector store directory {self.vector_store_dir} already exceeds max "
+                        f"directory size. You can change the vector store directory, delete files, "
+                        "or increase the max directory size. "
+                    )
 
     @staticmethod
     def get_file_size_bytes(file_path: str) -> float:
