@@ -5,15 +5,6 @@ import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
-create_deps_requirement_message = None
-try:
-    import requests
-    import tiktoken
-    from tiktoken import Encoding
-    from bs4 import BeautifulSoup
-except ImportError as e:
-    create_deps_requirement_message = str(e)
-
 from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
 from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
@@ -47,6 +38,15 @@ from pyspark_ai.tool import (
     LRUVectorStore,
 )
 from pyspark_ai.spark_utils import SparkUtils
+
+create_deps_requirement_message = None
+try:
+    import requests
+    import tiktoken
+    from tiktoken import Encoding
+    from bs4 import BeautifulSoup
+except ImportError as e:
+    create_deps_requirement_message = str(e)
 
 
 class SparkAI:
@@ -534,7 +534,9 @@ class SparkAI:
         """
         # check for necessary plot dependencies
         try:
-            import pandas, plotly, pyarrow
+            import pandas
+            import plotly
+            import pyarrow
         except ImportError:
             raise Exception(
                 "Dependencies for `plot_df` not found. To fix, run `pip install pyspark-ai[plot]`"
