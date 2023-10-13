@@ -2,9 +2,11 @@ import logging
 import re
 import sys
 
+
 from pygments import highlight
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer, SqlLexer
+
 
 GREEN = "\033[92m"  # terminal code for green
 YELLOW = "\033[93m"  # terminal code for yellow

@@ -5,15 +5,20 @@ import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
-import requests
-import tiktoken
-from bs4 import BeautifulSoup
+create_deps_requirement_message = None
+try:
+    import requests
+    import tiktoken
+    from tiktoken import Encoding
+    from bs4 import BeautifulSoup
+except ImportError as e:
+    create_deps_requirement_message = str(e)
+
 from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
 from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
 from pyspark.sql import DataFrame, SparkSession
-from tiktoken import Encoding
 
 from pyspark_ai.ai_utils import AIUtils
 from pyspark_ai.cache import Cache
@@ -62,7 +67,7 @@ class SparkAI:
         cache_file_location: Optional[str] = None,
         vector_store_dir: Optional[str] = None,
         vector_store_max_gb: Optional[float] = 16,
-        encoding: Optional[Encoding] = None,
+        encoding: "Optional[Encoding]" = None,
         max_tokens_of_web_content: int = 3000,
         sample_rows_in_table_info: int = 3,
         verbose: bool = True,
@@ -113,7 +118,8 @@ class SparkAI:
             self._cache = None
         self._vector_store_dir = vector_store_dir
         self._vector_store_max_gb = vector_store_max_gb
-        self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
+        if not create_deps_requirement_message:
+            self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
         self._max_tokens_of_web_content = max_tokens_of_web_content
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
         self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
@@ -351,6 +357,12 @@ class SparkAI:
 
         :return: a Spark DataFrame
         """
+        # check for necessary dependencies
+        if create_deps_requirement_message:
+            raise Exception(
+                "Dependencies for `create_df` not found. To fix, run `pip install pyspark-ai[create]`"
+            )
+
         url = desc.strip()  # Remove leading and trailing whitespace
         is_url = self._is_http_or_https_url(url)
         # If the input is not a valid URL, use search tool to get the dataset.
@@ -520,6 +532,13 @@ class SparkAI:
         :return: Returns the generated code as a string. If the generated code is not valid Python code, an empty string
                  is returned.
         """
+        # check for necessary plot dependencies
+        try:
+            import pandas, plotly, pyarrow
+        except ImportError:
+            raise Exception(
+                "Dependencies for `plot_df` not found. To fix, run `pip install pyspark-ai[plot]`"
+            )
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
         plot_chain = PythonExecutor(
