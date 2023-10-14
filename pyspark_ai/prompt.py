@@ -40,7 +40,79 @@ SQL_PROMPT = PromptTemplate(
     template=SQL_TEMPLATE,
 )
 
-SPARK_SQL_EXAMPLES = [
+SPARK_SQL_EXAMPLES_NO_VECTOR_SEARCH = [
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
+    in the format (column_name: type, [sample_value_1, sample_value_2...]):
+```
+(a: STRING, [Kongur Tagh, Grossglockner])
+(b: INT, [7649, 3798])
+(c: STRING, [China, Austria])
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
+Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
+and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
+I will use = rather than "like" in my SQL query because I need an exact match.
+Action: query_validation
+Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
+```
+Product STRING
+Amount BIGINT
+Country STRING
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_93bcf0`: Pivot the fruit table by country and sum the amount for each fruit and country combination.
+Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
+Action: query_sql_db
+Action Input: "SELECT DISTINCT `Country` FROM spark_ai_temp_view_93bcf0"
+Observation: USA, Canada, Mexico, China
+Thought: I can write a query to pivot the table by country and sum the amount for each fruit and country combination.
+Action: query_validation
+Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))"""
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
+```
+Student STRING
+Birthday STRING
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
+Thought: The keyword 'January 1, 2006' is most similar to the sample values in the `Birthday` column.
+I will use the column `Birthday` to filter the rows where its value is 'January 1, 2006' and then select the COUNT(`Student`) 
+because the question asks for the total number of students.
+Action: query_validation
+Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'
+Observation: OK
+Thought: I now know the final answer.
+Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"""
+    """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
+```
+PassengerId INT
+Survived INT
+Pclass INT
+Name STRING
+Sex STRING
+Age DOUBLE
+SibSp INT
+Parch INT
+Ticket STRING
+Fare DOUBLE
+Cabin STRING
+Embarked STRING
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_wl2sdf`: What's the name of the oldest survived passenger?
+Thought: I will query the Name and Age columns, filtering by Survived and ordering by Age in descending order.
+Action: query_validation
+Action Input: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1"""
+]
+
+SPARK_SQL_EXAMPLES_VECTOR_SEARCH = [
     """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
     in the format (column_name: type, [sample_value_1, sample_value_2...]):
 ```
@@ -127,7 +199,7 @@ The dataframe contains the column names and types in this format:
 column_name: type.
 It's very important to ONLY use the verbatim column names in your resulting SQL query.
 
-Here are the column names and types for your dataframe:
+Here are the column names and types for your dataframe, in the format [column_name]: [type]
 ```
 {columns}
 ```
@@ -145,8 +217,22 @@ Given a question, you need to write a Spark SQL query to answer the question. Th
 Always use the tool similar_value to find the correct filter value format, unless it's obvious.
 Use the COUNT SQL function when the query asks for total number of some non-countable column."""
 
-SPARK_SQL_PROMPT = PromptTemplate.from_examples(
-    examples=SPARK_SQL_EXAMPLES,
+SPARK_SQL_PROMPT_VECTOR_SEARCH = PromptTemplate.from_examples(
+    examples=SPARK_SQL_EXAMPLES_VECTOR_SEARCH,
+    suffix=SPARK_SQL_SUFFIX,
+    input_variables=[
+        "view_name",
+        "columns",
+        "sample_vals",
+        "comment",
+        "desc",
+        "agent_scratchpad",
+    ],
+    prefix=SPARK_SQL_PREFIX,
+)
+
+SPARK_SQL_PROMPT_NO_VECTOR_SEARCH = PromptTemplate.from_examples(
+    examples=SPARK_SQL_EXAMPLES_NO_VECTOR_SEARCH,
     suffix=SPARK_SQL_SUFFIX,
     input_variables=[
         "view_name",
