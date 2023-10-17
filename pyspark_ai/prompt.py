@@ -160,14 +160,14 @@ SPARK_SQL_EXAMPLES_NO_VECTOR_SEARCH = [
     spark_sql_no_vector_example_1,
     spark_sql_shared_example_1,
     spark_sql_no_vector_example_2,
-    spark_sql_shared_example_2
+    spark_sql_shared_example_2,
 ]
 
 SPARK_SQL_EXAMPLES_VECTOR_SEARCH = [
     spark_sql_vector_example_1,
     spark_sql_shared_example_1,
     spark_sql_vector_example_2,
-    spark_sql_shared_example_2
+    spark_sql_shared_example_2,
 ]
 
 SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` {comment}.
