@@ -358,7 +358,7 @@ class SparkAI:
             from bs4 import BeautifulSoup
         except ImportError:
             raise Exception(
-                "Dependencies for `create_df` not found. To fix, run `pip install pyspark-ai[create]`"
+                "Dependencies for `ingestion` not found. To fix, run `pip install pyspark-ai[ingestion]`"
             )
 
         url = desc.strip()  # Remove leading and trailing whitespace
