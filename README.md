@@ -20,10 +20,10 @@ pip install pyspark-ai
 ```
 
 pyspark-ai can also be installed with optional dependencies to enable certain functionality. 
-For example, to install pyspark-ai with the optional dependencies to ingest data into a DataFrame:
+For example, to install pyspark-ai with the optional dependencies to plot data from a DataFrame:
 
 ```bash
-pip install "pyspark-ai[ingestion]"
+pip install "pyspark-ai[plot]"
 ```
 
 To install all optionall dependencies:
@@ -113,14 +113,9 @@ To improve the accuracy of transform query generation, you can also optionally e
 This is done by specifying a `vector_store_dir` location for the vector files when you initialize SparkAI. For example:
 
 ```python
-from langchain.chat_models import AzureChatOpenAI
 from pyspark_ai import SparkAI
 
-llm = AzureChatOpenAI(
-    deployment_name=...,
-    model_name=...
-)
-spark_ai = SparkAI(vector_store_dir="temp/", llm=llm) # vector files will be stored in the temp dir
+spark_ai = SparkAI(vector_store_dir="temp/") # vector files will be stored in the temp dir
 spark_ai.activate() 
 ```
 
