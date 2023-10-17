@@ -35,7 +35,7 @@ plotly = "^5.15.0"
 [tool.poetry.group.vector-search.dependencies]
 faiss-cpu = "^1.7.4"
 sentence-transformers = "^2.2.2"
-torch = ">=2.0.0, !=2.0.1, !=2.1.0"
+torch = ">=2.0.0, !=2.0.1"
 
 [tool.poetry.group.ingestion.dependencies]
 requests = "^2.31.0"
