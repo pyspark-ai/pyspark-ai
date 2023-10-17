@@ -106,36 +106,39 @@ class QueryValidationTool(BaseTool):
 class LRUVectorStore:
     """Implements an LRU policy to enforce a max storage space for vector file storage."""
 
-    def __init__(self, vector_file_dir: str, max_size: float = 16) -> None:
+    def __init__(self, vector_store_dir: str, max_size: float = 16) -> None:
         # by default, max_size = 16 GB
         self.files: OrderedDict[str, float] = OrderedDict()
-        self.vector_file_dir = vector_file_dir
+        self.vector_store_dir = vector_store_dir
         # represent in bytes to prevent floating point errors
         self.max_bytes = max_size * 1e9
         self.current_size = 0
 
-        # initialize the file cache, if vector_file_dir exists
+        # initialize the file cache, if vector_store_dir exists
         # existing files will get evicted in reverse-alphabetical order
         # TODO: write LRU to disk, to evict existing files in LRU order
-        if os.path.exists(self.vector_file_dir):
-            for file in os.listdir(self.vector_file_dir):
-                file_path = os.path.join(self.vector_file_dir, file)
+        if os.path.exists(self.vector_store_dir):
+            for file in os.listdir(self.vector_store_dir):
+                file_path = os.path.join(self.vector_store_dir, file)
                 file_size = LRUVectorStore.get_file_size_bytes(file_path)
-                if LRUVectorStore.get_file_size_bytes(file_path) <= self.max_bytes:
-                    self.files[file_path] = file_size
-                    self.current_size += file_size
-                else:
-                    shutil.rmtree(file_path)
+                self.files[file_path] = file_size
+                self.current_size += file_size
+                if self.current_size > self.max_bytes:
+                    raise Exception(
+                        f"Vector store directory {self.vector_store_dir} already exceeds max "
+                        f"directory size. You can change the vector store directory, delete files, "
+                        "or increase the max directory size. "
+                    )
 
     @staticmethod
     def get_file_size_bytes(file_path: str) -> float:
         return os.path.getsize(file_path)
 
     @staticmethod
-    def get_storage(vector_file_dir: str) -> float:
+    def get_storage(vector_store_dir: str) -> float:
         # calculate current storage space of vector files, in bytes
         size = 0
-        for path, dirs, files in os.walk(vector_file_dir):
+        for path, dirs, files in os.walk(vector_store_dir):
             for f in files:
                 fp = os.path.join(path, f)
                 size += LRUVectorStore.get_file_size_bytes(fp)

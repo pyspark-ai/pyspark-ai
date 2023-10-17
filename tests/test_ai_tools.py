@@ -308,8 +308,8 @@ class TestSimilarValueTool(unittest.TestCase):
             finally:
                 self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
-    def test_vector_file_lru_store_prepopulated_files(self):
-        """Tests LRUVectorStore counts files already present in vector store dir in eviction policy"""
+    def test_vector_file_lru_store_prepopulated_dirs(self):
+        """Tests LRUVectorStore counts vector stores already present in the vector store dir in eviction policy"""
         # add two dirs to vector_store_dir
         if not os.path.exists(self.vector_store_dir):
             os.makedirs(self.vector_store_dir)
@@ -320,48 +320,20 @@ class TestSimilarValueTool(unittest.TestCase):
         os.makedirs(path1)
         os.makedirs(path2)
 
-        # check that vector_store_dir contains the 2 files
+        # check that vector_store_dir contains the 2 dirs
         self.assertTrue(len(os.listdir(self.vector_store_dir)) == 2)
 
         vector_store_max_gb = 0
 
-        spark_ai = SparkAI(
-            llm=self.llm_mock,
-            spark_session=self.spark,
-            vector_store_dir=self.vector_store_dir,
-            vector_store_max_gb=vector_store_max_gb,
-        )
-        agent = spark_ai._create_sql_agent()
-        similar_value_tool = agent.lookup_tool("similar_value")
+        with self.assertRaises(Exception) as e:
+            spark_ai = SparkAI(
+                llm=self.llm_mock,
+                spark_session=self.spark,
+                vector_store_dir=self.vector_store_dir,
+                vector_store_max_gb=vector_store_max_gb,
+            )
 
-        table_file = "tests/data/test_transform_ai_tools.tables.jsonl"
-        source_file = "tests/data/test_similar_value_tool_e2e.jsonl"
-
-        # prepare tables
-        statements = create_temp_view_statements(table_file)
-        for stmt in statements:
-            self.spark.sql(stmt)
-
-        (
-            tables,
-            tool_inputs,
-            expected_results,
-        ) = TestSimilarValueTool.get_expected_results(source_file)
-
-        for table, tool_input, expected_result in zip(
-            tables, tool_inputs, expected_results
-        ):
-            table_name = get_table_name(table)
-            try:
-                df = self.spark.table(f"`{table_name}`")
-                df.createOrReplaceTempView(f"`{table_name}`")
-                similar_value_tool.run(f"{tool_input}{table_name}")
-
-                # test that previously present files get evicted
-                self.assertTrue(len(os.listdir(self.vector_store_dir)) == 0)
-                self.assertTrue(LRUVectorStore.get_storage(self.vector_store_dir) == 0)
-            finally:
-                self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+            self.assertTrue("already exceeds max directory size" in e.exception)
 
 
 if __name__ == "__main__":
