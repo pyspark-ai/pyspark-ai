@@ -21,7 +21,7 @@ class PythonExecutor(LLMChain):
 
     df: DataFrame
     cache: Cache = None
-    logger: CodeLogger
+    logger: CodeLogger = None
     max_retries: int = 3
 
     def run(

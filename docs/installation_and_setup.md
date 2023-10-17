@@ -8,7 +8,7 @@ pip install pyspark-ai
 ```
 
 pyspark-ai can also be installed with optional dependencies to enable certain functionality. 
-For example, to install pyspark-ai with the optional dependencies to ingest DataFrames:
+For example, to install pyspark-ai with the optional dependencies to ingest data into a DataFrame:
 
 ```bash
 pip install "pyspark-ai[ingestion]"

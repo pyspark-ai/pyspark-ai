@@ -20,7 +20,7 @@ pip install pyspark-ai
 ```
 
 pyspark-ai can also be installed with optional dependencies to enable certain functionality. 
-For example, to install pyspark-ai with the optional dependencies to ingest DataFrames:
+For example, to install pyspark-ai with the optional dependencies to ingest data into a DataFrame:
 
 ```bash
 pip install "pyspark-ai[ingestion]"
@@ -107,7 +107,26 @@ df.ai.transform("Pivot the data by product and the revenue for each product").sh
 
 For a detailed walkthrough of the transformations, please refer to our [transform_dataframe.ipynb](https://github.com/databrickslabs/pyspark-ai/blob/master/examples/transform_dataframe.ipynb) notebook.
 
-You can also optionally enable vector similarity search, to improve the accuracy of transform query generation. For a detailed walkthrough, please refer to our [].
+### Transform Accuracy Improvement: Vector Similarity Search 
+
+To improve the accuracy of transform query generation, you can also optionally enable vector similarity search. 
+This is done by specifying a `vector_store_dir` location for the vector files when you initialize SparkAI. For example:
+
+```python
+from langchain.chat_models import AzureChatOpenAI
+from pyspark_ai import SparkAI
+
+llm = AzureChatOpenAI(
+    deployment_name=...,
+    model_name=...
+)
+spark_ai = SparkAI(vector_store_dir="temp/", llm=llm) # vector files will be stored in the temp dir
+spark_ai.activate() 
+```
+
+Now when you call df.ai.transform as before, the agent will use word embeddings to generate accurate query values.
+
+For a detailed walkthrough, please refer to our [vector_similarity_search.ipynb](./examples/vector_similarity_search.ipynb).
 
 ### Data Ingestion
 If you have [set up the Google Python client](https://developers.google.com/docs/api/quickstart/python), you can ingest data via search engine:
