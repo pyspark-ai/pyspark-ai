@@ -121,10 +121,9 @@ class LRUVectorStore:
             for file in os.listdir(self.vector_store_dir):
                 file_path = os.path.join(self.vector_store_dir, file)
                 file_size = LRUVectorStore.get_file_size_bytes(file_path)
-                if LRUVectorStore.get_file_size_bytes(file_path) <= self.max_bytes:
-                    self.files[file_path] = file_size
-                    self.current_size += file_size
-                else:
+                self.files[file_path] = file_size
+                self.current_size += file_size
+                if self.current_size > self.max_bytes:
                     raise Exception(
                         f"Vector store directory {self.vector_store_dir} already exceeds max "
                         f"directory size. You can change the vector store directory, delete files, "
