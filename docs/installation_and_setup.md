@@ -11,7 +11,7 @@ pyspark-ai can also be installed with optional dependencies to enable certain fu
 For example, to install pyspark-ai with the optional dependencies to ingest DataFrames:
 
 ```bash
-pip install pyspark-ai[ingestion]
+pip install "pyspark-ai[ingestion]"
 ```
 
 For a full list of optional dependencies, see the [Optional Dependencies](#optional-dependencies) section.
@@ -55,48 +55,15 @@ pyspark-ai has many optional dependencies that are only used for specific method
 For example, ingestion via `spark_ai.create_df("...")` requires the `requests` package, while plotting via `df.plot()` requires the `plotly` package. 
 If the optional dependency is not installed, pyspark-ai will raise an Exception if a method requiring that dependency is called.
 
-If using pip, optional pyspark-ai dependencies can be installed as optional extras, e.g. `pip install pyspark-ai[ingestion, plot]`. 
-All optional dependencies can be installed with `pip install pyspark-ai[all]`.
+If using pip, optional pyspark-ai dependencies can be installed as optional extras, e.g. `pip install "pyspark-ai[ingestion, plot]"`. 
+All optional dependencies can be installed with `pip install "pyspark-ai[all]"`.
 
-Specific groups and their associated dependencies are listed below.
+Specific groups and their associated dependencies are listed below. For more details about groups, see the [README.md](../README.md).
 
-| Group       | Description | Dependencies | Pip extra
-|-------------| ----------- |
-| Plot        | Title       |
-| Ingestion   | Text        |
-| ----------- | ----------- |
-| Header      | Title       |
-| Paragraph   | Text        |
-| ----------- | ----------- |
-| Header      | Title       |
-| Paragraph   | Text        |
+| Group         | Description                                             | Dependencies                                                 | Pip Installation                          |
+|---------------|---------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------|
+| Plot          | Generate visualizations for DataFrame                   | pandas, plotly                                               | `pip install "pyspark-ai[plot]"`          |
+| Vector Search | Improve query generation accuracy in transformations    | faiss-cpu, sentence-transformers, torch                      | `pip install "pyspark-ai[vector-search]"` |
+| Ingestion     | Ingest data into a DataFrame, from URLs or descriptions | requests, tiktoken, beautifulsoup4, google-api-python-client | `pip install "pyspark-ai[ingestion]"`     |
+| Spark Connect | Support Spark Connect                                   | grpcio, grpcio-status, pyarrow                               | `pip install "pyspark-ai[spark-connect]"` |
 
-[tool.poetry.group.plot.dependencies]
-pandas = ">=1.0.5"
-plotly = "^5.15.0"
-
-[tool.poetry.group.vector-search.dependencies]
-faiss-cpu = "^1.7.4"
-sentence-transformers = "^2.2.2"
-# avoid torch version poetry.lock bug https://github.com/pytorch/pytorch/issues/100974
-torch = ">=2.0.0, !=2.0.1"
-
-[tool.poetry.group.ingestion.dependencies]
-requests = "^2.31.0"
-tiktoken = "0.4.0"
-beautifulsoup4 = "^4.12.2"
-google-api-python-client = "^2.90.0"
-
-[tool.poetry.group.spark-connect.dependencies]
-grpcio = ">=1.56.0"
-grpcio-status = ">=1.56.0"
-pyarrow = ">=4.0.0"
-
-[tool.poetry.group.dev.dependencies]
-pyspark = "^3.4.0"
-babel = "^2.12.1"
-chispa = "^0.9.2"
-
-[tool.poetry.group.lint.dependencies]
-flake8 = "^6.0.0"
-black = "^23.7.0"
