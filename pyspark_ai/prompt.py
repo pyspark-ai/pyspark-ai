@@ -143,7 +143,8 @@ Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
 Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
 Always use the tool similar_value to find the correct filter value format, unless it's obvious.
-Use the COUNT SQL function when the query asks for total number of some non-countable column."""
+Use the COUNT SQL function when the query asks for total number of some non-countable column.
+Use the SUM SQL function to accumulate the total number of countable column values."""
 
 SPARK_SQL_PROMPT = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES,
