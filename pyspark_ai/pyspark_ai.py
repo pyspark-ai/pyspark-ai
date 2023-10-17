@@ -202,9 +202,7 @@ class SparkAI:
         if self._verbose:
             self._logger.info(message)
 
-    def _trim_text_from_end(
-        self, text: str, max_tokens: int, encoding: "Encoding"
-    ) -> str:
+    def _trim_text_from_end(self, text: str, max_tokens: int) -> str:
         """
         Trim text from the end based on the maximum number of tokens allowed.
 
@@ -212,6 +210,9 @@ class SparkAI:
         :param max_tokens: maximum tokens allowed
         :return: trimmed text
         """
+        import tiktoken
+
+        encoding = tiktoken.get_encoding("cl100k_base")
         tokens = list(encoding.encode(text))
         if len(tokens) > max_tokens:
             tokens = tokens[:max_tokens]
@@ -237,11 +238,10 @@ class SparkAI:
         desc: str,
         columns: Optional[List[str]],
         cache: bool,
-        encoding: "Encoding",
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
-            clean_text, self._max_tokens_of_web_content, encoding
+            clean_text, self._max_tokens_of_web_content
         )
 
         sql_columns_hint = self._generate_sql_prompt(columns)
@@ -355,14 +355,12 @@ class SparkAI:
         try:
             import requests
             import tiktoken
-            from tiktoken import Encoding
             from bs4 import BeautifulSoup
         except ImportError:
             raise Exception(
                 "Dependencies for `create_df` not found. To fix, run `pip install pyspark-ai[create]`"
             )
 
-        encoding = tiktoken.get_encoding("cl100k_base")
         url = desc.strip()  # Remove leading and trailing whitespace
         is_url = self._is_http_or_https_url(url)
         # If the input is not a valid URL, use search tool to get the dataset.
@@ -396,9 +394,7 @@ class SparkAI:
         # dataset's description.
         if is_url:
             desc = soup.title.string
-        return self._create_dataframe_with_llm(
-            page_content, desc, columns, cache, encoding
-        )
+        return self._create_dataframe_with_llm(page_content, desc, columns, cache)
 
     def _get_transform_sql_query_from_agent(
         self,
