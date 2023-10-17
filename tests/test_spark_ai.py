@@ -9,7 +9,6 @@ from langchain.base_language import BaseLanguageModel
 from pyspark.sql import Row, SparkSession
 from pyspark_ai import SparkAI
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
-from tiktoken import Encoding
 
 
 class SparkAIInitializationTestCase(unittest.TestCase):
@@ -18,14 +17,12 @@ class SparkAIInitializationTestCase(unittest.TestCase):
     def setUp(self):
         self.llm_mock = MagicMock(spec=BaseLanguageModel)
         self.spark_session_mock = MagicMock(spec=SparkSession)
-        self.encoding_mock = MagicMock(spec=Encoding)
         self.web_search_tool_mock = MagicMock(spec=SearchToolWithCache.search)
         self.spark_ai = SparkAI(
             llm=self.llm_mock,
             web_search_tool=self.web_search_tool_mock,
             spark_session=self.spark_session_mock,
             enable_cache=False,
-            encoding=self.encoding_mock,
         )
 
     def test_initialization_with_default_values(self):
@@ -33,7 +30,6 @@ class SparkAIInitializationTestCase(unittest.TestCase):
         self.assertEqual(self.spark_ai._spark, self.spark_session_mock)
         self.assertEqual(self.spark_ai._llm, self.llm_mock)
         self.assertEqual(self.spark_ai._web_search_tool, self.web_search_tool_mock)
-        self.assertEqual(self.spark_ai._encoding, self.encoding_mock)
         self.assertEqual(self.spark_ai._max_tokens_of_web_content, 3000)
 
 
