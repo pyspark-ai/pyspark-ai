@@ -40,24 +40,8 @@ SQL_PROMPT = PromptTemplate(
     template=SQL_TEMPLATE,
 )
 
-SPARK_SQL_EXAMPLES_NO_VECTOR_SEARCH = [
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
-    in the format (column_name: type, [sample_value_1, sample_value_2...]):
-```
-(a: string, [Kongur Tagh, Grossglockner])
-(b: int, [7649, 3798])
-(c: string, [China, Austria])
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
-Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
-and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
-I will use = rather than "like" in my SQL query because I need an exact match.
-Action: query_validation
-Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
+# spark SQL few shot examples
+spark_sql_shared_example_1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
 ```
 Product: string
 Amount: bigint
@@ -74,21 +58,8 @@ Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Co
 Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
-```
-Student: string
-Birthday: string
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
-Thought: The keyword 'January 1, 2006' is most similar to the sample values in the `Birthday` column.
-I will use the column `Birthday` to filter the rows where its value is 'January 1, 2006' and then select the COUNT(`Student`) 
-because the question asks for the total number of students.
-Action: query_validation
-Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'
-Observation: OK
-Thought: I now know the final answer.
-Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
+
+spark_sql_shared_example_2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
 ```
 PassengerId: int
 Survived: int
@@ -110,10 +81,40 @@ Action Input: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1
 Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1"""
-]
 
-SPARK_SQL_EXAMPLES_VECTOR_SEARCH = [
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
+spark_sql_no_vector_example_1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
+    in the format (column_name: type, [sample_value_1, sample_value_2...]):
+```
+(a: string, [Kongur Tagh, Grossglockner])
+(b: int, [7649, 3798])
+(c: string, [China, Austria])
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
+Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
+and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
+I will use = rather than "like" in my SQL query because I need an exact match.
+Action: query_validation
+Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
+
+spark_sql_no_vector_example_2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
+```
+Student: string
+Birthday: string
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
+Thought: The keyword 'January 1, 2006' is most similar to the sample values in the `Birthday` column.
+I will use the column `Birthday` to filter the rows where its value is 'January 1, 2006' and then select the COUNT(`Student`) 
+because the question asks for the total number of students.
+Action: query_validation
+Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'
+Observation: OK
+Thought: I now know the final answer.
+Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"""
+
+spark_sql_vector_example_1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
     in the format (column_name: type, [sample_value_1, sample_value_2...]):
 ```
 (a: string, [Kongur Tagh, Grossglockner])
@@ -134,24 +135,8 @@ Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
 Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
-```
-Product: string
-Amount: bigint
-Country: string
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_93bcf0`: Pivot the fruit table by country and sum the amount for each fruit and country combination.
-Thought: Spark SQL does not support dynamic pivot operations, which are required to transpose the table as requested. I should get all the distinct values of column country.
-Action: query_sql_db
-Action Input: "SELECT DISTINCT `Country` FROM spark_ai_temp_view_93bcf0"
-Observation: USA, Canada, Mexico, China
-Thought: I can write a query to pivot the table by country and sum the amount for each fruit and country combination.
-Action: query_validation
-Action Input: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
+
+spark_sql_vector_example_2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
 ```
 Student: string
 Birthday: string
@@ -170,28 +155,19 @@ Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Bi
 Observation: OK
 Thought: I now know the final answer.
 Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'"""
-    """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
-```
-PassengerId: int
-Survived: int
-Pclass: int
-Name: string
-Sex: string
-Age: double
-SibSp: int
-Parch: int
-Ticket: string
-Fare: double
-Cabin: string
-Embarked: string
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_wl2sdf`: What's the name of the oldest survived passenger?
-Thought: I will query the Name and Age columns, filtering by Survived and ordering by Age in descending order.
-Action: query_validation
-Action Input: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1"""
+
+SPARK_SQL_EXAMPLES_NO_VECTOR_SEARCH = [
+    spark_sql_no_vector_example_1,
+    spark_sql_shared_example_1,
+    spark_sql_no_vector_example_2,
+    spark_sql_shared_example_2
+]
+
+SPARK_SQL_EXAMPLES_VECTOR_SEARCH = [
+    spark_sql_vector_example_1,
+    spark_sql_shared_example_1,
+    spark_sql_vector_example_2,
+    spark_sql_shared_example_2
 ]
 
 SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` {comment}.
