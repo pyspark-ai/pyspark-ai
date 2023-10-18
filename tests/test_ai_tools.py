@@ -16,6 +16,7 @@ from pyspark_ai.tool import (
 from benchmark.wikisql.wiki_sql import (
     get_table_name,
     create_temp_view_statements,
+    get_tables_and_questions,
 )
 
 
@@ -334,6 +335,44 @@ class TestSimilarValueTool(unittest.TestCase):
             )
 
             self.assertTrue("already exceeds max directory size" in e.exception)
+
+    @unittest.skipUnless(
+        os.environ.get("OPENAI_API_KEY") and os.environ["OPENAI_API_KEY"].strip() != "",
+        "OPENAI_API_KEY is not set",
+    )
+    def test_transform_without_similar_value_tool(self):
+        """Test that agent does not try to access SimilarValueTool if it is disabled"""
+        spark_ai = SparkAI()
+
+        # redirect verbose thoughts to f
+        from contextlib import redirect_stdout
+        import io
+
+        f = io.StringIO()
+
+        with redirect_stdout(f):
+            table_file = "tests/data/test_transform_ai_tools.tables.jsonl"
+            source_file = "tests/data/test_transform_without_similar_value_tool.jsonl"
+
+            # prepare tables
+            statements = create_temp_view_statements(table_file)
+            for stmt in statements:
+                self.spark.sql(stmt)
+
+            (tables, questions, results, sqls) = get_tables_and_questions(source_file)
+
+            for table, question, result, sql in zip(tables, questions, results, sqls):
+                table_name = get_table_name(table)
+                try:
+                    df = self.spark.table(f"`{table_name}`")
+                    df.createOrReplaceTempView(f"`{table_name}`")
+                    spark_ai._get_transform_sql_query(df=df, desc=question, cache=False)
+                finally:
+                    self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+        # assert that 'similar_value' not attempted
+        verbose_thoughts = f.getvalue()
+        self.assertTrue("similar_value" not in verbose_thoughts)
 
 
 if __name__ == "__main__":

@@ -399,14 +399,12 @@ class SparkAI:
     def _get_transform_sql_query_from_agent(
         self,
         temp_view_name: str,
-        schema: str,
         sample_vals_str: str,
         comment: str,
         desc: str,
     ) -> str:
         llm_result = self._sql_agent.run(
             view_name=temp_view_name,
-            columns=schema,
             sample_vals=sample_vals_str,
             comment=comment,
             desc=desc,
@@ -474,13 +472,13 @@ class SparkAI:
                 return replace_view_name(cached_result, temp_view_name)
             else:
                 sql_query = self._get_transform_sql_query_from_agent(
-                    temp_view_name, schema_str, sample_vals_str, comment, desc
+                    temp_view_name, sample_vals_str, comment, desc
                 )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
             return self._get_transform_sql_query_from_agent(
-                temp_view_name, schema_str, sample_vals_str, comment, desc
+                temp_view_name, sample_vals_str, comment, desc
             )
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
