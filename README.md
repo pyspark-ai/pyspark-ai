@@ -3,6 +3,10 @@
 ![English SDK for Apache Spark](./docs/_static/english-sdk-spark.svg)
 </div>
 
+![![image](https://github.com/pyspark-ai/pyspark-ai/actions/workflows/build_and_test.yml/badge.svg?branch=master)](https://github.com/pyspark-ai/pyspark-ai/actions/workflows/build_and_test.yml/badge.svg?branch=master)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/pyspark-ai)
+[![PyPI version](https://badge.fury.io/py/pyspark-ai.svg)](https://badge.fury.io/py/pyspark-ai)
+
 ## Introduction
 The English SDK for Apache Spark is an extremely simple yet powerful tool. It takes English instructions and compile them into PySpark objects like DataFrames.
 Its goal is to make Spark more user-friendly and accessible, allowing you to focus your efforts on extracting insights from your data.
@@ -115,7 +119,7 @@ This is done by specifying a `vector_store_dir` location for the vector files wh
 ```python
 from pyspark_ai import SparkAI
 
-spark_ai = SparkAI(vector_store_dir="temp/") # vector files will be stored in the temp dir
+spark_ai = SparkAI(vector_store_dir="vector_store/") # vector files will be stored in the dir "vector_store"
 spark_ai.activate() 
 ```
 
