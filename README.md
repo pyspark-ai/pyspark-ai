@@ -14,9 +14,25 @@ For a more comprehensive introduction and background to our project, we have the
 
 ## Installation
 
+pyspark-ai can be installed via pip from [PyPI](https://pypi.org/project/pyspark-ai/):
 ```bash
 pip install pyspark-ai
 ```
+
+pyspark-ai can also be installed with optional dependencies to enable certain functionality. 
+For example, to install pyspark-ai with the optional dependencies to plot data from a DataFrame:
+
+```bash
+pip install "pyspark-ai[plot]"
+```
+
+To install all optionall dependencies:
+
+```bash
+pip install "pyspark-ai[all]"
+```
+
+For a full list of optional dependencies, see [Installation and Setup](./docs/installation_and_setup.md).
 
 ## Configuring OpenAI LLMs
 As of July 2023, we have found that the GPT-4 works optimally with the English SDK. This superior AI model is readily accessible to all developers through the OpenAI API.
@@ -90,6 +106,22 @@ df.ai.transform("Pivot the data by product and the revenue for each product").sh
 | Tablet    |   1500 | 5500 |     2500 | 4000 |    null |
 
 For a detailed walkthrough of the transformations, please refer to our [transform_dataframe.ipynb](https://github.com/databrickslabs/pyspark-ai/blob/master/examples/transform_dataframe.ipynb) notebook.
+
+### Transform Accuracy Improvement: Vector Similarity Search 
+
+To improve the accuracy of transform query generation, you can also optionally enable vector similarity search. 
+This is done by specifying a `vector_store_dir` location for the vector files when you initialize SparkAI. For example:
+
+```python
+from pyspark_ai import SparkAI
+
+spark_ai = SparkAI(vector_store_dir="temp/") # vector files will be stored in the temp dir
+spark_ai.activate() 
+```
+
+Now when you call df.ai.transform as before, the agent will use word embeddings to generate accurate query values.
+
+For a detailed walkthrough, please refer to our [vector_similarity_search.ipynb](./examples/vector_similarity_search.ipynb).
 
 ### Data Ingestion
 If you have [set up the Google Python client](https://developers.google.com/docs/api/quickstart/python), you can ingest data via search engine:

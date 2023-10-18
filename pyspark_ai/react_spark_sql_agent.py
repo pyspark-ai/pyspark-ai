@@ -6,7 +6,11 @@ from langchain.agents.mrkl.output_parser import MRKLOutputParser
 from langchain.tools import BaseTool
 from pydantic import Field
 
-from pyspark_ai.prompt import SPARK_SQL_PROMPT
+from pyspark_ai.prompt import (
+    SPARK_SQL_PROMPT_VECTOR_SEARCH,
+    SPARK_SQL_PROMPT_NO_VECTOR_SEARCH,
+)
+from pyspark_ai.tool import SimilarValueTool
 
 
 class ReActSparkSQLAgent(Agent):
@@ -26,7 +30,10 @@ class ReActSparkSQLAgent(Agent):
     @classmethod
     def create_prompt(cls, tools: Sequence[BaseTool]) -> BasePromptTemplate:
         """Return default prompt."""
-        return SPARK_SQL_PROMPT
+        for tool in tools:
+            if isinstance(tool, SimilarValueTool):
+                return SPARK_SQL_PROMPT_VECTOR_SEARCH
+        return SPARK_SQL_PROMPT_NO_VECTOR_SEARCH
 
     @property
     def observation_prefix(self) -> str:

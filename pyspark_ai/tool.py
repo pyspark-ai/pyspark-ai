@@ -176,8 +176,13 @@ class VectorSearchUtil:
         lru_vector_store: Optional[LRUVectorStore],
         search_text: str,
     ) -> str:
-        from langchain.vectorstores import FAISS
-        from langchain.embeddings import HuggingFaceBgeEmbeddings
+        try:
+            from langchain.vectorstores import FAISS
+            from langchain.embeddings import HuggingFaceBgeEmbeddings
+        except ImportError:
+            raise Exception(
+                "Dependencies for `vector-search` not found. To fix, run `pip install pyspark-ai[vector-search]`"
+            )
 
         model_name = "BAAI/bge-base-en-v1.5"
         model_kwargs = {"device": "cpu"}

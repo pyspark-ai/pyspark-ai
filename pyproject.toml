@@ -24,27 +24,42 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8.1"
 pydantic = "^1.10.10"
+openai = "^0.27.8"
+langchain = ">=0.0.271,<0.1.0"
+pygments = "^2.15.1"
+
+[tool.poetry.group.plot.dependencies]
+pandas = ">=1.0.5"
+plotly = "^5.15.0"
+
+[tool.poetry.group.vector-search.dependencies]
+faiss-cpu = "^1.7.4"
+sentence-transformers = "^2.2.2"
+# avoid torch version poetry.lock bug https://github.com/pytorch/pytorch/issues/100974
+torch = ">=2.0.0, !=2.0.1"
+
+[tool.poetry.group.ingestion.dependencies]
 requests = "^2.31.0"
 tiktoken = "0.4.0"
 beautifulsoup4 = "^4.12.2"
-openai = "^0.27.8"
-langchain = ">=0.0.271,<0.1.0"
-pandas = ">=1.0.5"
-pygments = "^2.15.1"
 google-api-python-client = "^2.90.0"
-chispa = "^0.9.2"
-grpcio = ">=1.56.0"
-plotly = "^5.15.0"
-pyarrow = ">=4.0.0"
-grpcio-status = ">=1.56.0"
-faiss-cpu = "^1.7.4"
-sentence-transformers = "^2.2.2"
-torch = ">=2.0.0, !=2.0.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.spark-connect.dependencies]
+grpcio = ">=1.56.0"
+grpcio-status = ">=1.56.0"
+pyarrow = ">=4.0.0"
+
+[tool.poetry.group.dev.dependencies]
 pyspark = "^3.4.0"
 babel = "^2.12.1"
+chispa = "^0.9.2"
 
 [tool.poetry.group.lint.dependencies]
 flake8 = "^6.0.0"
 black = "^23.7.0"
+
+[tool.poetry.extras]
+plot = ["pandas", "plotly", "pyarrow"]
+vector-search = ["faiss-cpu", "sentence-transformers", "torch"]
+ingestion = ["requests", "tiktoken", "beautifulsoup4", "google-api-python-client"]
+spark-connect = ["grpcio", "grpcio-status"]

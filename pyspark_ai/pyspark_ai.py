@@ -15,7 +15,6 @@ from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI
 from pyspark.sql import DataFrame, SparkSession
-from tiktoken import Encoding
 
 from pyspark_ai.ai_utils import AIUtils
 from pyspark_ai.cache import Cache
@@ -64,7 +63,6 @@ class SparkAI:
         cache_file_location: Optional[str] = None,
         vector_store_dir: Optional[str] = None,
         vector_store_max_gb: Optional[float] = 16,
-        encoding: Optional[Encoding] = None,
         max_tokens_of_web_content: int = 3000,
         sample_rows_in_table_info: int = 3,
         verbose: bool = True,
@@ -82,7 +80,6 @@ class SparkAI:
         :param vector_store_dir: optional str, directory path for vector similarity search files,
                                 if storing to disk is desired
         :param vector_store_max_gb: optional float, max size of vector store dir in GB
-        :param encoding: optional Encoding, cl100k_base will be used if not provided
         :param max_tokens_of_web_content: maximum tokens of web content after encoding
         :param sample_rows_in_table_info: number of rows to be sampled and shown in the table info.
                                         This is only used for SQL transform. To disable it, set it to 0.
@@ -115,7 +112,6 @@ class SparkAI:
             self._cache = None
         self._vector_store_dir = vector_store_dir
         self._vector_store_max_gb = vector_store_max_gb
-        self._encoding = encoding or tiktoken.get_encoding("cl100k_base")
         self._max_tokens_of_web_content = max_tokens_of_web_content
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
         self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
@@ -219,10 +215,13 @@ class SparkAI:
         :param max_tokens: maximum tokens allowed
         :return: trimmed text
         """
-        tokens = list(self._encoding.encode(text))
+        import tiktoken
+
+        encoding = tiktoken.get_encoding("cl100k_base")
+        tokens = list(encoding.encode(text))
         if len(tokens) > max_tokens:
             tokens = tokens[:max_tokens]
-        return self._encoding.decode(tokens)
+        return encoding.decode(tokens)
 
     def _get_url_from_search_tool(
         self, desc: str, columns: Optional[List[str]], cache: bool
@@ -239,7 +238,11 @@ class SparkAI:
         )
 
     def _create_dataframe_with_llm(
-        self, text: str, desc: str, columns: Optional[List[str]], cache: bool
+        self,
+        text: str,
+        desc: str,
+        columns: Optional[List[str]],
+        cache: bool,
     ) -> DataFrame:
         clean_text = " ".join(text.split())
         web_content = self._trim_text_from_end(
@@ -353,6 +356,16 @@ class SparkAI:
 
         :return: a Spark DataFrame
         """
+        # check for necessary dependencies
+        try:
+            import requests
+            import tiktoken
+            from bs4 import BeautifulSoup
+        except ImportError:
+            raise Exception(
+                "Dependencies for `ingestion` not found. To fix, run `pip install pyspark-ai[ingestion]`"
+            )
+
         url = desc.strip()  # Remove leading and trailing whitespace
         is_url = self._is_http_or_https_url(url)
         # If the input is not a valid URL, use search tool to get the dataset.
@@ -391,14 +404,12 @@ class SparkAI:
     def _get_transform_sql_query_from_agent(
         self,
         temp_view_name: str,
-        schema: str,
         sample_vals_str: str,
         comment: str,
         desc: str,
     ) -> str:
         llm_result = self._sql_agent.run(
             view_name=temp_view_name,
-            columns=schema,
             sample_vals=sample_vals_str,
             comment=comment,
             desc=desc,
@@ -466,13 +477,13 @@ class SparkAI:
                 return replace_view_name(cached_result, temp_view_name)
             else:
                 sql_query = self._get_transform_sql_query_from_agent(
-                    temp_view_name, schema_str, sample_vals_str, comment, desc
+                    temp_view_name, sample_vals_str, comment, desc
                 )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
             return self._get_transform_sql_query_from_agent(
-                temp_view_name, schema_str, sample_vals_str, comment, desc
+                temp_view_name, sample_vals_str, comment, desc
             )
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
@@ -522,6 +533,14 @@ class SparkAI:
         :return: Returns the generated code as a string. If the generated code is not valid Python code, an empty string
                  is returned.
         """
+        # check for necessary plot dependencies
+        try:
+            import pandas
+            import plotly
+        except ImportError:
+            raise Exception(
+                "Dependencies for `plot_df` not found. To fix, run `pip install pyspark-ai[plot]`"
+            )
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
         plot_chain = PythonExecutor(
