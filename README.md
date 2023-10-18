@@ -115,7 +115,7 @@ This is done by specifying a `vector_store_dir` location for the vector files wh
 ```python
 from pyspark_ai import SparkAI
 
-spark_ai = SparkAI(vector_store_dir="temp/") # vector files will be stored in the temp dir
+spark_ai = SparkAI(vector_store_dir="vector_store/") # vector files will be stored in the dir "vector_store"
 spark_ai.activate() 
 ```
 
