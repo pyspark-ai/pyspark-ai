@@ -5,7 +5,9 @@ import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
-from langchain import BasePromptTemplate, GoogleSearchAPIWrapper, LLMChain
+from langchain.prompts.base import BasePromptTemplate
+from langchain.utilities.google_search import GoogleSearchAPIWrapper
+from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
 from langchain.chat_models import ChatOpenAI

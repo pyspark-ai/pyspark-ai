@@ -1,5 +1,5 @@
 # flake8: noqa
-from langchain import FewShotPromptTemplate
+from langchain.prompts.few_shot import FewShotPromptTemplate
 from langchain.prompts.prompt import PromptTemplate
 
 SEARCH_TEMPLATE = """Given a Query and a list of Google Search Results, return the link

@@ -1,6 +1,6 @@
 from typing import Any, Sequence, List
 
-from langchain import BasePromptTemplate
+from langchain.prompts.base import BasePromptTemplate
 from langchain.agents import Agent, AgentOutputParser
 from langchain.agents.mrkl.output_parser import MRKLOutputParser
 from langchain.tools import BaseTool
