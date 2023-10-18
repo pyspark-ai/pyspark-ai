@@ -5,9 +5,6 @@ import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
-import requests
-import tiktoken
-from bs4 import BeautifulSoup
 from langchain.prompts.base import BasePromptTemplate
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
 from langchain.chains import LLMChain
