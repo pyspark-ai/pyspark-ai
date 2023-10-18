@@ -368,7 +368,7 @@ class TestSimilarValueTool(unittest.TestCase):
         os.environ.get("OPENAI_API_KEY") and os.environ["OPENAI_API_KEY"].strip() != "",
         "OPENAI_API_KEY is not set",
     )
-    def test_disable_similar_value_tool(self):
+    def test_transform_without_similar_value_tool(self):
         """Test that agent does not try to access SimilarValueTool if it is disabled"""
         spark_ai = SparkAI()
 
@@ -380,7 +380,7 @@ class TestSimilarValueTool(unittest.TestCase):
 
         with redirect_stdout(f):
             table_file = "tests/data/test_transform_ai_tools.tables.jsonl"
-            source_file = "tests/data/test_disable_similar_value_tool.jsonl"
+            source_file = "tests/data/test_transform_without_similar_value_tool.jsonl"
 
             # prepare tables
             statements = create_temp_view_statements(table_file)

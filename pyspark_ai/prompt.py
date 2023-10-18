@@ -41,7 +41,61 @@ SQL_PROMPT = PromptTemplate(
 )
 
 # spark SQL few shot examples
-spark_sql_shared_example_1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
+spark_sql_shared_example_1_prefix = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
+    in the format (column_name: type, [sample_value_1, sample_value_2...]):
+```
+(a: string, [Kongur Tagh, Grossglockner])
+(b: int, [7649, 3798])
+(c: string, [China, Austria])
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
+Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
+and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
+I will use = rather than "like" in my SQL query because I need an exact match."""
+
+spark_sql_shared_example_1_suffix = """Action: query_validation
+Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
+Observation: OK
+Thought:I now know the final answer.
+Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
+
+spark_sql_no_vector_example_1 = spark_sql_shared_example_1_prefix + spark_sql_shared_example_1_suffix
+
+spark_sql_vector_example_1 = spark_sql_shared_example_1_prefix + """I'll use the similar_value tool to help
+me choose an exact filter value for `c`.
+Action: similar_value
+Action Input: Japan|c|spark_ai_temp_view_14kjd0
+Observation: Japan
+Thought: The correct `c` filter should be 'Japan' because it is semantically closest to the keyword.""" + spark_sql_shared_example_1_suffix
+
+spark_sql_shared_example_2_prefix = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
+```
+Student: string
+Birthday: string
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
+Thought: The keyword 'January 1, 2006' is most similar to the sample values in the `Birthday` column."""
+
+spark_sql_no_vector_example_2 = spark_sql_shared_example_2_prefix + """Action: query_validation
+Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'
+Observation: OK
+Thought: I now know the final answer.
+Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"""
+
+spark_sql_vector_example_2 = spark_sql_shared_example_2_prefix + """I need to filter on an exact value from the `Birthday` column, so I will use the tool similar_value to help me choose my filter value.
+Action: similar_value
+Action Input: January 1, 2006|Birthday|spark_ai_temp_view_12qcl3
+Observation: 01-01-2006
+Thought: The correct `Birthday` filter should be '01-01-2006' because it is semantically closest to the keyword.
+I will use the column `Birthday` to filter the rows where its value is '01-01-2006' and then select the COUNT(`Student`) 
+because the question asks for the total number of students.
+Action: query_validation
+Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'
+Observation: OK
+Thought: I now know the final answer.
+Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'"""
+
+spark_sql_shared_example_3 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
 ```
 Product: string
 Amount: bigint
@@ -59,7 +113,7 @@ Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))"""
 
-spark_sql_shared_example_2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
+spark_sql_shared_example_4 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
 ```
 PassengerId: int
 Survived: int
@@ -82,92 +136,18 @@ Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT Name, Age FROM spark_ai_temp_view_wl2sdf WHERE Survived = 1 ORDER BY Age DESC LIMIT 1"""
 
-spark_sql_no_vector_example_1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
-    in the format (column_name: type, [sample_value_1, sample_value_2...]):
-```
-(a: string, [Kongur Tagh, Grossglockner])
-(b: int, [7649, 3798])
-(c: string, [China, Austria])
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
-Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
-and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
-I will use = rather than "like" in my SQL query because I need an exact match.
-Action: query_validation
-Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
-
-spark_sql_no_vector_example_2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
-```
-Student: string
-Birthday: string
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
-Thought: The keyword 'January 1, 2006' is most similar to the sample values in the `Birthday` column.
-I will use the column `Birthday` to filter the rows where its value is 'January 1, 2006' and then select the COUNT(`Student`) 
-because the question asks for the total number of students.
-Action: query_validation
-Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'
-Observation: OK
-Thought: I now know the final answer.
-Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"""
-
-spark_sql_vector_example_1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
-    in the format (column_name: type, [sample_value_1, sample_value_2...]):
-```
-(a: string, [Kongur Tagh, Grossglockner])
-(b: int, [7649, 3798])
-(c: string, [China, Austria])
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
-Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
-and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
-I will use = rather than "like" in my SQL query because I need an exact match. I'll use the similar_value tool to help
-me choose an exact filter value for `c`.
-Action: similar_value
-Action Input: Japan|c|spark_ai_temp_view_14kjd0
-Observation: Japan
-Thought: The correct `c` filter should be 'Japan' because it is semantically closest to the keyword.
-Action: query_validation
-Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
-Observation: OK
-Thought:I now know the final answer.
-Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
-
-spark_sql_vector_example_2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
-```
-Student: string
-Birthday: string
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
-Thought: The keyword 'January 1, 2006' is most similar to the sample values in the `Birthday` column.
-I need to filter on an exact value from the `Birthday` column, so I will use the tool similar_value to help me choose my filter value.
-Action: similar_value
-Action Input: January 1, 2006|Birthday|spark_ai_temp_view_12qcl3
-Observation: 01-01-2006
-Thought: The correct `Birthday` filter should be '01-01-2006' because it is semantically closest to the keyword.
-I will use the column `Birthday` to filter the rows where its value is '01-01-2006' and then select the COUNT(`Student`) 
-because the question asks for the total number of students.
-Action: query_validation
-Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'
-Observation: OK
-Thought: I now know the final answer.
-Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'"""
-
 SPARK_SQL_EXAMPLES_NO_VECTOR_SEARCH = [
     spark_sql_no_vector_example_1,
-    spark_sql_shared_example_1,
     spark_sql_no_vector_example_2,
-    spark_sql_shared_example_2,
+    spark_sql_shared_example_3,
+    spark_sql_shared_example_4,
 ]
 
 SPARK_SQL_EXAMPLES_VECTOR_SEARCH = [
     spark_sql_vector_example_1,
-    spark_sql_shared_example_1,
     spark_sql_vector_example_2,
-    spark_sql_shared_example_2,
+    spark_sql_shared_example_3,
+    spark_sql_shared_example_4,
 ]
 
 SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` {comment}.
