@@ -139,6 +139,7 @@ class SparkAI:
                 prompt=SQL_CHAIN_PROMPT,
                 llm=self._llm,
                 logger=self._logger,
+                spark=self._spark,
             )
         return self._sql_chain
 
@@ -479,7 +480,11 @@ class SparkAI:
             )
         else:
             # Otherwise, generate the SQL query with a prompt with few-shot examples
-            chain =
+            return self.sql_chain.run(
+                view_name=temp_view_name,
+                sample_vals=sample_vals_str,
+                comment=comment,
+                desc=desc)
 
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
         temp_view_name = random_view_name(df)
@@ -508,13 +513,13 @@ class SparkAI:
                 self.log(CodeLogger.colorize_code(cached_result, "sql"))
                 return replace_view_name(cached_result, temp_view_name)
             else:
-                sql_query = self._get_transform_sql_query_from_agent(
+                sql_query = self._get_sql_query(
                     temp_view_name, sample_vals_str, comment, desc
                 )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
-            return self._get_transform_sql_query_from_agent(
+            return self._get_sql_query(
                 temp_view_name, sample_vals_str, comment, desc
             )
 

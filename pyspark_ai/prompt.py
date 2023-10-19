@@ -50,7 +50,7 @@ sql_question1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0`
 ```
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan."""
 
-sql_answer1 = "Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"
+sql_answer1 = "SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"
 
 sql_question2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
 ```
@@ -60,7 +60,7 @@ Birthday: string
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
 """
 
-sql_answer2 = "Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"
+sql_answer2 = "SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"
 
 spark_sql_shared_example_1_prefix = f"""{sql_question1}
 Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
@@ -71,7 +71,7 @@ spark_sql_shared_example_1_suffix = f"""Action: query_validation
 Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
 Observation: OK
 Thought:I now know the final answer.
-{sql_answer1}"""
+Final Answer: {sql_answer1}"""
 
 spark_sql_no_vector_example_1 = (
     spark_sql_shared_example_1_prefix + spark_sql_shared_example_1_suffix
@@ -97,7 +97,7 @@ spark_sql_no_vector_example_2 = (
 Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'
 Observation: OK
 Thought: I now know the final answer.
-{sql_answer2}"""
+Final Answer: {sql_answer2}"""
 )
 
 spark_sql_vector_example_2 = (
@@ -217,8 +217,8 @@ SPARK_SQL_PROMPT_NO_VECTOR_SEARCH = PromptTemplate.from_examples(
 )
 
 SQL_CHAIN_EXAMPLES = [
-    sql_question1 + "\n" + sql_answer1,
-    sql_question2 + "\n" + sql_answer2,
+    sql_question1 + f"\nAnswer:\n```{sql_answer1}```",
+    sql_question2 + f"\nAnswer:\n```{sql_answer2}```",
 ]
 
 SQL_CHAIN_PROMPT = PromptTemplate.from_examples(
