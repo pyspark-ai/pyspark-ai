@@ -23,7 +23,8 @@ from pyspark_ai.prompt import (
     SEARCH_PROMPT,
     SQL_PROMPT,
     UDF_PROMPT,
-    VERIFY_PROMPT, SQL_CHAIN_PROMPT,
+    VERIFY_PROMPT,
+    SQL_CHAIN_PROMPT,
 )
 from pyspark_ai.python_executor import PythonExecutor
 from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
@@ -130,7 +131,6 @@ class SparkAI:
             return LLMChain(llm=self._llm, prompt=prompt)
 
         return LLMChainWithCache(llm=self._llm, prompt=prompt, cache=self._cache)
-
 
     @property
     def sql_chain(self):
@@ -484,7 +484,8 @@ class SparkAI:
                 view_name=temp_view_name,
                 sample_vals=sample_vals_str,
                 comment=comment,
-                desc=desc)
+                desc=desc,
+            )
 
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
         temp_view_name = random_view_name(df)
@@ -519,9 +520,7 @@ class SparkAI:
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
-            return self._get_sql_query(
-                temp_view_name, sample_vals_str, comment, desc
-            )
+            return self._get_sql_query(temp_view_name, sample_vals_str, comment, desc)
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
         """

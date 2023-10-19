@@ -15,6 +15,7 @@ class SparkSQLChain(LLMChain):
     LLM Chain for generating SQL code for DataFrame transform.
     It supports retrying if the generated query fails the SQL compiler.
     """
+
     spark: SparkSession
     logger: CodeLogger = None
     max_retries: int = 3
@@ -33,9 +34,7 @@ class SparkSQLChain(LLMChain):
         ), "The llm is not an instance of BaseChatModel"
         prompt_str = self.prompt.format_prompt(**kwargs).to_string()
         messages = [HumanMessage(content=prompt_str)]
-        return self._generate_code_with_retries(
-            self.llm, messages, self.max_retries
-        )
+        return self._generate_code_with_retries(self.llm, messages, self.max_retries)
 
     def _generate_code_with_retries(
         self,
@@ -65,6 +64,4 @@ class SparkSQLChain(LLMChain):
             messages.append(response)
             # append the exception as a HumanMessage into messages
             messages.append(HumanMessage(content=str(e)))
-            return self._generate_code_with_retries(
-                chat_model, messages, retries - 1
-            )
+            return self._generate_code_with_retries(chat_model, messages, retries - 1)
