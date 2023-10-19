@@ -145,7 +145,7 @@ class SparkAI:
 
     @property
     def sql_agent(self):
-        if self._sql_agent is not None:
+        if self._sql_agent is None:
             self._sql_agent = self._create_sql_agent()
         return self._sql_agent
 
