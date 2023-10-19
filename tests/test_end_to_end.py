@@ -35,7 +35,7 @@ class EndToEndTestCaseGPT35(unittest.TestCase):
         self.setup_spark_ai(self.spark)
 
     def create_and_get_table_name(
-        self, table: str, table_file: str = "data/test_transform_e2e.tables.jsonl"
+        self, table: str, table_file: str = "tests/data/test_transform_e2e.tables.jsonl"
     ):
         """Util function to create temp view for desired table and return the table name"""
         statements = create_temp_view_statements(table_file)
@@ -103,7 +103,7 @@ class EndToEndTestCaseGPT35(unittest.TestCase):
 
 
     def test_plot(self):
-        flight_df = self.spark_ai._spark.read.option("header", "true").csv("data/2011_february_aa_flight_paths.csv")
+        flight_df = self.spark_ai._spark.read.option("header", "true").csv("tests/data/2011_february_aa_flight_paths.csv")
         # The following plotting will probably fail on the first run with error:
         #     'DataFrame' object has no attribute 'date'
         code = flight_df.ai.plot("Boxplot summarizing the range of starting latitudes for all AA flights in February 2011.")
