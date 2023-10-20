@@ -178,6 +178,11 @@ Given a question, you need to write a Spark SQL query to answer the question. Th
 Use the COUNT SQL function when the query asks for total number of some non-countable column.
 Use the SUM SQL function to accumulate the total number of countable column values."""
 
+SPARK_SQL_PREFIX_VECTOR_SEARCH = (
+    SPARK_SQL_PREFIX
+    + "Always use the tool similar_value to find the correct filter value format, unless it's obvious."
+)
+
 SPARK_SQL_PROMPT_VECTOR_SEARCH = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES_VECTOR_SEARCH,
     suffix=SPARK_SQL_SUFFIX,
@@ -188,7 +193,7 @@ SPARK_SQL_PROMPT_VECTOR_SEARCH = PromptTemplate.from_examples(
         "desc",
         "agent_scratchpad",
     ],
-    prefix=SPARK_SQL_PREFIX,
+    prefix=SPARK_SQL_PREFIX_VECTOR_SEARCH,
 )
 
 SPARK_SQL_PROMPT_NO_VECTOR_SEARCH = PromptTemplate.from_examples(
