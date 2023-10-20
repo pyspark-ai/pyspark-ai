@@ -1,6 +1,6 @@
 from typing import Any, List, Optional
 
-from langchain import LLMChain
+from langchain.chains import LLMChain
 from langchain.callbacks.manager import Callbacks
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage, HumanMessage

@@ -112,12 +112,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--table_file",
         help="table definition file",
-        default="data/test_sample.tables.jsonl",
+        default="data/100_test_sample.tables.jsonl",
     )
     parser.add_argument(
         "--source_file",
         help="source file for the prediction",
-        default="data/test_sample.jsonl",
+        default="data/one_example.jsonl",
     )
     args = parser.parse_args()
 
