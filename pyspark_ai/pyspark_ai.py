@@ -24,10 +24,12 @@ from pyspark_ai.prompt import (
     SQL_PROMPT,
     UDF_PROMPT,
     VERIFY_PROMPT,
+    SQL_CHAIN_PROMPT,
 )
 from pyspark_ai.python_executor import PythonExecutor
 from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
+from pyspark_ai.spark_sql_chain import SparkSQLChain
 from pyspark_ai.temp_view_utils import (
     random_view_name,
     replace_view_name,
@@ -111,9 +113,8 @@ class SparkAI:
         self._vector_store_max_gb = vector_store_max_gb
         self._max_tokens_of_web_content = max_tokens_of_web_content
         self._search_llm_chain = self._create_llm_chain(prompt=SEARCH_PROMPT)
-        self._sql_llm_chain = self._create_llm_chain(prompt=SQL_PROMPT)
+        self._ingestion_chain = self._create_llm_chain(prompt=SQL_PROMPT)
         self._explain_chain = self._create_llm_chain(prompt=EXPLAIN_DF_PROMPT)
-        self._sql_agent = self._create_sql_agent()
         self._verify_chain = self._create_llm_chain(prompt=VERIFY_PROMPT)
         self._udf_chain = self._create_llm_chain(prompt=UDF_PROMPT)
         self._sample_rows_in_table_info = sample_rows_in_table_info
@@ -122,12 +123,31 @@ class SparkAI:
             self._logger = CodeLogger("spark_ai")
         else:
             self._logger = None
+        self._sql_agent = None
+        self._sql_chain = None
 
     def _create_llm_chain(self, prompt: BasePromptTemplate):
         if self._cache is None:
             return LLMChain(llm=self._llm, prompt=prompt)
 
         return LLMChainWithCache(llm=self._llm, prompt=prompt, cache=self._cache)
+
+    @property
+    def sql_chain(self):
+        if self._sql_chain is None:
+            self._sql_chain = SparkSQLChain(
+                prompt=SQL_CHAIN_PROMPT,
+                llm=self._llm,
+                logger=self._logger,
+                spark=self._spark,
+            )
+        return self._sql_chain
+
+    @property
+    def sql_agent(self):
+        if self._sql_agent is None:
+            self._sql_agent = self._create_sql_agent()
+        return self._sql_agent
 
     def _create_sql_agent(self):
         # exclude SimilarValueTool if vector_store_dir not configured
@@ -251,7 +271,7 @@ class SparkAI:
         # Run the LLM chain to get an ingestion SQL query
         tags = self._get_tags(cache)
         temp_view_name = random_view_name(web_content)
-        llm_result = self._sql_llm_chain.run(
+        llm_result = self._ingestion_chain.run(
             tags=tags,
             query=desc,
             web_content=web_content,
@@ -405,7 +425,7 @@ class SparkAI:
         comment: str,
         desc: str,
     ) -> str:
-        llm_result = self._sql_agent.run(
+        llm_result = self.sql_agent.run(
             view_name=temp_view_name,
             sample_vals=sample_vals_str,
             comment=comment,
@@ -446,6 +466,27 @@ class SparkAI:
                 return "which represents " + comment
         return ""
 
+    def _get_sql_query(
+        self,
+        temp_view_name: str,
+        sample_vals_str: str,
+        comment: str,
+        desc: str,
+    ) -> str:
+        # If LLM is ChatOpenAI instance and the model is GPT-4, use the ReActSparkSQLAgent to generate the SQL query
+        if isinstance(self._llm, ChatOpenAI) and self._llm.model_name == "gpt-4":
+            return self._get_transform_sql_query_from_agent(
+                temp_view_name, sample_vals_str, comment, desc
+            )
+        else:
+            # Otherwise, generate the SQL query with a prompt with few-shot examples
+            return self.sql_chain.run(
+                view_name=temp_view_name,
+                sample_vals=sample_vals_str,
+                comment=comment,
+                desc=desc,
+            )
+
     def _get_transform_sql_query(self, df: DataFrame, desc: str, cache: bool) -> str:
         temp_view_name = random_view_name(df)
         create_temp_view_code = CodeLogger.colorize_code(
@@ -473,15 +514,13 @@ class SparkAI:
                 self.log(CodeLogger.colorize_code(cached_result, "sql"))
                 return replace_view_name(cached_result, temp_view_name)
             else:
-                sql_query = self._get_transform_sql_query_from_agent(
+                sql_query = self._get_sql_query(
                     temp_view_name, sample_vals_str, comment, desc
                 )
                 self._cache.update(key=cache_key, val=canonize_string(sql_query))
                 return sql_query
         else:
-            return self._get_transform_sql_query_from_agent(
-                temp_view_name, sample_vals_str, comment, desc
-            )
+            return self._get_sql_query(temp_view_name, sample_vals_str, comment, desc)
 
     def transform_df(self, df: DataFrame, desc: str, cache: bool = True) -> DataFrame:
         """

@@ -41,23 +41,37 @@ SQL_PROMPT = PromptTemplate(
 )
 
 # spark SQL few shot examples
-spark_sql_shared_example_1_prefix = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
+sql_question1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
     in the format (column_name: type, [sample_value_1, sample_value_2...]):
 ```
 (a: string, [Kongur Tagh, Grossglockner])
 (b: int, [7649, 3798])
 (c: string, [China, Austria])
 ```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan.
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan."""
+
+sql_answer1 = "SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"
+
+sql_question2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
+```
+Student: string
+Birthday: string
+```
+Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
+"""
+
+sql_answer2 = "SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"
+
+spark_sql_shared_example_1_prefix = f"""{sql_question1}
 Thought: The column names are non-descriptive, but from the sample values I see that column `a` contains mountains
 and column `c` contains countries. So, I will filter on column `c` for 'Japan' and column `a` for the mountain.
 I will use = rather than "like" in my SQL query because I need an exact match."""
 
-spark_sql_shared_example_1_suffix = """Action: query_validation
+spark_sql_shared_example_1_suffix = f"""Action: query_validation
 Action Input: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'
 Observation: OK
 Thought:I now know the final answer.
-Final Answer: SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"""
+Final Answer: {sql_answer1}"""
 
 spark_sql_no_vector_example_1 = (
     spark_sql_shared_example_1_prefix + spark_sql_shared_example_1_suffix
@@ -74,21 +88,16 @@ Thought: The correct `c` filter should be 'Japan' because it is semantically clo
     + spark_sql_shared_example_1_suffix
 )
 
-spark_sql_shared_example_2_prefix = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
-```
-Student: string
-Birthday: string
-```
-Write a Spark SQL query to retrieve from view `spark_ai_temp_view_12qcl3`: What is the total number of students with the birthday January 1, 2006?
+spark_sql_shared_example_2_prefix = f"""{sql_question2}
 Thought: The keyword 'January 1, 2006' is most similar to the sample values in the `Birthday` column."""
 
 spark_sql_no_vector_example_2 = (
     spark_sql_shared_example_2_prefix
-    + """Action: query_validation
+    + f"""Action: query_validation
 Action Input: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'
 Observation: OK
 Thought: I now know the final answer.
-Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = 'January 1, 2006'"""
+Final Answer: {sql_answer2}"""
 )
 
 spark_sql_vector_example_2 = (
@@ -171,7 +180,9 @@ It's very important to ONLY use the verbatim column_name in your resulting SQL q
 {sample_vals}
 
 Write a Spark SQL query to retrieve the following from view `{view_name}`: {desc}
-{agent_scratchpad}"""
+"""
+
+SPARK_SQL_SUFFIX_FOR_AGENT = SPARK_SQL_SUFFIX + "\n{agent_scratchpad}"
 
 SPARK_SQL_PREFIX = """You are an assistant for writing professional Spark SQL queries. 
 Given a question, you need to write a Spark SQL query to answer the question. The result is ALWAYS a Spark SQL query.
@@ -181,7 +192,7 @@ Use the SUM SQL function to accumulate the total number of countable column valu
 
 SPARK_SQL_PROMPT_VECTOR_SEARCH = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES_VECTOR_SEARCH,
-    suffix=SPARK_SQL_SUFFIX,
+    suffix=SPARK_SQL_SUFFIX_FOR_AGENT,
     input_variables=[
         "view_name",
         "sample_vals",
@@ -194,7 +205,7 @@ SPARK_SQL_PROMPT_VECTOR_SEARCH = PromptTemplate.from_examples(
 
 SPARK_SQL_PROMPT_NO_VECTOR_SEARCH = PromptTemplate.from_examples(
     examples=SPARK_SQL_EXAMPLES_NO_VECTOR_SEARCH,
-    suffix=SPARK_SQL_SUFFIX,
+    suffix=SPARK_SQL_SUFFIX_FOR_AGENT,
     input_variables=[
         "view_name",
         "sample_vals",
@@ -205,6 +216,22 @@ SPARK_SQL_PROMPT_NO_VECTOR_SEARCH = PromptTemplate.from_examples(
     prefix=SPARK_SQL_PREFIX,
 )
 
+SQL_CHAIN_EXAMPLES = [
+    sql_question1 + f"\nAnswer:\n```{sql_answer1}```",
+    sql_question2 + f"\nAnswer:\n```{sql_answer2}```",
+]
+
+SQL_CHAIN_PROMPT = PromptTemplate.from_examples(
+    examples=SQL_CHAIN_EXAMPLES,
+    suffix=SPARK_SQL_SUFFIX,
+    input_variables=[
+        "view_name",
+        "sample_vals",
+        "comment",
+        "desc",
+    ],
+    prefix=SPARK_SQL_PREFIX,
+)
 
 EXPLAIN_PREFIX = """You are an Apache Spark SQL expert, who can summary what a dataframe retrieves. Given an analyzed
 query plan of a dataframe, you will
