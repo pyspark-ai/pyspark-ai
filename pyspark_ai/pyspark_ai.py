@@ -270,7 +270,7 @@ class SparkAI:
 
     @staticmethod
     def _get_df_schema(df: DataFrame) -> list:
-        schema_lst = [f"{name}: {dtype}" for name, dtype in df.dtypes]
+        schema_lst = [f"{name}, {dtype}" for name, dtype in df.dtypes]
         return schema_lst
 
     @staticmethod
