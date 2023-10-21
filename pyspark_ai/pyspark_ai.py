@@ -503,7 +503,7 @@ class SparkAI:
             for sample_row in sample_rows:
                 sample_vals.append(sample_row[index])
             schema_row_lst.append((schema_lst[index], sample_vals))
-        sample_vals_str = "".join([str(val) for val in schema_row_lst])
+        sample_vals_str = "\n".join([str(val) for val in schema_row_lst])
         comment = self._get_table_comment(df)
 
         if cache:
