@@ -1,6 +1,6 @@
 from typing import Any, List, Optional
 
-from langchain import LLMChain
+from langchain.chains import LLMChain
 from langchain.callbacks.manager import Callbacks
 
 from pyspark_ai.cache import Cache
