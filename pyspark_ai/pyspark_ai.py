@@ -502,7 +502,8 @@ class SparkAI:
             sample_vals = []
             for sample_row in sample_rows:
                 sample_vals.append(sample_row[index])
-            schema_row_lst.append((schema_lst[index], sample_vals))
+            curr_schema_row = f"({schema_lst[index]}, {str(sample_vals)})"
+            schema_row_lst.append(curr_schema_row)
         sample_vals_str = "\n".join([str(val) for val in schema_row_lst])
         comment = self._get_table_comment(df)
 
