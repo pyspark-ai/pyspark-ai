@@ -28,26 +28,26 @@ openai = "^0.27.8"
 langchain = ">=0.0.271,<0.1.0"
 pygments = "^2.15.1"
 
-[tool.poetry.group.plot.dependencies]
-pandas = ">=1.0.5"
-plotly = "^5.15.0"
+# plot extras
+pandas = { version = ">=1.0.5", optional = true }
+plotly = { version = "^5.15.0", optional = true }
 
-[tool.poetry.group.vector-search.dependencies]
-faiss-cpu = "^1.7.4"
-sentence-transformers = "^2.2.2"
+# vector search extras
+faiss-cpu = { version = "^1.7.4", optional = true }
+sentence-transformers = { version = "^2.2.2", optional = true }
 # avoid torch version poetry.lock bug https://github.com/pytorch/pytorch/issues/100974
-torch = ">=2.0.0, !=2.0.1"
+torch = { version = ">=2.0.0, !=2.0.1, !=2.1.0", optional = true }
 
-[tool.poetry.group.ingestion.dependencies]
-requests = "^2.31.0"
-tiktoken = "0.4.0"
-beautifulsoup4 = "^4.12.2"
-google-api-python-client = "^2.90.0"
+# ingestion extras
+requests = { version = "^2.31.0", optional = true }
+tiktoken = { version = "0.4.0", optional = true }
+beautifulsoup4 = { version = "^4.12.2", optional = true }
+google-api-python-client = { version = "^2.90.0", optional = true }
 
-[tool.poetry.group.spark-connect.dependencies]
-grpcio = ">=1.56.0"
-grpcio-status = ">=1.56.0"
-pyarrow = ">=4.0.0"
+# spark connect extras
+grpcio = { version = ">=1.56.0", optional = true }
+grpcio-status = { version = ">=1.56.0", optional = true }
+pyarrow = { version = ">=4.0.0", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 pyspark = "^3.4.0"
