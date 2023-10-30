@@ -128,7 +128,30 @@ Now when you call df.ai.transform as before, the agent will use word embeddings 
 For a detailed walkthrough, please refer to our [vector_similarity_search.ipynb](./examples/vector_similarity_search.ipynb).
 
 ### Plot
+Let's create a DataFrame for car sales in the U.S.
+
 ```python
+# auto sales data from https://www.carpro.com/blog/full-year-2022-national-auto-sales-by-brand
+data = [('Toyota', 1849751, -9), ('Ford', 1767439, -2), ('Chevrolet', 1502389, 6),
+        ('Honda', 881201, -33), ('Hyundai', 724265, -2), ('Kia', 693549, -1),
+        ('Jeep', 684612, -12), ('Nissan', 682731, -25), ('Subaru', 556581, -5),
+        ('Ram Trucks', 545194, -16), ('GMC', 517649, 7), ('Mercedes-Benz', 350949, 7),
+        ('BMW', 332388, -1), ('Volkswagen', 301069, -20), ('Mazda', 294908, -11),
+        ('Lexus', 258704, -15), ('Dodge', 190793, -12), ('Audi', 186875, -5),
+        ('Cadillac', 134726, 14), ('Chrysler', 112713, -2), ('Buick', 103519, -42),
+        ('Acura', 102306, -35), ('Volvo', 102038, -16), ('Mitsubishi', 102037, -16),
+        ('Lincoln', 83486, -4), ('Porsche', 70065, 0), ('Genesis', 56410, 14),
+        ('INFINITI', 46619, -20), ('MINI', 29504, -1), ('Alfa Romeo', 12845, -30),
+        ('Maserati', 6413, -10), ('Bentley', 3975, 0), ('Lamborghini', 3134, 3),
+        ('Fiat', 915, -61), ('McLaren', 840, -35), ('Rolls-Royce', 460, 7)]
+
+auto_df = spark.createDataFrame(data, ["Brand", "US_Sales_2022", "Sales_Change_Percentage"])
+```
+
+We can visualize the data with the plot API:
+
+```python
+# call plot() with no args for LLM-generated plot
 auto_df.ai.plot()
 ```
 ![2022 USA national auto sales by brand](docs/_static/auto_sales.png)
