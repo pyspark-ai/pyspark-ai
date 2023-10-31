@@ -69,7 +69,7 @@ llm = AzureChatOpenAI(
 spark_ai = SparkAI(llm=llm)
 spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
-Using the Azure OpenAI service can provide better data privacy and security, as per [Microsoft's Data Privacy page](https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy).
+As per [Microsoft's Data Privacy page](https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy), using the Azure OpenAI service can provide better data privacy and security.
 
 ### DataFrame Transformation
 Given the following DataFrame `df`:
