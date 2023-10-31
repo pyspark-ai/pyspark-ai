@@ -145,7 +145,7 @@ data = [('Toyota', 1849751, -9), ('Ford', 1767439, -2), ('Chevrolet', 1502389, 6
         ('Maserati', 6413, -10), ('Bentley', 3975, 0), ('Lamborghini', 3134, 3),
         ('Fiat', 915, -61), ('McLaren', 840, -35), ('Rolls-Royce', 460, 7)]
 
-auto_df = spark.createDataFrame(data, ["Brand", "US_Sales_2022", "Sales_Change_Percentage"])
+auto_df = spark_ai._spark.createDataFrame(data, ["Brand", "US_Sales_2022", "Sales_Change_Percentage"])
 ```
 
 We can visualize the data with the plot API:
