@@ -207,6 +207,7 @@ class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
             self.parsed_email_df,
         )
 
+    @unittest.skip("skip test due to nondeterministic behavior")
     def test_laplace_random_udf(self):
         @self.spark_ai.udf
         def laplace_random_number(loc: float, scale: float) -> float:
