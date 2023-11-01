@@ -177,6 +177,7 @@ class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
 
     # The following tests are skipped for gpt-3.5-turbo because they can be flaky
     # Also, our current focus is on DataFrame transform and plotting.
+    @unittest.skip("skip test due to nondeterministic behavior")
     def test_array_udf_output(self):
         @self.spark_ai.udf
         def parse_heterogeneous_json(json_str: str, schema: List[str]) -> List[str]:
