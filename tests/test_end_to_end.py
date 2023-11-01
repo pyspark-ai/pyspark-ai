@@ -73,35 +73,6 @@ class EndToEndTestCaseGPT35(unittest.TestCase):
         transformed_df = df.ai.transform("what city had the warmest temperature?")
         self.assertEqual(transformed_df.collect()[0][0], "Austin")
 
-    def test_transform_col_query_wikisql(self):
-        """Test that agent selects correct query column for ambiguous wikisql table example"""
-        table_name = self.create_and_get_table_name("1-1108394-47")
-
-        try:
-            df = self.spark.table(f"`{table_name}`")
-            df.createOrReplaceTempView(f"`{table_name}`")
-
-            transformed_df = df.ai.transform(
-                "which candidate won 88 votes in Queens in 1921?"
-            )
-            self.assertEqual(transformed_df.collect()[0][0], "jerome t. de hunt")
-        finally:
-            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
-
-    def test_filter_exact(self):
-        """Test that agent filters by an exact value"""
-        table_name = self.create_and_get_table_name("1-11545282-10")
-
-        try:
-            df = self.spark.table(f"`{table_name}`")
-            df.createOrReplaceTempView(f"`{table_name}`")
-
-            transformed_df = df.ai.transform("which forward player has the number 22?")
-            self.assertEqual(transformed_df.collect()[0][0], "henry james")
-        finally:
-            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
-
-
     def test_plot(self):
         flight_df = self.spark_ai._spark.read.option("header", "true").csv("tests/data/2011_february_aa_flight_paths.csv")
         # The following plotting will probably fail on the first run with error:
@@ -176,6 +147,33 @@ class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
             schema="string",
         )
 
+    def test_transform_col_query_wikisql(self):
+        """Test that agent selects correct query column for ambiguous wikisql table example"""
+        table_name = self.create_and_get_table_name("1-1108394-47")
+
+        try:
+            df = self.spark.table(f"`{table_name}`")
+            df.createOrReplaceTempView(f"`{table_name}`")
+
+            transformed_df = df.ai.transform(
+                "which candidate won 88 votes in Queens in 1921?"
+            )
+            self.assertEqual(transformed_df.collect()[0][0], "jerome t. de hunt")
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    def test_filter_exact(self):
+        """Test that agent filters by an exact value"""
+        table_name = self.create_and_get_table_name("1-11545282-10")
+
+        try:
+            df = self.spark.table(f"`{table_name}`")
+            df.createOrReplaceTempView(f"`{table_name}`")
+
+            transformed_df = df.ai.transform("which forward player has the number 22?")
+            self.assertEqual(transformed_df.collect()[0][0], "henry james")
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
     # The following tests are skipped for gpt-3.5-turbo because they can be flaky
     # Also, our current focus is on DataFrame transform and plotting.
