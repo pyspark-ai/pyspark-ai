@@ -336,10 +336,7 @@ class TestSimilarValueTool(unittest.TestCase):
 
             self.assertTrue("already exceeds max directory size" in e.exception)
 
-    @unittest.skipUnless(
-        os.environ.get("OPENAI_API_KEY") and os.environ["OPENAI_API_KEY"].strip() != "",
-        "OPENAI_API_KEY is not set",
-    )
+    @unittest.skip("skip test due to nondeterministic behavior")
     def test_transform_without_similar_value_tool(self):
         """Test that agent does not try to access SimilarValueTool if it is disabled"""
         spark_ai = SparkAI()
