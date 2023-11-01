@@ -574,6 +574,7 @@ class SparkAI:
         try:
             import pandas
             import plotly
+            import pyarrow
         except ImportError:
             raise Exception(
                 "Dependencies for `plot_df` not found. To fix, run `pip install pyspark-ai[plot]`"
