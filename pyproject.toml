@@ -55,8 +55,7 @@ babel = "^2.12.1"
 chispa = "^0.9.2"
 
 [tool.poetry.group.lint.dependencies]
-# flake8 = "^6.0.0"
-black = "^23.7.0"
+black = "^23.11.0"
 ruff = "^0.1.6"
 
 [tool.poetry.extras]
@@ -94,12 +93,14 @@ exclude = [
     ".tox",
     ".venv",
     "__pypackages__",
+    "__pycache__",
     "_build",
     "buck-out",
     "build",
     "dist",
     "node_modules",
     "venv",
+    "examples"
 ]
 
 line-length = 120
@@ -109,6 +110,8 @@ target-version = "py38"
 [tool.ruff.lint]
 select = ["E", "F", "W", "C", "S", "I"]
 ignore = []
+# See https://github.com/PyCQA/pycodestyle/issues/373
+extend-ignore = ["E203", "F401"]
 fixable = ["ALL"]
 unfixable = []
 
