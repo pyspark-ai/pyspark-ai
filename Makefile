@@ -17,7 +17,7 @@ lint_diff format_diff: PYTHON_FILES=$(shell git diff --name-only --diff-filter=d
 
 lint lint_diff:
 	poetry run black $(PYTHON_FILES) --check
-	poetry run flake8 $(PYTHON_FILES)
+	poetry run ruff . $(PYTHON_FILES)
 
 format format_diff:
 	poetry run black $(PYTHON_FILES)
