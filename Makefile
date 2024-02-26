@@ -47,4 +47,4 @@ help:
 	@echo 'test                         - run unit tests'
 	@echo 'spell_check                  - run spell check'
 	@echo 'spell_fix                    - fix spelling errors'
-	@echo 'clean												- clean artifacts'
+	@echo 'clean                        - clean artifacts'
