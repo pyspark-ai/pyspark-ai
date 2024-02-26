@@ -88,7 +88,8 @@ class EndToEndTestCaseGPT35(unittest.TestCase):
 
 class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
     def setup_spark_ai(self, spark: SparkSession):
-        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-4"))
+        # Temperature was set to zero to make tests deterministic
+        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-4", temperature=0))
         self.spark_ai.activate()
 
     def setUp(self):
