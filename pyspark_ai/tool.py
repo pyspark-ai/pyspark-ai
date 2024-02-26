@@ -3,8 +3,10 @@ import shutil
 from collections import OrderedDict
 from typing import Any, Optional, Union
 
-from langchain.callbacks.manager import (AsyncCallbackManagerForToolRun,
-                                         CallbackManagerForToolRun)
+from langchain.callbacks.manager import (
+    AsyncCallbackManagerForToolRun,
+    CallbackManagerForToolRun,
+)
 from langchain.tools import BaseTool
 from pydantic import Field
 from pyspark.sql import SparkSession
