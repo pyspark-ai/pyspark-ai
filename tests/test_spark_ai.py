@@ -3,7 +3,6 @@ import unittest
 from io import StringIO
 from unittest.mock import MagicMock
 
-import numpy as np
 from chispa.dataframe_comparer import assert_df_equality
 from langchain.base_language import BaseLanguageModel
 from pyspark.sql import Row, SparkSession
