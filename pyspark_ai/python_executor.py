@@ -10,7 +10,7 @@ is_spark_connect = (
     "SPARK_CONNECT_MODE_ENABLED" in os.environ or "SPARK_REMOTE" in os.environ
 )
 
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession  # noqa: E402
 
 active_session = SparkSession.getActiveSession()
 
@@ -22,10 +22,10 @@ if is_spark_connect:
 else:
     from pyspark.sql import DataFrame
 
-from pyspark_ai.ai_utils import AIUtils
-from pyspark_ai.cache import Cache
-from pyspark_ai.code_logger import CodeLogger
-from pyspark_ai.temp_view_utils import canonize_string
+from pyspark_ai.ai_utils import AIUtils  # noqa: E402
+from pyspark_ai.cache import Cache  # noqa: E402
+from pyspark_ai.code_logger import CodeLogger  # noqa: E402
+from pyspark_ai.temp_view_utils import canonize_string  # noqa: E402
 
 SKIP_CACHE_TAGS = ["SKIP_CACHE"]
 
