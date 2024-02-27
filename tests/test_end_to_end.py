@@ -1,20 +1,19 @@
-import os
 import json
+import os
 import unittest
 from random import random, shuffle
 from typing import List
 
 import numpy as np
 from chispa.dataframe_comparer import assert_df_equality
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import expr, lit, mean, stddev
 from pyspark.sql.types import ArrayType, DoubleType, StringType
+
+from benchmark.wikisql.wiki_sql import (create_temp_view_statements,
+                                        get_table_name)
 from pyspark_ai import SparkAI
-from benchmark.wikisql.wiki_sql import (
-    get_table_name,
-    create_temp_view_statements,
-)
 
 
 @unittest.skipUnless(
@@ -23,7 +22,9 @@ from benchmark.wikisql.wiki_sql import (
 )
 class EndToEndTestCaseGPT35(unittest.TestCase):
     def setup_spark_ai(self, spark: SparkSession):
-        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-3.5-turbo"))
+        self.spark_ai = SparkAI(
+            llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+        )
         self.spark_ai.activate()
 
     def setUp(self):
@@ -74,16 +75,21 @@ class EndToEndTestCaseGPT35(unittest.TestCase):
         self.assertEqual(transformed_df.collect()[0][0], "Austin")
 
     def test_plot(self):
-        flight_df = self.spark_ai._spark.read.option("header", "true").csv("tests/data/2011_february_aa_flight_paths.csv")
+        flight_df = self.spark_ai._spark.read.option("header", "true").csv(
+            "tests/data/2011_february_aa_flight_paths.csv"
+        )
         # The following plotting will probably fail on the first run with error:
         #     'DataFrame' object has no attribute 'date'
-        code = flight_df.ai.plot("Boxplot summarizing the range of starting latitudes for all AA flights in February 2011.")
-        assert(code != "")
+        code = flight_df.ai.plot(
+            "Boxplot summarizing the range of starting latitudes for all AA flights in February 2011."
+        )
+        assert code != ""
 
 
 class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
     def setup_spark_ai(self, spark: SparkSession):
-        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-4"))
+        # Temperature was set to zero to make tests deterministic
+        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-4", temperature=0))
         self.spark_ai.activate()
 
     def setUp(self):

@@ -1,15 +1,16 @@
-from typing import Optional, Any, Union
-from collections import OrderedDict
 import os
 import shutil
+from collections import OrderedDict
+from typing import Any, Optional, Union
 
 from langchain.callbacks.manager import (
-    CallbackManagerForToolRun,
     AsyncCallbackManagerForToolRun,
+    CallbackManagerForToolRun,
 )
 from langchain.tools import BaseTool
 from pydantic import Field
 from pyspark.sql import SparkSession
+
 from pyspark_ai.ai_utils import AIUtils
 from pyspark_ai.spark_utils import SparkUtils
 
@@ -177,8 +178,8 @@ class VectorSearchUtil:
         search_text: str,
     ) -> str:
         try:
-            from langchain.vectorstores import FAISS
-            from langchain.embeddings import HuggingFaceBgeEmbeddings
+            from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+            from langchain_community.vectorstores import FAISS
         except ImportError:
             raise Exception(
                 "Dependencies for `vector-search` not found. To fix, run `pip install pyspark-ai[vector-search]`"
