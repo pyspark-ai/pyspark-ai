@@ -274,7 +274,6 @@ class SparkConnectTestCase(unittest.TestCase):
         cls.spark.stop()
 
 
-@unittest.skip("skip until GHA secret key enabled")
 class SparkConnectTests(SparkConnectTestCase):
     def setUp(self):
         self.spark_ai = SparkAI(

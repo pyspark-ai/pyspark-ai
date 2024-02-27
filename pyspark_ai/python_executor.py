@@ -1,16 +1,30 @@
+import os
 from typing import Any, List, Optional
 
-from langchain.chains import LLMChain
 from langchain.callbacks.manager import Callbacks
+from langchain.chains import LLMChain
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage, HumanMessage
-from pyspark.sql import DataFrame
 
-from pyspark_ai.code_logger import CodeLogger
+is_spark_connect = (
+    "SPARK_CONNECT_MODE_ENABLED" in os.environ or "SPARK_REMOTE" in os.environ
+)
+
+from pyspark.sql import SparkSession
+
+active_session = SparkSession.getActiveSession()
+
+if active_session is not None:
+    is_spark_connect = is_spark_connect or (not hasattr(active_session, "_jvm"))
+
+if is_spark_connect:
+    from pyspark.sql.connect import DataFrame
+else:
+    from pyspark.sql import DataFrame
 
 from pyspark_ai.ai_utils import AIUtils
-
 from pyspark_ai.cache import Cache
+from pyspark_ai.code_logger import CodeLogger
 from pyspark_ai.temp_view_utils import canonize_string
 
 SKIP_CACHE_TAGS = ["SKIP_CACHE"]
