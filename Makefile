@@ -34,6 +34,8 @@ spell_fix:
 
 clean:
 	rm -r spark-warehouse
+	rm *.tgz # spark sources
+	rm -r spark-3.5.0-bin-hadoop3 # unpacked spark sources
 	echo '' # to avoid failing builds if there is no such directory
 
 ######################

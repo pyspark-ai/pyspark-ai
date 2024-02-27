@@ -1,4 +1,5 @@
 import logging
+import os
 import unittest
 from io import StringIO
 from unittest.mock import MagicMock
@@ -256,14 +257,16 @@ class CacheRetrievalTestCase(SparkTestCase):
 
 
 class SparkAnalysisTest(SparkTestCase):
+    @unittest.skipIf(
+        "SPARK_CONNECT_MODE_ENABLE" in os.environ,
+        "_jdf is not supported in SparkConnect",
+    )
     def test_analysis_handling(self):
         self.spark_ai = SparkAI(llm=self.llm_mock)
         df = self.spark.range(100).groupBy("id").count()
         left = self.spark_ai._get_analyzed_plan_from_explain(df)
         right = df._jdf.queryExecution().analyzed().toString()
         self.assertEqual(left, right)
-
-
 
 
 if __name__ == "__main__":

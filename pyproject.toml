@@ -51,7 +51,7 @@ grpcio = { version = ">=1.56.0", optional = true }
 grpcio-status = { version = ">=1.56.0", optional = true }
 
 [tool.poetry.group.dev.dependencies]
-pyspark = { version = "^3.4", extras = ["connect"] }
+pyspark = "^3.4"
 babel = "^2.12"
 chispa = "^0.9"
 
