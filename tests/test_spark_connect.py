@@ -1,6 +1,7 @@
 import logging
 import os
 import unittest
+import warnings
 from io import StringIO
 
 from pyspark.sql import Row, SparkSession
@@ -13,7 +14,9 @@ class SparkConnectTestCase(unittest.TestCase):
         if "SPARK_CONNECT_MODE_ENABLE" not in os.environ:
             cls.spark = SparkSession.builder.master("local[1]").getOrCreate()
         else:
-            cls.spark = SparkSession.builder.remote("sc://localhost:15002").getOrCreate()
+            cls.spark = SparkSession.builder.remote(
+                "sc://localhost:15002"
+            ).getOrCreate()
 
     @classmethod
     def tearDownClass(cls):
@@ -122,4 +125,6 @@ class SparkConnectTests(SparkConnectTestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ResourceWarning)
+        unittest.main()

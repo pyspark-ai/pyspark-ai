@@ -1,6 +1,7 @@
 import logging
 import os
 import unittest
+import warnings
 from io import StringIO
 from unittest.mock import MagicMock
 
@@ -270,4 +271,6 @@ class SparkAnalysisTest(SparkTestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ResourceWarning)
+        unittest.main()
