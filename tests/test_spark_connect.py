@@ -10,7 +10,10 @@ from pyspark_ai import SparkAI
 class SparkConnectTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.spark = SparkSession.builder.remote("sc://localhost:15002").getOrCreate()
+        if "SPARK_CONNECT_MODE_ENABLE" not in os.environ:
+            cls.spark = SparkSession.builder.master("local[1]").getOrCreate()
+        else:
+            cls.spark = SparkSession.builder.remote("sc://localhost:15002").getOrCreate()
 
     @classmethod
     def tearDownClass(cls):

@@ -1,17 +1,17 @@
 import unittest
-from typing import List, Optional, Any
+from typing import Any, List, Optional
 
-from langchain.callbacks.manager import CallbackManagerForLLMRun, AsyncCallbackManagerForLLMRun
+from langchain.callbacks.manager import (
+    AsyncCallbackManagerForLLMRun,
+    CallbackManagerForLLMRun,
+)
 from langchain.chat_models.base import BaseChatModel
-from langchain.schema import BaseMessage, AIMessage, ChatResult
+from langchain.schema import AIMessage, BaseMessage, ChatResult
 from pyspark.sql import SparkSession
-
 from pyspark_ai import SparkAI
-from pyspark_ai.prompt import PLOT_PROMPT
-
 from pyspark_ai.code_logger import CodeLogger
-
-from pyspark_ai.python_executor import PythonExecutor
+from pyspark_ai.prompt import PLOT_PROMPT
+from pyspark_ai.python_executor import DataFrameLike, PythonExecutor
 
 
 # Test case for PythonExecutor.
@@ -27,18 +27,21 @@ class TestPythonExecutor(unittest.TestCase):
         predict_messages_calls: int
 
         def _generate(
-                self,
-                messages: List[BaseMessage],
-                stop: Optional[List[str]] = None,
-                run_manager: Optional[CallbackManagerForLLMRun] = None,
-                **kwargs: Any) -> ChatResult:
+            self,
+            messages: List[BaseMessage],
+            stop: Optional[List[str]] = None,
+            run_manager: Optional[CallbackManagerForLLMRun] = None,
+            **kwargs: Any
+        ) -> ChatResult:
             pass
 
         async def _agenerate(
-                self, messages: List[BaseMessage],
-                stop: Optional[List[str]] = None,
-                run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
-                **kwargs: Any) -> ChatResult:
+            self,
+            messages: List[BaseMessage],
+            stop: Optional[List[str]] = None,
+            run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
+            **kwargs: Any
+        ) -> ChatResult:
             pass
 
         @property
@@ -56,13 +59,16 @@ class TestPythonExecutor(unittest.TestCase):
             return AIMessage(content="1 + 1")
 
     def test_retry(self):
-        df = SparkSession.builder.getOrCreate().createDataFrame([("1", "1")], ["input", "response"])
+        df = SparkSession.builder.getOrCreate().createDataFrame(
+            [("1", "1")], ["input", "response"]
+        )
         llm = self.MockLLM()
         executor = PythonExecutor(
             llm=llm,
-            df=df,
+            df=DataFrameLike(df=df),
             prompt=PLOT_PROMPT,
-            logger=CodeLogger("test"))
+            logger=CodeLogger("test"),
+        )
         executor.run(
             columns=SparkAI._get_df_schema(df),
             instruction="plot",
@@ -70,14 +76,17 @@ class TestPythonExecutor(unittest.TestCase):
         self.assertEqual(llm.predict_messages_calls, 2)
 
     def test_no_retry(self):
-        df = SparkSession.builder.getOrCreate().createDataFrame([("1", "1")], ["input", "response"])
+        df = SparkSession.builder.getOrCreate().createDataFrame(
+            [("1", "1")], ["input", "response"]
+        )
         llm = self.MockLLM()
         executor = PythonExecutor(
             llm=llm,
-            df=df,
+            df=DataFrameLike(df=df),
             prompt=PLOT_PROMPT,
             logger=CodeLogger("test"),
-            max_retries=0)
+            max_retries=0,
+        )
         executor.run(
             columns=SparkAI._get_df_schema(df),
             instruction="plot",
