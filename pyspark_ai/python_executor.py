@@ -6,21 +6,7 @@ from langchain.chains import LLMChain
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage, HumanMessage
 
-is_spark_connect = (
-    "SPARK_CONNECT_MODE_ENABLED" in os.environ or "SPARK_REMOTE" in os.environ
-)
-
-from pyspark.sql import SparkSession  # noqa: E402
-
-active_session = SparkSession.getActiveSession()
-
-if active_session is not None:
-    is_spark_connect = is_spark_connect or (not hasattr(active_session, "_jvm"))
-
-if is_spark_connect:
-    from pyspark.sql.connect import DataFrame
-else:
-    from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame
 
 from pyspark_ai.ai_utils import AIUtils  # noqa: E402
 from pyspark_ai.cache import Cache  # noqa: E402
@@ -30,10 +16,15 @@ from pyspark_ai.temp_view_utils import canonize_string  # noqa: E402
 SKIP_CACHE_TAGS = ["SKIP_CACHE"]
 
 
+class DataFrameLike:
+    def __init__(self, df: DataFrame):
+        self.df = df
+
+
 class PythonExecutor(LLMChain):
     """LLM Chain to generate python code. It supports caching and retrying."""
 
-    df: DataFrame
+    df: DataFrameLike
     cache: Cache = None
     logger: CodeLogger = None
     max_retries: int = 3
@@ -55,11 +46,11 @@ class PythonExecutor(LLMChain):
         if self.cache is not None:
             cached_result = self.cache.lookup(prompt_str) if use_cache else None
             if cached_result is not None:
-                self._execute_code(self.df, cached_result)
+                self._execute_code(self.df.df, cached_result)
                 return cached_result
         messages = [HumanMessage(content=prompt_str)]
         response = self._generate_python_with_retries(
-            self.df, self.llm, messages, self.max_retries
+            self.df.df, self.llm, messages, self.max_retries
         )
         if use_cache and self.cache is not None:
             self.cache.update(prompt_str, response)

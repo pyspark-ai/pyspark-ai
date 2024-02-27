@@ -1,4 +1,5 @@
 import logging
+import os
 import unittest
 from io import StringIO
 
@@ -19,10 +20,15 @@ class SparkConnectTestCase(unittest.TestCase):
 class SparkConnectTests(SparkConnectTestCase):
     def setUp(self):
         self.spark_ai = SparkAI(
-            cache_file_location="examples/spark_ai_cache.json", verbose=True
+            spark_session=self.spark,
+            cache_file_location="examples/spark_ai_cache.json",
+            verbose=True,
         )
         self.spark_ai.activate()
 
+    @unittest.skipIf(
+        "SPARK_CONNECT_MODE_ENABLE" not in os.environ, "not spark connect env"
+    )
     def test_spark_connect_autodf_e2e(self):
         try:
             df = self.spark_ai.create_df(
@@ -53,6 +59,9 @@ class SparkConnectTests(SparkConnectTestCase):
         except Exception:
             self.fail("Spark Connect auto_df end-to-end test error")
 
+    @unittest.skipIf(
+        "SPARK_CONNECT_MODE_ENABLE" not in os.environ, "not spark connect env"
+    )
     def test_spark_connect_transform(self):
         try:
             spark = self.spark_ai._spark
@@ -79,6 +88,9 @@ class SparkConnectTests(SparkConnectTestCase):
         except Exception:
             self.fail("Spark Connect transform error")
 
+    @unittest.skipIf(
+        "SPARK_CONNECT_MODE_ENABLE" not in os.environ, "not spark connect env"
+    )
     def test_spark_connect_pivot(self):
         try:
             spark = self.spark_ai._spark
