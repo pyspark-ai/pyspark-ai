@@ -23,6 +23,10 @@ class SparkConnectTestCase(unittest.TestCase):
         cls.spark.stop()
 
 
+@unittest.skipUnless(
+    os.environ.get("OPENAI_API_KEY") and os.environ["OPENAI_API_KEY"].strip() != "",
+    "OPENAI_API_KEY is not set",
+)
 class SparkConnectTests(SparkConnectTestCase):
     def setUp(self):
         self.spark_ai = SparkAI(
