@@ -26,7 +26,7 @@ from pyspark_ai.prompt import (
     UDF_PROMPT,
     VERIFY_PROMPT,
 )
-from pyspark_ai.python_executor import PythonExecutor
+from pyspark_ai.python_executor import PythonExecutor, DataFrameLike
 from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.spark_sql_chain import SparkSQLChain
@@ -582,7 +582,7 @@ class SparkAI:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
         plot_chain = PythonExecutor(
-            df=df,
+            df=DataFrameLike(df),
             prompt=PLOT_PROMPT,
             cache=self._cache,
             llm=self._llm,

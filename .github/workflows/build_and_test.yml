@@ -29,3 +29,11 @@ jobs:
         run: poetry run python -u -m unittest discover
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Test Spark Connect
+        run: |
+          sh run_spark_connect.sh
+          poetry run python -m unittest tests/test_spark_connect.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SPARK_CONNECT_MODE_ENABLE: 1

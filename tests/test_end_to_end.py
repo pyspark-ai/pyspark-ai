@@ -1,6 +1,7 @@
 import json
 import os
 import unittest
+import warnings
 from random import random, shuffle
 from typing import List
 
@@ -11,8 +12,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import expr, lit, mean, stddev
 from pyspark.sql.types import ArrayType, DoubleType, StringType
 
-from benchmark.wikisql.wiki_sql import (create_temp_view_statements,
-                                        get_table_name)
+from benchmark.wikisql.wiki_sql import create_temp_view_statements, get_table_name
 from pyspark_ai import SparkAI
 
 
@@ -241,3 +241,9 @@ class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
 
         assert abs(spark_results["mean"] - numpy_mean) / numpy_mean <= 0.05
         assert abs(spark_results["stddev"] - numpy_stddev) / numpy_stddev <= 0.05
+
+
+if __name__ == "__main__":
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ResourceWarning)
+        unittest.main()
