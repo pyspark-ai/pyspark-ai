@@ -32,7 +32,7 @@ spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_ch
 
 ## Example 2: Parse heterogeneous JSON text
 
-Let's imagine we have heterogeneous JSON texts: each of them may contain or not keys and also order of keys is random. We can generate sucha a DataFrame by mutating single JSON.
+Let's imagine we have heterogeneous JSON texts: each of them may or may not contain certain keys, and the order of keys are random. We can generate sucha a DataFrame by mutating single JSON.
 
 ```python
 random_dict = {
