@@ -6,6 +6,9 @@ on:
       - master
     paths:
       - 'docs/**'
+      - 'poetry.lock'
+      - 'pyproject.toml'
+      - 'examples/**'
   workflow_dispatch:
 
 permissions:
