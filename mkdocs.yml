@@ -20,10 +20,10 @@ nav:
   - contributing.md
   - resources.md
   - Examples:
-      - "../examples/create_udf.ipynb"
-      - "../examples/example.ipynb"
-      - "../examples/transform_dataframe.ipynb"
-      - "../examples/vector_similarity_search.ipynb"
+      - "notebooks/create_udf.ipynb"
+      - "notebooks/example.ipynb"
+      - "notebooks/transform_dataframe.ipynb"
+      - "notebooks/vector_similarity_search.ipynb"
 
 plugins:
   - mkdocs-jupyter
