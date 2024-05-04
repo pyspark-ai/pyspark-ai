@@ -5,12 +5,12 @@ import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
-from langchain.prompts.base import BasePromptTemplate
-from langchain.utilities.google_search import GoogleSearchAPIWrapper
-from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor
 from langchain.base_language import BaseLanguageModel
-from langchain.chat_models import ChatOpenAI
+from langchain.chains import LLMChain
+from langchain.prompts.base import BasePromptTemplate
+from langchain.utilities.google_search import GoogleSearchAPIWrapper
+from langchain_community.chat_models import ChatOpenAI
 from pyspark.sql import DataFrame, SparkSession
 
 from pyspark_ai.ai_utils import AIUtils
@@ -21,27 +21,27 @@ from pyspark_ai.prompt import (
     EXPLAIN_DF_PROMPT,
     PLOT_PROMPT,
     SEARCH_PROMPT,
+    SQL_CHAIN_PROMPT,
     SQL_PROMPT,
     UDF_PROMPT,
     VERIFY_PROMPT,
-    SQL_CHAIN_PROMPT,
 )
-from pyspark_ai.python_executor import PythonExecutor
+from pyspark_ai.python_executor import PythonExecutor, DataFrameLike
 from pyspark_ai.react_spark_sql_agent import ReActSparkSQLAgent
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
 from pyspark_ai.spark_sql_chain import SparkSQLChain
+from pyspark_ai.spark_utils import SparkUtils
 from pyspark_ai.temp_view_utils import (
+    canonize_string,
     random_view_name,
     replace_view_name,
-    canonize_string,
 )
 from pyspark_ai.tool import (
+    LRUVectorStore,
     QuerySparkSQLTool,
     QueryValidationTool,
     SimilarValueTool,
-    LRUVectorStore,
 )
-from pyspark_ai.spark_utils import SparkUtils
 
 
 class SparkAI:
@@ -502,7 +502,8 @@ class SparkAI:
             sample_vals = []
             for sample_row in sample_rows:
                 sample_vals.append(sample_row[index])
-            schema_row_lst.append((schema_lst[index], sample_vals))
+            curr_schema_row = f"({schema_lst[index]}, {str(sample_vals)})"
+            schema_row_lst.append(curr_schema_row)
         sample_vals_str = "\n".join([str(val) for val in schema_row_lst])
         comment = self._get_table_comment(df)
 
@@ -573,6 +574,7 @@ class SparkAI:
         try:
             import pandas
             import plotly
+            import pyarrow
         except ImportError:
             raise Exception(
                 "Dependencies for `plot_df` not found. To fix, run `pip install pyspark-ai[plot]`"
@@ -580,7 +582,7 @@ class SparkAI:
         instruction = f"The purpose of the plot: {desc}" if desc is not None else ""
         tags = self._get_tags(cache)
         plot_chain = PythonExecutor(
-            df=df,
+            df=DataFrameLike(df),
             prompt=PLOT_PROMPT,
             cache=self._cache,
             llm=self._llm,

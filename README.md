@@ -69,7 +69,7 @@ llm = AzureChatOpenAI(
 spark_ai = SparkAI(llm=llm)
 spark_ai.activate()  # active partial functions for Spark DataFrame
 ```
-As per [Microsoft's Data Privacy page](https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy), using the Azure OpenAI service can provide better data privacy and security.
+Using the Azure OpenAI service can provide better data privacy and security, as per [Microsoft's Data Privacy page](https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy).
 
 ### DataFrame Transformation
 Given the following DataFrame `df`:
@@ -127,30 +127,31 @@ Now when you call df.ai.transform as before, the agent will use word embeddings 
 
 For a detailed walkthrough, please refer to our [vector_similarity_search.ipynb](./examples/vector_similarity_search.ipynb).
 
-### Data Ingestion
-If you have [set up the Google Python client](https://developers.google.com/docs/api/quickstart/python), you can ingest data via search engine:
-```python
-auto_df = spark_ai.create_df("2022 USA national auto sales by brand")
-```
-Otherwise, you can ingest data via URL:
-```python
-auto_df = spark_ai.create_df("https://www.carpro.com/blog/full-year-2022-national-auto-sales-by-brand")
-```
-
-Take a look at the data:
-```python
-auto_df.show(n=5)
-```
-| rank | brand     | us_sales_2022 | sales_change_vs_2021 |
-|------|-----------|---------------|----------------------|
-| 1    | Toyota    | 1849751       | -9                   |
-| 2    | Ford      | 1767439       | -2                   |
-| 3    | Chevrolet | 1502389       | 6                    |
-| 4    | Honda     | 881201        | -33                  |
-| 5    | Hyundai   | 724265        | -2                   |
-
 ### Plot
+Let's create a DataFrame for car sales in the U.S.
+
 ```python
+# auto sales data from https://www.carpro.com/blog/full-year-2022-national-auto-sales-by-brand
+data = [('Toyota', 1849751, -9), ('Ford', 1767439, -2), ('Chevrolet', 1502389, 6),
+        ('Honda', 881201, -33), ('Hyundai', 724265, -2), ('Kia', 693549, -1),
+        ('Jeep', 684612, -12), ('Nissan', 682731, -25), ('Subaru', 556581, -5),
+        ('Ram Trucks', 545194, -16), ('GMC', 517649, 7), ('Mercedes-Benz', 350949, 7),
+        ('BMW', 332388, -1), ('Volkswagen', 301069, -20), ('Mazda', 294908, -11),
+        ('Lexus', 258704, -15), ('Dodge', 190793, -12), ('Audi', 186875, -5),
+        ('Cadillac', 134726, 14), ('Chrysler', 112713, -2), ('Buick', 103519, -42),
+        ('Acura', 102306, -35), ('Volvo', 102038, -16), ('Mitsubishi', 102037, -16),
+        ('Lincoln', 83486, -4), ('Porsche', 70065, 0), ('Genesis', 56410, 14),
+        ('INFINITI', 46619, -20), ('MINI', 29504, -1), ('Alfa Romeo', 12845, -30),
+        ('Maserati', 6413, -10), ('Bentley', 3975, 0), ('Lamborghini', 3134, 3),
+        ('Fiat', 915, -61), ('McLaren', 840, -35), ('Rolls-Royce', 460, 7)]
+
+auto_df = spark_ai._spark.createDataFrame(data, ["Brand", "US_Sales_2022", "Sales_Change_Percentage"])
+```
+
+We can visualize the data with the plot API:
+
+```python
+# call plot() with no args for LLM-generated plot
 auto_df.ai.plot()
 ```
 ![2022 USA national auto sales by brand](docs/_static/auto_sales.png)
@@ -161,50 +162,7 @@ auto_df.ai.plot("pie chart for US sales market shares, show the top 5 brands and
 ```
 ![2022 USA national auto sales_market_share by brand](docs/_static/auto_sales_pie_char.png)
 
-### DataFrame Explanation
-```python
-auto_top_growth_df.ai.explain()
-```
-
-> In summary, this dataframe is retrieving the brand with the highest sales change in 2022 compared to 2021. It presents the results sorted by sales change in descending order and only returns the top result.
-
-### DataFrame Attribute Verification
-```python
-auto_top_growth_df.ai.verify("expect sales change percentage to be between -100 to 100")
-```
-
-> result: True
-
-### UDF Generation
-
-```python
-@spark_ai.udf
-def previous_years_sales(brand: str, current_year_sale: int, sales_change_percentage: float) -> int:
-    """Calculate previous years sales from sales change percentage"""
-    ...
-    
-spark.udf.register("previous_years_sales", previous_years_sales)
-auto_df.createOrReplaceTempView("autoDF")
-
-spark.sql("select brand as brand, previous_years_sales(brand, us_sales, sales_change_percentage) as 2021_sales from autoDF").show()
-```
-
-| brand         |2021_sales|
-|---------------|-------------|
-| Toyota        |   2032693|
-| Ford          |   1803509|
-| Chevrolet     |   1417348|
-| Honda         |   1315225|
-| Hyundai       |    739045|
-
-
-### Cache
-The SparkAI supports a simple in-memory and persistent cache system. It keeps an in-memory staging cache, which gets updated for LLM and web search results. The staging cache can be persisted through the commit() method. Cache lookup is always performed on both in-memory staging cache and persistent cache.
-```python
-spark_ai.commit()
-```
-
-Refer to [example.ipynb](https://github.com/databrickslabs/pyspark-ai/blob/master/examples/example.ipynb) for more detailed usage examples.
+Please refer to [example.ipynb](https://github.com/databrickslabs/pyspark-ai/blob/master/examples/example.ipynb) for more APIs and detailed usage examples.
 
 ## Contributing
 

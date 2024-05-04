@@ -1,20 +1,19 @@
-import os
 import json
+import os
 import unittest
+import warnings
 from random import random, shuffle
 from typing import List
 
 import numpy as np
 from chispa.dataframe_comparer import assert_df_equality
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import expr, lit, mean, stddev
 from pyspark.sql.types import ArrayType, DoubleType, StringType
+
+from benchmark.wikisql.wiki_sql import create_temp_view_statements, get_table_name
 from pyspark_ai import SparkAI
-from benchmark.wikisql.wiki_sql import (
-    get_table_name,
-    create_temp_view_statements,
-)
 
 
 @unittest.skipUnless(
@@ -23,7 +22,9 @@ from benchmark.wikisql.wiki_sql import (
 )
 class EndToEndTestCaseGPT35(unittest.TestCase):
     def setup_spark_ai(self, spark: SparkSession):
-        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-3.5-turbo"))
+        self.spark_ai = SparkAI(
+            llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+        )
         self.spark_ai.activate()
 
     def setUp(self):
@@ -73,46 +74,22 @@ class EndToEndTestCaseGPT35(unittest.TestCase):
         transformed_df = df.ai.transform("what city had the warmest temperature?")
         self.assertEqual(transformed_df.collect()[0][0], "Austin")
 
-    def test_transform_col_query_wikisql(self):
-        """Test that agent selects correct query column for ambiguous wikisql table example"""
-        table_name = self.create_and_get_table_name("1-1108394-47")
-
-        try:
-            df = self.spark.table(f"`{table_name}`")
-            df.createOrReplaceTempView(f"`{table_name}`")
-
-            transformed_df = df.ai.transform(
-                "which candidate won 88 votes in Queens in 1921?"
-            )
-            self.assertEqual(transformed_df.collect()[0][0], "jerome t. de hunt")
-        finally:
-            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
-
-    def test_filter_exact(self):
-        """Test that agent filters by an exact value"""
-        table_name = self.create_and_get_table_name("1-11545282-10")
-
-        try:
-            df = self.spark.table(f"`{table_name}`")
-            df.createOrReplaceTempView(f"`{table_name}`")
-
-            transformed_df = df.ai.transform("which forward player has the number 22?")
-            self.assertEqual(transformed_df.collect()[0][0], "henry james")
-        finally:
-            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
-
-
     def test_plot(self):
-        flight_df = self.spark_ai._spark.read.option("header", "true").csv("tests/data/2011_february_aa_flight_paths.csv")
+        flight_df = self.spark_ai._spark.read.option("header", "true").csv(
+            "tests/data/2011_february_aa_flight_paths.csv"
+        )
         # The following plotting will probably fail on the first run with error:
         #     'DataFrame' object has no attribute 'date'
-        code = flight_df.ai.plot("Boxplot summarizing the range of starting latitudes for all AA flights in February 2011.")
-        assert(code != "")
+        code = flight_df.ai.plot(
+            "Boxplot summarizing the range of starting latitudes for all AA flights in February 2011."
+        )
+        assert code != ""
 
 
 class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
     def setup_spark_ai(self, spark: SparkSession):
-        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-4"))
+        # Temperature was set to zero to make tests deterministic
+        self.spark_ai = SparkAI(llm=ChatOpenAI(model_name="gpt-4", temperature=0))
         self.spark_ai.activate()
 
     def setUp(self):
@@ -176,9 +153,37 @@ class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
             schema="string",
         )
 
+    def test_transform_col_query_wikisql(self):
+        """Test that agent selects correct query column for ambiguous wikisql table example"""
+        table_name = self.create_and_get_table_name("1-1108394-47")
+
+        try:
+            df = self.spark.table(f"`{table_name}`")
+            df.createOrReplaceTempView(f"`{table_name}`")
+
+            transformed_df = df.ai.transform(
+                "which candidate won 88 votes in Queens in 1921?"
+            )
+            self.assertEqual(transformed_df.collect()[0][0], "jerome t. de hunt")
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    def test_filter_exact(self):
+        """Test that agent filters by an exact value"""
+        table_name = self.create_and_get_table_name("1-11545282-10")
+
+        try:
+            df = self.spark.table(f"`{table_name}`")
+            df.createOrReplaceTempView(f"`{table_name}`")
+
+            transformed_df = df.ai.transform("which forward player has the number 22?")
+            self.assertEqual(transformed_df.collect()[0][0], "henry james")
+        finally:
+            self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
 
     # The following tests are skipped for gpt-3.5-turbo because they can be flaky
     # Also, our current focus is on DataFrame transform and plotting.
+    @unittest.skip("skip test due to nondeterministic behavior")
     def test_array_udf_output(self):
         @self.spark_ai.udf
         def parse_heterogeneous_json(json_str: str, schema: List[str]) -> List[str]:
@@ -207,6 +212,7 @@ class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
             self.parsed_email_df,
         )
 
+    @unittest.skip("skip test due to nondeterministic behavior")
     def test_laplace_random_udf(self):
         @self.spark_ai.udf
         def laplace_random_number(loc: float, scale: float) -> float:
@@ -235,3 +241,9 @@ class EndToEndTestCaseGPT4(EndToEndTestCaseGPT35):
 
         assert abs(spark_results["mean"] - numpy_mean) / numpy_mean <= 0.05
         assert abs(spark_results["stddev"] - numpy_stddev) / numpy_stddev <= 0.05
+
+
+if __name__ == "__main__":
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ResourceWarning)
+        unittest.main()

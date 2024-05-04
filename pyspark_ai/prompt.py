@@ -42,17 +42,17 @@ SQL_PROMPT = PromptTemplate(
 
 # spark SQL few shot examples
 sql_question1 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_14kjd0` with the following sample vals,
-    in the format (column_name: type, [sample_value_1, sample_value_2...]):
+    in the format (column_name, type, [sample_value_1, sample_value_2...]):
 ```
-(a: string, [Kongur Tagh, Grossglockner])
-(b: int, [7649, 3798])
-(c: string, [China, Austria])
+(a, string, [Kongur Tagh, Grossglockner])
+(b, int, [7649, 3798])
+(c, string, [China, Austria])
 ```
 Write a Spark SQL query to retrieve from view `spark_ai_temp_view_14kjd0`: Find the mountain located in Japan."""
 
 sql_answer1 = "SELECT `a` FROM `spark_ai_temp_view_14kjd0` WHERE `c` = 'Japan'"
 
-sql_question2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following columns:
+sql_question2 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_12qcl3` with the following (columns, types, sample_values):
 ```
 (Student, string, [student1, student2])
 (Birthday, string, [Dec 12 2005, 2006-03-04])
@@ -116,7 +116,7 @@ Thought: I now know the final answer.
 Final Answer: SELECT COUNT(`Student`) FROM `spark_ai_temp_view_12qcl3` WHERE `Birthday` = '01-01-2006'"""
 )
 
-spark_sql_shared_example_3 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following columns:
+spark_sql_shared_example_3 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_93bcf0` with the following (columns, types, sample_values):
 ```
 (Product, string, [apples, mangoes])
 (Amount, bigint, [10394892, 20192384])
@@ -134,7 +134,7 @@ Observation: OK
 Thought:I now know the final answer.
 Final Answer: SELECT * FROM spark_ai_temp_view_93bcf0 PIVOT (SUM(Amount) FOR `Country` IN ('USA', 'Canada', 'Mexico', 'China'))"""
 
-spark_sql_shared_example_4 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following columns:
+spark_sql_shared_example_4 = """QUESTION: Given a Spark temp view `spark_ai_temp_view_wl2sdf` with the following (columns, types, sample_values):
 ```
 (PassengerId, int, [001, 002])
 (Survived, int, [1, 0])
@@ -174,7 +174,7 @@ SPARK_SQL_EXAMPLES_VECTOR_SEARCH = [
 SPARK_SQL_SUFFIX = """\nQuestion: Given a Spark temp view `{view_name}` {comment}.
 
 Here are column names and sample values from each column, to help you understand the columns in the dataframe.
-The format will be (column_name: type, [sample_value_1, sample_value_2...])... 
+The format will be (column_name, type, [sample_value_1, sample_value_2...])... 
 Use these column names and sample values to help you choose which columns to query.
 It's very important to ONLY use the verbatim column_name in your resulting SQL query; DO NOT include the type.
 {sample_vals}

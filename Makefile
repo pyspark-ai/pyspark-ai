@@ -1,4 +1,4 @@
-.PHONY: all format lint test spell_check spell_fix help
+.PHONY: all format lint test spell_check spell_fix help clean
 
 # Default target executed when no arguments are given to make.
 all: help
@@ -28,6 +28,16 @@ spell_check:
 spell_fix:
 	poetry run codespell --toml pyproject.toml -w $(PYTHON_FILES)
 
+#########
+# CLEAN #
+#########
+
+clean:
+	rm -r spark-warehouse
+	rm *.tgz # spark sources
+	rm -r spark-3.5.0-bin-hadoop3 # unpacked spark sources
+	echo '' # to avoid failing builds if there is no such directory
+
 ######################
 # HELP
 ######################
@@ -39,3 +49,4 @@ help:
 	@echo 'test                         - run unit tests'
 	@echo 'spell_check                  - run spell check'
 	@echo 'spell_fix                    - fix spelling errors'
+	@echo 'clean                        - clean artifacts'
