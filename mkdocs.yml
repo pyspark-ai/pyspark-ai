@@ -20,9 +20,9 @@ nav:
   - contributing.md
   - resources.md
   - Examples:
-      - "notebooks/create_udf.ipynb"
       - "notebooks/example.ipynb"
       - "notebooks/transform_dataframe.ipynb"
+      - "notebooks/create_udf.ipynb"
       - "notebooks/vector_similarity_search.ipynb"
 
 plugins:
