@@ -59,6 +59,10 @@ chispa = "^0.9"
 flake8 = "^6.0"
 black = "^23.7"
 
+[tool.poetry.group.website.dependencies]
+mkdocs-material = "^9"
+mkdocs-jupyter = "^0"
+
 [tool.poetry.extras]
 plot = ["pandas", "plotly", "pyarrow"]
 vector-search = ["faiss-cpu", "sentence-transformers", "torch"]
