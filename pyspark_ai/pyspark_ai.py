@@ -384,7 +384,9 @@ class SparkAI:
         df.createOrReplaceTempView(temp_view_name)
         schema_lst = SparkUtils.get_df_schema(df)
         schema_str = "\n".join(schema_lst)
-        sample_rows = SparkUtils.get_sample_spark_rows(df, self._sample_rows_in_table_info)
+        sample_rows = SparkUtils.get_sample_spark_rows(
+            df, self._sample_rows_in_table_info
+        )
         schema_row_lst = []
         for index in range(len(schema_lst)):
             sample_vals = []
