@@ -12,6 +12,7 @@ from pyspark_ai import SparkAI
 from pyspark_ai.code_logger import CodeLogger
 from pyspark_ai.prompt import PLOT_PROMPT
 from pyspark_ai.python_executor import DataFrameLike, PythonExecutor
+from pyspark_ai.spark_utils import SparkUtils
 
 
 # Test case for PythonExecutor.
@@ -70,7 +71,7 @@ class TestPythonExecutor(unittest.TestCase):
             logger=CodeLogger("test"),
         )
         executor.run(
-            columns=SparkAI._get_df_schema(df),
+            columns=SparkUtils.get_df_schema(df),
             instruction="plot",
         )
         self.assertEqual(llm.predict_messages_calls, 2)
@@ -88,7 +89,7 @@ class TestPythonExecutor(unittest.TestCase):
             max_retries=0,
         )
         executor.run(
-            columns=SparkAI._get_df_schema(df),
+            columns=SparkUtils.get_df_schema(df),
             instruction="plot",
         )
         self.assertEqual(llm.predict_messages_calls, 1)
