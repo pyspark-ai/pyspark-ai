@@ -1,7 +1,4 @@
-import contextlib
-import io
 import os
-import re
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
@@ -177,23 +174,6 @@ class SparkAI:
         )
 
     @staticmethod
-    def _extract_view_name(query: str) -> str:
-        """
-        Extract the view name from the provided SQL query.
-
-        :param query: SQL query as a string
-        :return: view name as a string
-        """
-        pattern = r"^CREATE(?: OR REPLACE)? TEMP VIEW (\S+)"
-        match = re.search(pattern, query, re.IGNORECASE)
-        if not match:
-            raise ValueError(
-                f"The provided query: '{query}' is not valid for creating a temporary view. "
-                "Expected pattern: 'CREATE TEMP VIEW [VIEW_NAME] ...'"
-            )
-        return match.group(1)
-
-    @staticmethod
     def _generate_search_prompt(columns: Optional[List[str]]) -> str:
         return (
             f"The best search results should contain as many as possible of these info: {','.join(columns)}"
@@ -281,78 +261,18 @@ class SparkAI:
         sql_query = AIUtils.extract_code_blocks(llm_result)[0]
         # The actual view name used in the SQL query may be different from the
         # temp view name because of caching.
-        view_name = self._extract_view_name(sql_query)
+        view_name = SparkUtils.extract_view_name(sql_query)
         formatted_sql_query = CodeLogger.colorize_code(sql_query, "sql")
         self.log(f"SQL query for the ingestion:\n{formatted_sql_query}")
         self.log(f"Storing data into temp view: {view_name}\n")
         self._spark.sql(sql_query)
         return self._spark.table(view_name)
 
-    @staticmethod
-    def _get_df_schema(df: DataFrame) -> list:
-        schema_lst = [f"{name}, {dtype}" for name, dtype in df.dtypes]
-        return schema_lst
-
-    @staticmethod
-    def _trim_hash_id(analyzed_plan):
-        # Pattern to find strings like #59 or #2021
-        pattern = r"#\d+"
-
-        # Remove matching patterns
-        trimmed_plan = re.sub(pattern, "", analyzed_plan)
-
-        return trimmed_plan
-
-    @staticmethod
-    def _get_analyzed_plan_from_explain(df: DataFrame) -> str:
-        """
-        Helper function to parse the content of the extended explain
-        string to extract the analyzed logical plan. As Spark does not provide
-        access to the logical plane without accessing the query execution object
-        directly, the value is extracted from the explain text representation.
-
-        :param df: The dataframe to extract the logical plan from.
-        :return: The analyzed logical plan.
-        """
-        with contextlib.redirect_stdout(io.StringIO()) as f:
-            df.explain(extended=True)
-        explain = f.getvalue()
-        splits = explain.split("\n")
-        # The two index operations will fail if Spark changes the textual
-        # plan representation.
-        begin = splits.index("== Analyzed Logical Plan ==")
-        end = splits.index("== Optimized Logical Plan ==")
-        # The analyzed logical plan starts two lines after the section marker.
-        # The first line is the output schema.
-        return "\n".join(splits[begin + 2 : end])
-
-    @staticmethod
-    def _get_tables_from_explain(df: DataFrame) -> List[str]:
-        """
-        Helper function to parse the tables from the content of the explanation
-        """
-        explain = SparkAI._get_analyzed_plan_from_explain(df)
-        splits = explain.split("\n")
-        # For table relations, the table name is the 2nd element in the line
-        # It can be one of the followings:
-        # 1. "  +- Relation default.foo101"
-        # 2. ":        +- Relation default.foo100"
-        # 3. "Relation default.foo100"
-        tables = []
-        for line in splits:
-            # if line starts with "Relation" or contains "+- Relation", it is a table relation
-            if line.startswith("Relation ") or "+- Relation " in line:
-                table_name_with_output = line.split("Relation ", 1)[1].split(" ")[0]
-                table_name = table_name_with_output.split("[")[0]
-                tables.append(table_name)
-
-        return tables
-
     def _get_df_explain(self, df: DataFrame, cache: bool) -> str:
-        raw_analyzed_str = self._get_analyzed_plan_from_explain(df)
+        raw_analyzed_str = SparkUtils.get_analyzed_plan_from_explain(df)
         tags = self._get_tags(cache)
         return self._explain_chain.run(
-            tags=tags, input=self._trim_hash_id(raw_analyzed_str)
+            tags=tags, input=SparkUtils.trim_hash_id(raw_analyzed_str)
         )
 
     def _get_tags(self, cache: bool) -> Optional[List[str]]:
@@ -434,38 +354,6 @@ class SparkAI:
         sql_query_from_response = AIUtils.extract_code_blocks(llm_result)[0]
         return sql_query_from_response
 
-    def _get_sample_spark_rows(self, df: DataFrame) -> list:
-        if self._sample_rows_in_table_info <= 0:
-            return []
-        try:
-            sample_rows = SparkUtils.get_dataframe_results(df.limit(3))
-            return sample_rows
-        except Exception:
-            # If fail to get sample rows, return empty list
-            return []
-
-    def _get_table_comment_from_desc(self, table_name: str) -> str:
-        try:
-            # Get the output of describe table
-            outputs = self._spark.sql("DESC extended " + table_name).collect()
-            # Get the table comment from output if the first row is "Comment"
-            for row in outputs:
-                if row.col_name == "Comment":
-                    return row.data_type
-            return ""
-        except Exception:
-            # If fail to get table comment, return empty string
-            return ""
-
-    def _get_table_comment(self, df: DataFrame) -> str:
-        tables = self._get_tables_from_explain(df)
-        # To be conservative, we return the table comment if there is only one table
-        if len(tables) == 1:
-            comment = self._get_table_comment_from_desc(tables[0])
-            if len(comment) > 0:
-                return "which represents " + comment
-        return ""
-
     def _get_sql_query(
         self,
         temp_view_name: str,
@@ -494,9 +382,11 @@ class SparkAI:
         )
         self.log(f"Creating temp view for the transform:\n{create_temp_view_code}")
         df.createOrReplaceTempView(temp_view_name)
-        schema_lst = self._get_df_schema(df)
+        schema_lst = SparkUtils.get_df_schema(df)
         schema_str = "\n".join(schema_lst)
-        sample_rows = self._get_sample_spark_rows(df)
+        sample_rows = SparkUtils.get_sample_spark_rows(
+            df, self._sample_rows_in_table_info
+        )
         schema_row_lst = []
         for index in range(len(schema_lst)):
             sample_vals = []
@@ -505,7 +395,7 @@ class SparkAI:
             curr_schema_row = f"({schema_lst[index]}, {str(sample_vals)})"
             schema_row_lst.append(curr_schema_row)
         sample_vals_str = "\n".join([str(val) for val in schema_row_lst])
-        comment = self._get_table_comment(df)
+        comment = SparkUtils.get_table_comment(df, self._spark)
 
         if cache:
             cache_key = ReActSparkSQLAgent.cache_key(desc, schema_str)
@@ -590,7 +480,7 @@ class SparkAI:
         )
         return plot_chain.run(
             tags=tags,
-            columns=self._get_df_schema(df),
+            columns=SparkUtils.get_df_schema(df),
             instruction=instruction,
         )
 

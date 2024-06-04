@@ -10,6 +10,7 @@ from langchain.base_language import BaseLanguageModel
 from pyspark.sql import Row, SparkSession
 from pyspark_ai import SparkAI
 from pyspark_ai.search_tool_with_cache import SearchToolWithCache
+from pyspark_ai.spark_utils import SparkUtils
 
 
 class SparkAIInitializationTestCase(unittest.TestCase):
@@ -60,10 +61,10 @@ class TestGetTableCommentFromExplain(unittest.TestCase):
             df = self.create_and_read_table(
                 table_name, [(1, "foo"), (2, "bar")], comment
             )
-            tables = SparkAI._get_tables_from_explain(df)
+            tables = SparkUtils.get_tables_from_explain(df)
             self.assertEqual(tables, [table_name])
             self.assertEqual(
-                self.spark_ai._get_table_comment(df), "which represents comment1"
+                SparkUtils.get_table_comment(df, self.spark), "which represents comment1"
             )
         finally:
             self.spark.sql(f"DROP TABLE IF EXISTS {table_name}")
@@ -79,19 +80,19 @@ class TestGetTableCommentFromExplain(unittest.TestCase):
                 for name in table_names
             ]
             df = dfs[0].join(dfs[1], "col1")
-            tables = SparkAI._get_tables_from_explain(df)
+            tables = SparkUtils.get_tables_from_explain(df)
             self.assertEqual(tables, table_names)
             # Currently we only set the comment when reading a single table
-            self.assertEqual(self.spark_ai._get_table_comment(df), "")
+            self.assertEqual(SparkUtils.get_table_comment(df, self.spark), "")
         finally:
             for name in table_names:
                 self.spark.sql(f"DROP TABLE IF EXISTS {name}")
 
     def test_no_table(self):
         df = self.spark.createDataFrame([(1, "foo"), (2, "bar")], ["col1", "col2"])
-        tables = SparkAI._get_tables_from_explain(df)
+        tables = SparkUtils.get_tables_from_explain(df)
         self.assertEqual(tables, [])
-        self.assertEqual(self.spark_ai._get_table_comment(df), "")
+        self.assertEqual(SparkUtils.get_table_comment(df, self.spark), "")
 
 
 class SparkAITrimTextTestCase(unittest.TestCase):
@@ -119,21 +120,21 @@ class ExtractViewNameTestCase(unittest.TestCase):
         """Tests if the function correctly extracts the view name from a valid CREATE TEMP VIEW query"""
         query = "CREATE TEMP VIEW temp_view AS SELECT * FROM table"
         expected_view_name = "temp_view"
-        actual_view_name = SparkAI._extract_view_name(query)
+        actual_view_name = SparkUtils.extract_view_name(query)
         self.assertEqual(actual_view_name, expected_view_name)
 
     def test_extract_view_name_with_valid_create_or_replace_temp_query(self):
         """Tests if the function correctly extracts the view name from a valid CREATE OR REPLACE TEMP VIEW query"""
         query = "CREATE OR REPLACE TEMP VIEW temp_view AS SELECT * FROM table"
         expected_view_name = "temp_view"
-        actual_view_name = SparkAI._extract_view_name(query)
+        actual_view_name = SparkUtils.extract_view_name(query)
         self.assertEqual(actual_view_name, expected_view_name)
 
     def test_extract_view_name_with_invalid_query(self):
         """Tests if the function correctly raises a ValueError for an invalid query"""
         query = "SELECT * FROM table"
         with self.assertRaises(ValueError) as e:
-            SparkAI._extract_view_name(query)
+            SparkUtils.extract_view_name(query)
         self.assertEqual(
             str(e.exception),
             f"The provided query: '{query}' is not valid for creating a temporary view. Expected pattern: 'CREATE TEMP VIEW [VIEW_NAME] ...'",
@@ -143,14 +144,14 @@ class ExtractViewNameTestCase(unittest.TestCase):
         """Tests if the function correctly handles case insensitivity in the CREATE TEMP VIEW keyword"""
         query = "create temp view temp_view AS SELECT * FROM table"
         expected_view_name = "temp_view"
-        actual_view_name = SparkAI._extract_view_name(query)
+        actual_view_name = SparkUtils.extract_view_name(query)
         self.assertEqual(actual_view_name, expected_view_name)
 
     def test_extract_view_name_with_empty_query(self):
         """Tests if the function correctly raises a ValueError for an empty query"""
         query = ""
         with self.assertRaises(ValueError) as e:
-            SparkAI._extract_view_name(query)
+            SparkUtils.extract_view_name(query)
         self.assertEqual(
             str(e.exception),
             f"The provided query: '{query}' is not valid for creating a temporary view. Expected pattern: 'CREATE TEMP VIEW [VIEW_NAME] ...'",
@@ -265,7 +266,7 @@ class SparkAnalysisTest(SparkTestCase):
     def test_analysis_handling(self):
         self.spark_ai = SparkAI(llm=self.llm_mock)
         df = self.spark.range(100).groupBy("id").count()
-        left = self.spark_ai._get_analyzed_plan_from_explain(df)
+        left = SparkUtils.get_analyzed_plan_from_explain(df)
         right = df._jdf.queryExecution().analyzed().toString()
         self.assertEqual(left, right)
 
