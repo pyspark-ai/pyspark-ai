@@ -24,9 +24,22 @@ nav:
       - "notebooks/transform_dataframe.ipynb"
       - "notebooks/create_udf.ipynb"
       - "notebooks/vector_similarity_search.ipynb"
+  - API Reference: reference/SUMMARY.md
 
 plugins:
   - mkdocs-jupyter
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: sphinx
+            docstring_options:
+              show_if_no_docstring: true
+            show_source: true
 
 # Extensions
 markdown_extensions:

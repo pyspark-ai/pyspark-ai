@@ -31,6 +31,8 @@ jobs:
       - name: Install poetry
         run: |
           pipx install "poetry>=1.3.0,<1.4.0"
-      - run: poetry install --only website
+      # Because generating of API docs requires actual import of all the files
+      # we need to install all the dependencies that are used in the project.
+      - run: poetry install --with website --extras all
       - run: poetry run mkdocs gh-deploy --force
 
