@@ -62,6 +62,9 @@ black = "^23.7"
 [tool.poetry.group.website.dependencies]
 mkdocs-material = "^9"
 mkdocs-jupyter = "^0"
+mkdocstrings-python = "*"
+mkdocs-gen-files = "*"
+mkdocs-literate-nav = "*"
 
 [tool.poetry.extras]
 plot = ["pandas", "plotly", "pyarrow"]
